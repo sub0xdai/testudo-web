@@ -55,3 +55,32 @@ export interface Stat {
   label: string;
   value: string;
 }
+
+export interface Balance {
+  asset: string;
+  available: string;
+  locked: string;
+}
+
+export interface OpenOrder {
+  orderId: string;
+  market: string;
+  side: 'BUY' | 'SELL';
+  price: string;
+  quantity: string;
+  filledQuantity: string;
+  status: 'OPEN' | 'PARTIALLY_FILLED';
+  createdAt: number;
+}
+
+export interface OrderHistory {
+  orderId: string;
+  market: string;
+  side: 'BUY' | 'SELL';
+  price: string;
+  quantity: string;
+  filledQuantity: string;
+  status: 'FILLED' | 'CANCELLED' | 'EXPIRED';
+  createdAt: number;
+  completedAt: number;
+}

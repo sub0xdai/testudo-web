@@ -1,7 +1,7 @@
 import axios from "axios";
-import { CreateOrder, Depth, KLine, Ticker, Trade, UserId } from "./types";
+import { CreateOrder, Depth, KLine, Ticker, Trade, UserId, Balance, OpenOrder, OrderHistory } from "./types";
 
-const BASE_URL = "https://exchange.jogeshwar.xyz/backend/api/v1";
+const BASE_URL = "http://localhost:8080/api/v1";
 
 export async function getDepth(market: string): Promise<Depth> {
   const response = await axios.get(`${BASE_URL}/depth?symbol=${market}`);
@@ -51,5 +51,34 @@ export async function createOrder(order: CreateOrder): Promise<string> {
 
 export async function createUser(): Promise<UserId> {
   const response = await axios.post(`${BASE_URL}/users`);
+  return response.data;
+}
+
+export async function getBalances(userId: string): Promise<Balance[]> {
+  const response = await axios.get(`${BASE_URL}/balances?user_id=${userId}`);
+  return response.data;
+}
+
+export async function getOpenOrders(userId: string, market?: string): Promise<OpenOrder[]> {
+  const params = new URLSearchParams({ user_id: userId });
+  if (market) {
+    params.append('symbol', market);
+  }
+  const response = await axios.get(`${BASE_URL}/orders?${params.toString()}`);
+  return response.data;
+}
+
+export async function cancelOrder(orderId: string, userId: string): Promise<void> {
+  await axios.delete(`${BASE_URL}/order`, {
+    data: { order_id: orderId, user_id: userId }
+  });
+}
+
+export async function getOrderHistory(userId: string, market?: string): Promise<OrderHistory[]> {
+  const params = new URLSearchParams({ user_id: userId });
+  if (market) {
+    params.append('symbol', market);
+  }
+  const response = await axios.get(`${BASE_URL}/order-history?${params.toString()}`);
   return response.data;
 }

@@ -1,61 +1,110 @@
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { TradesContext } from "../../state/TradesProvider";
+import { formatPrice, formatQuantity, formatTime } from "../../utils/format";
+import { Skeleton } from "../ui/Skeleton";
+
+/**
+ * Loading skeleton for trades list
+ */
+function TradesSkeleton() {
+  return (
+    <div className="flex flex-col gap-1">
+      {Array.from({ length: 10 }).map((_, i) => (
+        <div key={i} className="grid grid-cols-3 gap-4 py-2 px-1">
+          <Skeleton variant="text" width="80%" height={14} />
+          <Skeleton variant="text" width="60%" height={14} className="mx-auto" />
+          <Skeleton variant="text" width="70%" height={14} className="ml-auto" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Empty state when no trades
+ */
+function EmptyState() {
+  return (
+    <div className="flex items-center justify-center h-full text-text-secondary text-sm">
+      No recent trades
+    </div>
+  );
+}
 
 export const RecentTrades = () => {
-  const { trades } = useContext(TradesContext);
+  const { trades, loading } = useContext(TradesContext);
 
-  const formatTime = (timestamp: number) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-  };
+  const isLoading = loading.trades;
+  const isEmpty = !isLoading && trades.length === 0;
+
+  // Memoize formatted trades for performance
+  const formattedTrades = useMemo(() => {
+    return trades.map((trade) => ({
+      ...trade,
+      formattedPrice: formatPrice(trade.price),
+      formattedQuantity: formatQuantity(trade.quantity),
+      formattedTime: formatTime(trade.timestamp),
+    }));
+  }, [trades]);
 
   return (
-    <div className="h-full flex flex-col py-1 pl-2 pr-2 text-xs text-center recent-trades-header text-text-tertiary font-display bg-container-bg">
-      {/* Recent Trades Header */}
-      <div className="grid grid-cols-3 gap-4 py-2 border-b border-container-border">
-        <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px] text-left">
-          Price (USD)
+    <div className="h-full flex flex-col bg-container-bg">
+      {/* Header */}
+      <div className="grid grid-cols-3 gap-4 py-2 px-3 border-b border-container-border text-text-secondary">
+        <span className="font-semibold text-[11px] leading-[14px] tracking-[0.15px] text-left uppercase">
+          Price
         </span>
-        <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px] pr-1 text-center">
-          Size (SOL)
+        <span className="font-semibold text-[11px] leading-[14px] tracking-[0.15px] text-center uppercase">
+          Size
         </span>
-        <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px] text-right">
+        <span className="font-semibold text-[11px] leading-[14px] tracking-[0.15px] text-right uppercase">
           Time
         </span>
       </div>
 
-      {/* Scrollable Trades Data */}
+      {/* Trades List */}
       <div
-        className="flex-1 overflow-y-auto font-numeral"
+        className="flex-1 overflow-y-auto"
         style={{
-          scrollbarWidth: "none" /* For Firefox */,
-          msOverflowStyle: "none" /* For Internet Explorer and Edge */,
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
         }}
       >
-        {trades.map((trade, index) => (
-          <div
-            key={index}
-            className="grid grid-cols-3 py-2 px-1 text-text-secondary hover:cursor-pointer hover:bg-container-bg-hover"
-          >
-            <span
-              className={`font-semibold text-[13px] leading-[16px] text-left ${
-                trade.isBuyerMaker ? "text-positive-green" : "text-negative-red"
-              }`}
+        {isLoading ? (
+          <TradesSkeleton />
+        ) : isEmpty ? (
+          <EmptyState />
+        ) : (
+          formattedTrades.map((trade, index) => (
+            <div
+              key={`${trade.id}-${index}`}
+              className="grid grid-cols-3 gap-4 py-1.5 px-3 text-text-default
+                       hover:bg-container-bg-hover transition-colors duration-100
+                       border-b border-container-border/30 last:border-b-0"
             >
-              {trade.price}
-            </span>
-            <span className="font-semibold text-[13px] leading-[16px] text-center">
-              {trade.quantity}
-            </span>
-            <span className="font-semibold text-[13px] leading-[16px] text-right text-nowrap">
-              {formatTime(trade.timestamp)}
-            </span>
-          </div>
-        ))}
+              {/* Price - colored based on trade direction */}
+              <span
+                className={`font-numeral text-[12px] leading-[16px] text-left font-medium ${
+                  trade.isBuyerMaker
+                    ? "text-positive-green"
+                    : "text-negative-red"
+                }`}
+              >
+                {trade.formattedPrice}
+              </span>
+
+              {/* Quantity */}
+              <span className="font-numeral text-[12px] leading-[16px] text-center text-text-default">
+                {trade.formattedQuantity}
+              </span>
+
+              {/* Time */}
+              <span className="font-numeral text-[12px] leading-[16px] text-right text-text-secondary whitespace-nowrap">
+                {trade.formattedTime}
+              </span>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

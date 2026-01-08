@@ -1,191 +1,219 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext, useCallback } from "react";
 import { OrderBook } from "./depth/OrderBook";
 import { RecentTrades } from "./depth/RecentTrades";
 import { getDepth, getTrades } from "../utils/requests";
 import { WsManager } from "../utils/ws_manager";
-import { useContext } from "react";
 import { TradesContext } from "../state/TradesProvider";
 import { Trade } from "../utils/types";
 
-export const Depth = ({ market }: { market: string }) => {
-  // State to track active tab
-  const [activeTab, setActiveTab] = useState("orderbook"); // 'orderbook' or 'recentTrades'
+type TabType = 'orderbook' | 'recentTrades';
+
+interface DepthProps {
+  market: string;
+}
+
+/**
+ * O(n) order book update using Map for lookups
+ * Replaces the previous O(n²) algorithm
+ */
+function mergeOrderBookUpdates(
+  existing: [string, string][],
+  updates: [string, string][],
+  sortDirection: 'asc' | 'desc',
+  limit: number
+): [string, string][] {
+  // Create a Map for O(1) lookups
+  const orderMap = new Map<string, string>();
+
+  // Add existing orders to map
+  for (const [price, size] of existing) {
+    orderMap.set(price, size);
+  }
+
+  // Apply updates
+  for (const [price, size] of updates) {
+    if (parseFloat(size) === 0) {
+      // Remove if size is 0
+      orderMap.delete(price);
+    } else {
+      // Add or update
+      orderMap.set(price, size);
+    }
+  }
+
+  // Convert back to array and sort
+  const result = Array.from(orderMap.entries()) as [string, string][];
+
+  // Sort based on direction
+  if (sortDirection === 'desc') {
+    // Bids: highest price first
+    result.sort((a, b) => parseFloat(b[0]) - parseFloat(a[0]));
+  } else {
+    // Asks: lowest price first
+    result.sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]));
+  }
+
+  // Limit results
+  return result.slice(0, limit);
+}
+
+export const Depth = ({ market }: DepthProps) => {
+  const [activeTab, setActiveTab] = useState<TabType>("orderbook");
 
   const {
     setTrades,
+    addTrade,
     setBids,
     setAsks,
     setPrice,
-    setTotalBidSize,
-    setTotalAskSize,
     orderBookRef,
+    setLoading,
+    setError,
+    setConnectionStatus,
   } = useContext(TradesContext);
 
+  // Depth update callback - memoized for stable reference
+  const handleDepthUpdate = useCallback((rawData: unknown) => {
+    const data = rawData as { bids: [string, string][]; asks: [string, string][] };
+    setBids((originalBids) => {
+      const current = originalBids || [];
+      return mergeOrderBookUpdates(current, data.bids, 'desc', 30);
+    });
+
+    setAsks((originalAsks) => {
+      const current = originalAsks || [];
+      return mergeOrderBookUpdates(current, data.asks, 'asc', 30);
+    });
+  }, [setBids, setAsks]);
+
+  // Trade update callback - memoized for stable reference
+  const handleTradeUpdate = useCallback((rawData: unknown) => {
+    const data = rawData as {
+      t: number | string;
+      m: boolean;
+      p: string;
+      q: string;
+      T: number;
+    };
+    const newTrade: Trade = {
+      id: typeof data.t === 'string' ? parseInt(data.t, 10) : data.t,
+      isBuyerMaker: data.m,
+      price: data.p,
+      quantity: data.q,
+      quoteQuantity: (parseFloat(data.p) * parseFloat(data.q)).toFixed(6),
+      timestamp: data.T,
+    };
+
+    setPrice(data.p);
+    addTrade(newTrade);
+  }, [setPrice, addTrade]);
+
   useEffect(() => {
-    WsManager.getInstance().registerCallback(
-      "depth",
-      (data: any) => {
-        console.log("depth has been updated");
-        console.log(data);
+    let mounted = true;
+    const ws = WsManager.getInstance();
 
-        setBids((originalBids) => {
-          let bidsAfterUpdate = [...(originalBids || [])];
+    // Subscribe to WebSocket connection state changes
+    const unsubscribeConnection = ws.onConnectionChange((state) => {
+      if (mounted) {
+        setConnectionStatus(state);
+      }
+    });
 
-          for (let i = 0; i < bidsAfterUpdate.length; i++) {
-            for (let j = 0; j < data.bids.length; j++) {
-              if (bidsAfterUpdate[i][0] === data.bids[j][0]) {
-                bidsAfterUpdate[i][1] = data.bids[j][1];
-                if (Number(bidsAfterUpdate[i][1]) === 0) {
-                  bidsAfterUpdate.splice(i, 1);
-                }
-                break;
-              }
-            }
-          }
+    // Register WebSocket callbacks
+    ws.registerCallback("depth", handleDepthUpdate, `DEPTH-${market}`);
+    ws.registerCallback("trade", handleTradeUpdate, `TRADE-${market}`);
 
-          for (let j = 0; j < data.bids.length; j++) {
-            if (
-              Number(data.bids[j][1]) !== 0 &&
-              !bidsAfterUpdate.map((x) => x[0]).includes(data.bids[j][0])
-            ) {
-              bidsAfterUpdate.push(data.bids[j]);
-              break;
-            }
-          }
-          bidsAfterUpdate.sort((x, y) =>
-            Number(y[0]) < Number(x[0]) ? -1 : 1
-          );
-
-          bidsAfterUpdate = bidsAfterUpdate.slice(-30);
-          return bidsAfterUpdate;
-        });
-
-        setAsks((originalAsks) => {
-          let asksAfterUpdate = [...(originalAsks || [])];
-
-          for (let i = 0; i < asksAfterUpdate.length; i++) {
-            for (let j = 0; j < data.asks.length; j++) {
-              if (asksAfterUpdate[i][0] === data.asks[j][0]) {
-                asksAfterUpdate[i][1] = data.asks[j][1];
-                if (Number(asksAfterUpdate[i][1]) === 0) {
-                  asksAfterUpdate.splice(i, 1);
-                }
-                break;
-              }
-            }
-          }
-
-          for (let j = 0; j < data.asks.length; j++) {
-            if (
-              Number(data.asks[j][1]) !== 0 &&
-              !asksAfterUpdate.map((x) => x[0]).includes(data.asks[j][0])
-            ) {
-              asksAfterUpdate.push(data.asks[j]);
-              break;
-            }
-          }
-          asksAfterUpdate.sort((x, y) =>
-            Number(y[0]) < Number(x[0]) ? 1 : -1
-          );
-
-          asksAfterUpdate = asksAfterUpdate.slice(0, 30);
-          return asksAfterUpdate;
-        });
-      },
-      `DEPTH-${market}`
-    );
-
-    WsManager.getInstance().registerCallback(
-      "trade",
-      (data: any) => {
-        console.log("trade has been updated");
-        console.log(data);
-
-        const newTrade: Trade = {
-          id: data.t,
-          isBuyerMaker: data.m,
-          price: data.p,
-          quantity: data.q,
-          quoteQuantity: data.q,
-          timestamp: data.T,
-        };
-
-        setPrice(data.p);
-
-        setTrades((oldTrades) => {
-          const newTrades = [...oldTrades];
-          newTrades.unshift(newTrade);
-          newTrades.pop();
-          return newTrades;
-        });
-      },
-      `TRADE-${market}`
-    );
-
-    WsManager.getInstance().sendMessage({
+    // Subscribe to streams
+    ws.sendMessage({
       method: "SUBSCRIBE",
       params: [`depth.${market}`],
     });
 
-    WsManager.getInstance().sendMessage({
+    ws.sendMessage({
       method: "SUBSCRIBE",
       params: [`trade.${market}`],
     });
 
-    getTrades(market).then((trades) => {
-      trades = trades.filter((trade) => parseFloat(trade.quantity) !== 0);
-      trades = trades.slice(0, 50);
-      setTrades(trades);
-      setPrice(trades?.[0]?.price);
-    });
+    // Fetch initial data
+    const fetchInitialData = async () => {
+      try {
+        setLoading('trades', true);
+        setLoading('orderBook', true);
 
-    getDepth(market).then((depth) => {
-      const bidsData = depth.bids;
-      const asksData = depth.asks;
+        // Fetch trades and depth in parallel
+        const [tradesData, depthData] = await Promise.all([
+          getTrades(market),
+          getDepth(market),
+        ]);
 
-      if (!bidsData && !asksData) {
-        return;
+        if (!mounted) return;
+
+        // Process trades
+        const filteredTrades = tradesData
+          .filter((trade) => parseFloat(trade.quantity) !== 0)
+          .slice(0, 50);
+
+        setTrades(filteredTrades);
+        if (filteredTrades.length > 0) {
+          setPrice(filteredTrades[0].price);
+        }
+        setLoading('trades', false);
+
+        // Process depth
+        const { bids: bidsData, asks: asksData } = depthData;
+
+        if (bidsData || asksData) {
+          const filteredBids = (bidsData || [])
+            .filter((bid) => parseFloat(bid[1]) !== 0)
+            .sort((a, b) => parseFloat(b[0]) - parseFloat(a[0]))
+            .slice(0, 30);
+
+          const filteredAsks = (asksData || [])
+            .filter((ask) => parseFloat(ask[1]) !== 0)
+            .sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]))
+            .slice(0, 30);
+
+          setBids(filteredBids);
+          setAsks(filteredAsks);
+        }
+
+        setLoading('orderBook', false);
+
+        // Scroll to center on initial load
+        if (orderBookRef.current) {
+          const halfHeight = orderBookRef.current.scrollHeight / 2;
+          orderBookRef.current.scrollTo(
+            0,
+            halfHeight - orderBookRef.current.clientHeight / 2
+          );
+        }
+      } catch (err) {
+        if (!mounted) return;
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load market data';
+        setError('orderBook', errorMessage);
+        setError('trades', errorMessage);
+        setLoading('orderBook', false);
+        setLoading('trades', false);
       }
+    };
 
-      let filteredBids = bidsData.filter((bid) => parseFloat(bid[1]) !== 0);
-      let filteredAsks = asksData.filter((ask) => parseFloat(ask[1]) !== 0);
+    fetchInitialData();
 
-      const totalBids = filteredBids.reduce(
-        (acc, bid) => acc + parseFloat(bid[1]),
-        0
-      );
-      const totalAsks = filteredAsks.reduce(
-        (acc, ask) => acc + parseFloat(ask[1]),
-        0
-      );
-
-      filteredBids = filteredBids.slice(-30);
-      filteredAsks = filteredAsks.slice(0, 30);
-
-      setBids(filteredBids);
-      setAsks(filteredAsks);
-      setTotalBidSize(totalBids);
-      setTotalAskSize(totalAsks);
-
-      // Scroll to center on initial load
-      if (orderBookRef.current) {
-        const halfHeight = orderBookRef.current.scrollHeight / 2;
-        orderBookRef.current.scrollTo(
-          0,
-          halfHeight - orderBookRef.current.clientHeight / 2
-        );
-      }
-    });
-
+    // Cleanup
     return () => {
-      WsManager.getInstance().deRegisterCallback("depth", `DEPTH-${market}`);
-      WsManager.getInstance().sendMessage({
+      mounted = false;
+
+      // Unsubscribe from connection state changes
+      unsubscribeConnection();
+
+      ws.deRegisterCallback("depth", `DEPTH-${market}`);
+      ws.sendMessage({
         method: "UNSUBSCRIBE",
         params: [`depth.${market}`],
       });
 
-      WsManager.getInstance().deRegisterCallback("trade", `TRADE-${market}`);
-      WsManager.getInstance().sendMessage({
+      ws.deRegisterCallback("trade", `TRADE-${market}`);
+      ws.sendMessage({
         method: "UNSUBSCRIBE",
         params: [`trade.${market}`],
       });
@@ -196,62 +224,75 @@ export const Depth = ({ market }: { market: string }) => {
     setAsks,
     setBids,
     setPrice,
-    setTotalAskSize,
-    setTotalBidSize,
     setTrades,
+    addTrade,
+    setLoading,
+    setError,
+    setConnectionStatus,
+    handleDepthUpdate,
+    handleTradeUpdate,
   ]);
 
   return (
     <div className="h-full bg-container-bg rounded-xl overflow-hidden flex border border-container-border">
       <div className="flex flex-col grow">
         {/* Tabs Section */}
-        <div className="relative">
-          <div className="flex">
-            <div
+        <div className="relative border-b border-container-border">
+          <div className="flex" role="tablist">
+            <TabButton
+              label="Orderbook"
+              isActive={activeTab === "orderbook"}
               onClick={() => setActiveTab("orderbook")}
-              className={`py-2 px-3 flex items-center font-semibold relative hover:cursor-pointer hover:bg-container-bg-hover rounded-xl m-2 justify-center leading-[16px] flex-1 ${
-                activeTab === "orderbook"
-                  ? "text-text-emphasis bg-container-bg-selected"
-                  : "text-text-label"
-              }`}
-            >
-              <span className="flex items-center justify-center text-sm">
-                Orderbook
-              </span>
-            </div>
-
-            <div
+            />
+            <TabButton
+              label="Trades"
+              isActive={activeTab === "recentTrades"}
               onClick={() => setActiveTab("recentTrades")}
-              className={`py-2 px-3 flex items-center font-semibold relative hover:cursor-pointer hover:bg-container-bg-hover rounded-xl m-2 justify-center leading-[16px] flex-1 ${
-                activeTab === "recentTrades"
-                  ? "text-text-emphasis bg-container-bg-selected"
-                  : "text-text-label"
-              }`}
-            >
-              <span className="flex items-center justify-center text-sm">
-                Trades
-              </span>
-            </div>
+            />
           </div>
-          <div
-            className="w-full absolute inset-x-0 bottom-0 h-[1px] z-0"
-            style={{
-              background:
-                "linear-gradient(to left, rgba(0,0,0,0), var(--darkBlue-50))",
-            }}
-          ></div>
         </div>
 
-        {/* Custom style for WebKit-based browsers to hide scrollbar */}
-        <style>{`
-          div::-webkit-scrollbar {
-            display: none; /* For Chrome, Safari, and Opera */
-          }
-        `}</style>
-
         {/* Tab Content */}
-        {activeTab === "orderbook" ? <OrderBook /> : <RecentTrades />}
+        <div className="flex-1 overflow-hidden">
+          {activeTab === "orderbook" ? <OrderBook /> : <RecentTrades />}
+        </div>
       </div>
     </div>
   );
 };
+
+/**
+ * Tab button component for cleaner code
+ */
+function TabButton({
+  label,
+  isActive,
+  onClick,
+}: {
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      role="tab"
+      aria-selected={isActive}
+      onClick={onClick}
+      className={`
+        py-2 px-3 flex items-center font-semibold relative
+        hover:bg-container-bg-hover rounded-lg m-2
+        justify-center leading-[16px] flex-1
+        transition-colors duration-150
+        focus:outline-none focus:ring-2 focus:ring-interactive-link/50
+        ${isActive
+          ? "text-text-emphasis bg-container-bg-selected"
+          : "text-text-secondary hover:text-text-default"
+        }
+      `}
+    >
+      <span className="flex items-center justify-center text-sm">
+        {label}
+      </span>
+    </button>
+  );
+}

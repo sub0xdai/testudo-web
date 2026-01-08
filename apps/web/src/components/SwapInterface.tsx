@@ -1,289 +1,454 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useMemo, useCallback, useRef } from "react";
 import { createOrder } from "../utils/requests";
 import { CreateOrder } from "../utils/types";
 import { toast } from "sonner";
 import { TradesContext } from "../state/TradesProvider";
+import { formatUSD, formatQuantity, parseMarketSymbol } from "../utils/format";
+import { Skeleton } from "./ui/Skeleton";
+import { BalanceDisplay } from "./ui/BalanceDisplay";
+import { useKeyboardShortcuts, TRADING_SHORTCUTS } from "../hooks/useKeyboardShortcuts";
 
-export const SwapInterface = ({ market }: { market: string }) => {
-  const { price } = useContext(TradesContext);
-  const currentPrice = parseFloat(price ?? "0");
+type OrderSide = 'BUY' | 'SELL';
+type OrderType = 'Limit' | 'Market';
 
-  const [isBuyMode, setIsBuyMode] = useState(true); // Buy or Sell mode
-  const [orderType, setOrderType] = useState("Limit"); // Limit or Market
-  const [limitPrice, setLimitPrice] = useState(currentPrice); // Limit price (default)
-  const [size, setSize] = useState(""); // Trade size
-  const [maxUSD, setMaxUSD] = useState(0.0); // Max USD value based on price * size
-  const [fees, setFees] = useState(0.0); // Calculated fees
-  const [position, setPosition] = useState(0.0); // Calculated position
+interface SwapInterfaceProps {
+  market: string;
+}
 
-  // Calculate USD value, fees, and position whenever size or limitPrice changes
+export const SwapInterface = ({ market }: SwapInterfaceProps) => {
+  const { price, isSubmitting, setIsSubmitting, setError, loading } = useContext(TradesContext);
+  const currentPrice = useMemo(() => parseFloat(price ?? "0"), [price]);
+
+  const { base, quote } = useMemo(() => parseMarketSymbol(market), [market]);
+
+  const [orderSide, setOrderSide] = useState<OrderSide>("BUY");
+  const [orderType, setOrderType] = useState<OrderType>("Limit");
+  const [limitPrice, setLimitPrice] = useState<string>("");
+  const [size, setSize] = useState<string>("");
+
+  const sizeInputRef = useRef<HTMLInputElement>(null);
+
+  const isBuyMode = orderSide === "BUY";
+
+  // Clear form function for Escape shortcut
+  const clearForm = useCallback(() => {
+    setSize("");
+    setLimitPrice("");
+    // Blur any focused input
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    toast.info("Form cleared");
+  }, []);
+
+  // Sync limit price with current market price when it changes
   useEffect(() => {
-    const price = orderType === "Market" ? currentPrice : limitPrice;
-    const calculatedValue = price * Number(size || 0);
+    if (currentPrice > 0 && !limitPrice) {
+      setLimitPrice(currentPrice.toFixed(2));
+    }
+  }, [currentPrice, limitPrice]);
+
+  // Calculate derived values
+  const { maxUSD, fees, position } = useMemo(() => {
+    const priceValue = orderType === "Market" ? currentPrice : parseFloat(limitPrice) || 0;
+    const sizeValue = parseFloat(size) || 0;
+    const calculatedValue = priceValue * sizeValue;
     const calculatedFees = calculatedValue * 0.001; // 0.1% fees
-    setMaxUSD(calculatedValue); // Set the computed USD value
-    setFees(calculatedFees); // Set the computed fees
-    setPosition(Number(size || 0)); // Set position
+
+    return {
+      maxUSD: calculatedValue,
+      fees: calculatedFees,
+      position: sizeValue,
+    };
   }, [size, limitPrice, orderType, currentPrice]);
 
-  const handleCreateOrder = async () => {
-    const quantity = Number(size);
+  // Handle USD input change - calculate size from USD
+  const handleUSDChange = useCallback((value: string) => {
+    const usdValue = parseFloat(value) || 0;
+    const priceValue = orderType === "Market" ? currentPrice : parseFloat(limitPrice) || 0;
 
-    // Basic input checks
+    if (priceValue > 0) {
+      const newSize = usdValue / priceValue;
+      setSize(newSize > 0 ? newSize.toFixed(6) : "");
+    }
+  }, [orderType, currentPrice, limitPrice]);
+
+  // Validate order before submission
+  const validateOrder = useCallback((): string | null => {
+    const quantity = parseFloat(size);
+
     if (!quantity || quantity <= 0) {
-      toast.error("Please enter a valid size greater than zero.");
+      return "Please enter a valid size greater than zero.";
+    }
+
+    if (orderType === "Limit") {
+      const price = parseFloat(limitPrice);
+      if (!price || price <= 0) {
+        return "Please enter a valid limit price.";
+      }
+    }
+
+    if (orderType === "Market" && currentPrice <= 0) {
+      return "Market price unavailable. Please try again.";
+    }
+
+    return null;
+  }, [size, limitPrice, orderType, currentPrice]);
+
+  const handleCreateOrder = useCallback(async () => {
+    const validationError = validateOrder();
+    if (validationError) {
+      toast.error(validationError);
       return;
     }
 
-    if (orderType === "Limit" && (limitPrice <= 0 || isNaN(limitPrice))) {
-      toast.error("Please enter a valid limit price.");
-      return;
-    }
-
-    const side = isBuyMode ? "BUY" : "SELL";
-    const orderPrice = orderType === "Market" ? currentPrice : limitPrice; // Set price to 0 for market orders
+    const quantity = parseFloat(size);
+    const orderPrice = orderType === "Market" ? currentPrice : parseFloat(limitPrice);
 
     const order: CreateOrder = {
       market,
-      side,
+      side: orderSide,
       quantity,
       price: orderPrice,
-      userId: localStorage.getItem("user_id") ?? "test_user",
+      userId: localStorage.getItem("user_id") ?? "anonymous",
     };
 
     try {
-      const response = await createOrder(order);
-      console.log("Order created:", response);
-      toast.success("Order created successfully!");
+      setIsSubmitting(true);
+      setError('submission', null);
+
+      await createOrder(order);
+
+      toast.success(
+        `${orderSide} order placed: ${formatQuantity(quantity)} ${base} @ ${formatUSD(orderPrice)}`,
+        { duration: 5000 }
+      );
+
+      // Reset form on success
+      setSize("");
     } catch (error) {
-      console.error("Error creating order:", error);
-      toast.error("Error creating order!");
+      const errorMessage = error instanceof Error ? error.message : "Failed to create order";
+      setError('submission', errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
-  };
+  }, [validateOrder, size, limitPrice, orderType, currentPrice, market, orderSide, base, setIsSubmitting, setError]);
+
+  const isFormValid = useMemo(() => {
+    return validateOrder() === null;
+  }, [validateOrder]);
+
+  const isLoading = loading.ticker && !price;
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts([
+    {
+      ...TRADING_SHORTCUTS.BUY,
+      handler: () => {
+        setOrderSide("BUY");
+        sizeInputRef.current?.focus();
+        toast.info("Buy mode", { duration: 1500 });
+      },
+    },
+    {
+      ...TRADING_SHORTCUTS.SELL,
+      handler: () => {
+        setOrderSide("SELL");
+        sizeInputRef.current?.focus();
+        toast.info("Sell mode", { duration: 1500 });
+      },
+    },
+    {
+      ...TRADING_SHORTCUTS.CANCEL,
+      handler: clearForm,
+    },
+    {
+      ...TRADING_SHORTCUTS.SUBMIT,
+      handler: () => {
+        if (isFormValid && !isSubmitting) {
+          handleCreateOrder();
+        }
+      },
+    },
+  ]);
 
   return (
     <div className="h-fit lg:h-[600px]">
-      <div className="h-full bg-container-bg border-container-border rounded-lg border overflow-hidden">
-        <div className="p-3 relative flex flex-col h-full overflow-auto thin-scroll justify-start">
-          <div className="flex flex-col h-full justify-start">
-            <div className="flex flex-col relative z-10">
-              <div className="h-[40px] w-full inline-flex">
-                <div
-                  className={`flex items-center text-positive-green justify-center flex-1 h-full cursor-pointer border border-container-border rounded-l-xl ${
-                    isBuyMode
-                      ? " text-black bg-positive-green-bg"
-                      : "text-container-bg border-container-border"
-                  }`}
-                  onClick={() => setIsBuyMode(true)}
-                >
-                  <span>Buy</span>
-                </div>
-                <div
-                  className={`flex items-center justify-center flex-1 h-full cursor-pointer border border-container-border rounded-r-xl ${
-                    isBuyMode
-                      ? "text-negative-red"
-                      : "text-black text-negative-red hover:text-negative-red-hover bg-negative-red-bg"
-                  }`}
-                  onClick={() => setIsBuyMode(false)}
-                >
-                  <span>Sell</span>
-                </div>
-              </div>
+      <div className="h-full bg-container-bg border-container-border rounded-xl border overflow-hidden">
+        <div className="p-4 relative flex flex-col h-full overflow-auto thin-scroll justify-start">
+          <div className="flex flex-col h-full justify-start gap-4">
+            {/* Buy/Sell Toggle */}
+            <div className="flex rounded-xl overflow-hidden border border-container-border">
+              <SideButton
+                side="BUY"
+                isActive={isBuyMode}
+                onClick={() => setOrderSide("BUY")}
+              />
+              <SideButton
+                side="SELL"
+                isActive={!isBuyMode}
+                onClick={() => setOrderSide("SELL")}
+              />
+            </div>
 
-              <span className="flex-shrink-0 w-full pb-l"></span>
+            {/* Order Type Select */}
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="orderType"
+                className="text-text-secondary text-xs font-semibold tracking-wide"
+              >
+                Order Type
+              </label>
+              <select
+                id="orderType"
+                className="px-3 py-2 bg-container-bg-hover border border-container-border rounded-lg
+                         text-text-default text-sm focus:outline-none focus:ring-2 focus:ring-interactive-link/50
+                         transition-colors duration-150"
+                value={orderType}
+                onChange={(e) => setOrderType(e.target.value as OrderType)}
+              >
+                <option value="Limit">Limit</option>
+                <option value="Market">Market</option>
+              </select>
+            </div>
 
-              <div className="flex items-end w-full justify-between space-x-2 mb-2">
-                <div className="flex flex-col w-full">
-                  <div className="text-text-tertiary pointer-events-none select-none mt-0 mb-2">
-                    <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px] mt-0">
-                      Order Type
-                    </span>
-                  </div>
-                  <div className="relative">
-                    <select
-                      id="marketSelection"
-                      className="px-2 bg-input-bg border-none focus:outline-none active:outline-none text-text-input hover:bg-input-bg-hover border flex items-center text-sm w-full h-8 rounded-lg"
-                      value={orderType}
-                      onChange={(e) => setOrderType(e.target.value)}
-                    >
-                      <option
-                        value="Limit"
-                        className="text-text-input text-[14px] px-2 py-1"
-                      >
-                        Limit
-                      </option>
-                      <option
-                        value="Market"
-                        className="text-text-input text-[14px] px-2 py-1"
-                      >
-                        Market
-                      </option>
-                    </select>
-                  </div>
-                </div>
-              </div>
+            {/* Price Input */}
+            <div className="flex flex-col gap-2">
+              <label className="text-text-secondary text-xs font-semibold tracking-wide">
+                {orderType === "Limit" ? "Limit Price" : "Market Price"}
+              </label>
 
-              {orderType === "Limit" && (
-                <div className="flex flex-col">
-                  <div className="text-text-tertiary pointer-events-none select-none mt-0 mb-2">
-                    <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px] mt-0">
-                      Limit Price
-                    </span>
-                  </div>
-                  <div className="flex justify-center w-full relative h-8">
-                    <div className="absolute w-full h-[32px] text-sm inline-flex css-xbfbe9">
-                      <input
-                        className="px-2 pt-0.5 w-full bg-input-bg text-text-input default-transition focus:outline-none border-none h-full font-numeral css-e4p6dg rounded-lg"
-                        type="number"
-                        step={0.01}
-                        value={limitPrice}
-                        onChange={(e) => setLimitPrice(Number(e.target.value))}
-                        style={{ paddingRight: "40px" }}
-                      />
-                      <div className="absolute top-0 flex items-center h-full space-x-1 right-3 undefined z-1 select-none">
-                        <span className="pointer-events-none mt-0.5 text-text-default text-xs">
-                          USD
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Display Market Price when order type is "Market" */}
-              {orderType === "Market" && (
-                <div className="flex flex-col">
-                  <div className="text-text-tertiary pointer-events-none select-none mt-0 mb-2">
-                    <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px] mt-0">
-                      Market Price
-                    </span>
-                  </div>
-                  <div className="pointer-events-none text-sm bg-input-bg rounded-lg w-full px-2 flex items-center text-text-default h-[32px] select-none">
-                    Market Price
-                  </div>
-                </div>
-              )}
-
-              <span className="flex-shrink-0 w-full pb-l"></span>
-
-              {/* Size and Max USD Section */}
-              <div className="flex items-end justify-between space-x-2">
-                <div className="flex flex-col w-1/2">
-                  <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px] mb-2">
-                    <div className="flex justify-between text-text-tertiary">
-                      <div className="flex pb-0.5">Size</div>
-                    </div>
-                  </span>
-                  <div className="flex justify-center w-full relative h-8 ">
-                    <div className="absolute w-full h-[32px] text-sm inline-flex css-88j6ui">
-                      <input
-                        className="px-2 pt-0.5 w-full bg-input-bg default-transition focus:outline-none border-none h-full font-numeral text-text-secondary css-e4p6dg rounded-lg"
-                        type="number"
-                        step={0.001}
-                        value={size}
-                        onChange={(e) => setSize(e.target.value)}
-                        style={{ paddingRight: "40px" }}
-                      />
-                      <div className="absolute top-0 flex items-center h-full space-x-1 right-3 undefined z-1 select-none">
-                        <div className="h-[20px] w-[20px]">
-                          <img
-                            src="/sol.svg"
-                            className="rounded-full"
-                            width="20"
-                            height="20"
-                            alt="SOL icon"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col w-1/2">
-                  <div className="text-text-tertiary flex items-end mb-2">
-                    <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px] flex items-end"></span>
-                  </div>
-
-                  <div className="flex justify-center w-full relative h-8 ">
-                    <div className="absolute w-full h-[32px] text-sm inline-flex css-88j6ui">
-                      <input
-                        className="px-2 pt-0.5 w-full bg-input-bg rounded-lg default-transition focus:outline-none border-none h-full font-numeral text-text-secondary css-e4p6dg"
-                        type="number"
-                        value={maxUSD}
-                        onChange={(e) => {
-                          const newUSDValue = Number(e.target.value);
-                          setMaxUSD(newUSDValue);
-
-                          if (limitPrice > 0) {
-                            const newSize = newUSDValue / limitPrice;
-                            setSize(newSize.toFixed(6));
-                          }
-                        }}
-                        style={{ paddingRight: "40px" }}
-                      />
-                      <div className="absolute top-0 flex items-center h-full space-x-1 right-3 undefined z-1 select-none">
-                        <div className="h-[18px] w-[18px]">
-                          <img
-                            src="/usdc.svg"
-                            className="h-[18px] w-[18px]"
-                            width="18"
-                            height="18"
-                            alt="USDC icon"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <span className="flex-shrink-0 w-full pb-l"></span>
-
-              <div className="flex flex-col justify-center">
-                <div className="flex flex-col w-full space-y-2 rounded-md advanced-trade-details">
-                  <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px] flex items-center justify-between w-full">
-                    <div className="text-text-secondary shrink-0">
-                      <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px]">
-                        Fees (0.1%)
-                      </span>
-                    </div>
-                    <div className="text-text-default ">
-                      <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px]">
-                        ${fees.toFixed(2)}
-                      </span>
-                    </div>
-                  </span>
-                  <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px] flex items-center justify-between w-full">
-                    <div className="text-text-secondary shrink-0">Position</div>
-                    <div className="text-text-default ">
-                      <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px]">
-                        {position.toFixed(2)} SOL
-                      </span>
-                    </div>
+              {orderType === "Limit" ? (
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={limitPrice}
+                    onChange={(e) => setLimitPrice(e.target.value)}
+                    className="w-full px-3 py-2 pr-12 bg-container-bg-hover border border-container-border rounded-lg
+                             text-text-default text-sm font-numeral
+                             focus:outline-none focus:ring-2 focus:ring-interactive-link/50
+                             transition-colors duration-150"
+                    placeholder="0.00"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary text-xs">
+                    {quote}
                   </span>
                 </div>
-
-                <span className="flex-shrink-0 w-full pb-s"></span>
-                <span className="flex-shrink-0 w-full pb-m"></span>
-                <button
-                  onClick={handleCreateOrder}
-                  className={`space-x-2 disabled:cursor-not-allowed disabled:bg-button-disabled disabled:hover:bg-button-disabled disabled:text-text-disabled inline-flex rounded-xl items-center justify-center transition-all w-full h-[44px] py-[6px] px-[12px] ${
-                    isBuyMode
-                      ? "bg-positive-green/80 hover:bg-positive-green-hover border-positive-green text-black"
-                      : "bg-negative-red/80 hover:bg-negative-red-hover text-black"
-                  }`}
-                >
-                  {isBuyMode ? (
-                    <span>Buy</span>
+              ) : (
+                <div className="px-3 py-2 bg-container-bg-hover/50 border border-container-border rounded-lg
+                              text-text-default text-sm font-numeral">
+                  {isLoading ? (
+                    <Skeleton variant="text" width={80} height={16} />
                   ) : (
-                    <span>Sell</span>
+                    formatUSD(currentPrice)
                   )}
-                </button>
+                </div>
+              )}
+            </div>
+
+            {/* Size and USD Value */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Size Input */}
+              <div className="flex flex-col gap-2">
+                <label className="text-text-secondary text-xs font-semibold tracking-wide">
+                  Size
+                </label>
+                <div className="relative">
+                  <input
+                    ref={sizeInputRef}
+                    type="number"
+                    step="0.001"
+                    min="0"
+                    value={size}
+                    onChange={(e) => setSize(e.target.value)}
+                    className="w-full px-3 py-2 pr-12 bg-container-bg-hover border border-container-border rounded-lg
+                             text-text-default text-sm font-numeral
+                             focus:outline-none focus:ring-2 focus:ring-interactive-link/50
+                             transition-colors duration-150"
+                    placeholder="0.00"
+                  />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    <img
+                      src={`/${base.toLowerCase()}.svg`}
+                      alt={base}
+                      className="w-4 h-4 rounded-full"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* USD Value */}
+              <div className="flex flex-col gap-2">
+                <label className="text-text-secondary text-xs font-semibold tracking-wide">
+                  Total
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={maxUSD > 0 ? maxUSD.toFixed(2) : ""}
+                    onChange={(e) => handleUSDChange(e.target.value)}
+                    className="w-full px-3 py-2 pr-12 bg-container-bg-hover border border-container-border rounded-lg
+                             text-text-default text-sm font-numeral
+                             focus:outline-none focus:ring-2 focus:ring-interactive-link/50
+                             transition-colors duration-150"
+                    placeholder="0.00"
+                  />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    <img
+                      src={`/${quote.toLowerCase()}.svg`}
+                      alt={quote}
+                      className="w-4 h-4 rounded-full"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* Order Summary */}
+            <div className="flex flex-col gap-2 py-3 border-t border-container-border">
+              <div className="flex justify-between text-xs">
+                <span className="text-text-secondary">Fees (0.1%)</span>
+                <span className="text-text-default font-numeral">{formatUSD(fees)}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-text-secondary">Position</span>
+                <span className="text-text-default font-numeral">
+                  {formatQuantity(position)} {base}
+                </span>
+              </div>
+            </div>
+
+            {/* Balance Display */}
+            <div className="py-3 border-t border-container-border">
+              <BalanceDisplay market={market} currentPrice={currentPrice} />
+            </div>
+
+            {/* Submit Button */}
+            <button
+              onClick={handleCreateOrder}
+              disabled={!isFormValid || isSubmitting}
+              className={`
+                w-full py-3 px-4 rounded-xl font-semibold text-sm
+                transition-all duration-150
+                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-container-bg
+                disabled:opacity-50 disabled:cursor-not-allowed
+                ${isBuyMode
+                  ? "bg-positive-green hover:bg-positive-green-hover text-black focus:ring-positive-green"
+                  : "bg-negative-red hover:bg-negative-red-hover text-white focus:ring-negative-red"
+                }
+              `}
+            >
+              {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <LoadingSpinner />
+                  Processing...
+                </span>
+              ) : (
+                <span>
+                  {isBuyMode ? "Buy" : "Sell"} {base}
+                </span>
+              )}
+            </button>
+
+            {/* Keyboard Shortcuts Hint */}
+            <KeyboardShortcutsHint />
           </div>
         </div>
       </div>
     </div>
   );
 };
+
+/**
+ * Buy/Sell side toggle button
+ */
+function SideButton({
+  side,
+  isActive,
+  onClick,
+}: {
+  side: OrderSide;
+  isActive: boolean;
+  onClick: () => void;
+}) {
+  const isBuy = side === "BUY";
+
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        flex-1 py-2.5 font-semibold text-sm transition-all duration-150
+        focus:outline-none focus:ring-2 focus:ring-inset
+        ${isActive
+          ? isBuy
+            ? "bg-positive-green text-black focus:ring-positive-green-hover"
+            : "bg-negative-red text-white focus:ring-negative-red-hover"
+          : "bg-transparent text-text-secondary hover:text-text-default hover:bg-container-bg-hover"
+        }
+      `}
+    >
+      {isBuy ? "Buy" : "Sell"}
+    </button>
+  );
+}
+
+/**
+ * Simple loading spinner
+ */
+function LoadingSpinner() {
+  return (
+    <svg
+      className="animate-spin h-4 w-4"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
+    </svg>
+  );
+}
+
+/**
+ * Keyboard shortcuts hint (hidden on mobile)
+ */
+function KeyboardShortcutsHint() {
+  return (
+    <div className="hidden sm:flex items-center justify-center gap-3 pt-2 text-[10px] text-text-secondary">
+      <span className="flex items-center gap-1">
+        <kbd className="px-1.5 py-0.5 bg-container-bg-hover rounded text-text-default">Ctrl+B</kbd>
+        Buy
+      </span>
+      <span className="flex items-center gap-1">
+        <kbd className="px-1.5 py-0.5 bg-container-bg-hover rounded text-text-default">Ctrl+S</kbd>
+        Sell
+      </span>
+      <span className="flex items-center gap-1">
+        <kbd className="px-1.5 py-0.5 bg-container-bg-hover rounded text-text-default">Esc</kbd>
+        Clear
+      </span>
+    </div>
+  );
+}
