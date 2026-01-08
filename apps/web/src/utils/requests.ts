@@ -1,5 +1,5 @@
 import axios from "axios";
-import { CreateOrder, Depth, KLine, Ticker, Trade, UserId, Balance, OpenOrder, OrderHistory } from "./types";
+import { CreateOrder, Depth, KLine, Ticker, Trade, UserId, Balance, OpenOrder, OrderHistory, Market } from "./types";
 
 const BASE_URL = "http://localhost:8080/api/v1";
 
@@ -81,4 +81,18 @@ export async function getOrderHistory(userId: string, market?: string): Promise<
   }
   const response = await axios.get(`${BASE_URL}/order-history?${params.toString()}`);
   return response.data;
+}
+
+export async function getMarkets(): Promise<Market[]> {
+  try {
+    const response = await axios.get(`${BASE_URL}/markets`);
+    return response.data;
+  } catch {
+    // Fallback to hardcoded markets if API doesn't support this endpoint
+    return [
+      { symbol: 'SOL_USDC', baseAsset: 'SOL', quoteAsset: 'USDC', status: 'TRADING' },
+      { symbol: 'BTC_USDC', baseAsset: 'BTC', quoteAsset: 'USDC', status: 'TRADING' },
+      { symbol: 'ETH_USDC', baseAsset: 'ETH', quoteAsset: 'USDC', status: 'TRADING' },
+    ];
+  }
 }

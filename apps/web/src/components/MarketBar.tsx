@@ -1,8 +1,9 @@
 import { useEffect, useContext, useMemo } from "react";
 import { getTicker } from "../utils/requests";
 import { TradesContext } from "../state/TradesProvider";
-import { formatUSD, formatCompact, formatPercentChange, parseMarketSymbol } from "../utils/format";
+import { formatUSD, formatCompact, formatPercentChange } from "../utils/format";
 import { Skeleton, StatSkeleton } from "./ui/Skeleton";
+import { MarketSelector } from "./MarketSelector";
 
 interface MarketBarProps {
   market: string;
@@ -11,8 +12,6 @@ interface MarketBarProps {
 export const MarketBar = ({ market }: MarketBarProps) => {
   const { ticker, setTicker, setStats, price, loading, setLoading, setError } =
     useContext(TradesContext);
-
-  const { base, quote } = useMemo(() => parseMarketSymbol(market), [market]);
 
   // Fetch ticker on mount and market change
   useEffect(() => {
@@ -64,60 +63,33 @@ export const MarketBar = ({ market }: MarketBarProps) => {
 
   return (
     <div className="inline-flex items-center justify-center w-full h-full thin-scroll">
-      {/* Market Pair Section */}
-      <div className="h-full bg-container-bg overflow-hidden flex flex-col justify-center w-[308px] min-w-[100px] rounded-l-xl border border-container-border">
-        <div className="z-40 h-full flex flex-row w-full items-center justify-center gap-2 bg-container-bg text-text-default relative hover:bg-container-bg-hover transition-colors duration-150 sm:p-2">
-          <div className="flex items-center justify-center">
-            <div>
-              <img
-                src={`/${base.toLowerCase()}.svg`}
-                alt={base}
-                className="rounded-full relative z-10"
-                width={28}
-                height={28}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/default-token.svg';
-                }}
-              />
-            </div>
-            <div className="-ml-[20%]">
-              <img
-                src={`/${quote.toLowerCase()}.svg`}
-                alt={quote}
-                className="rounded-full"
-                width={24}
-                height={24}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/default-token.svg';
-                }}
-              />
-            </div>
-          </div>
-          <span className="text-text-default hidden md:block text-[18px] font-semibold">
-            {base}/{quote}
-          </span>
-        </div>
+      {/* Market Selector - Imperial Style */}
+      <div className="h-full panel-imperial overflow-hidden flex items-center justify-center min-w-[160px] px-3 border-r border-imperial-gold-dim/30">
+        <MarketSelector currentMarket={market} />
       </div>
 
       {/* Price and Stats Section */}
-      <div className="relative flex items-center justify-start w-full border border-l-0 border-container-border bg-container-bg h-full hidden-scroll sm:thin-scroll rounded-r-xl">
+      <div className="relative flex items-center justify-start w-full panel-imperial h-full hidden-scroll sm:thin-scroll">
+        {/* Gold accent line at top */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-imperial-gold/30 to-transparent" />
+
         <div className="flex justify-between sm:justify-start font-display whitespace-nowrap">
-          <div className="flex flex-row items-center justify-between px-4 py-2 space-x-3 xl:space-x-4 xl:px-6 sm:py-0">
-            {/* Connection Indicator */}
+          <div className="flex flex-row items-center justify-between px-4 py-2 space-x-4 xl:space-x-5 xl:px-6 sm:py-0">
+            {/* Connection Indicator - Gold pulse */}
             <div className="outline-none focus:outline-none flex">
               <div className="flex flex-col">
-                <div className="block h-2 w-2 rounded-full bg-positive-green animate-pulse" />
+                <div className="block h-2 w-2 bg-imperial-gold animate-gold-pulse" />
               </div>
             </div>
 
-            {/* Price Display */}
+            {/* Price Display - Large monospace */}
             <div className="outline-none focus:outline-none flex mr-0 sm:mr-0">
               <div className="flex flex-col">
-                <div className="overflow-hidden text-lg text-text-default font-numeral">
+                <div className="overflow-hidden text-xl text-text-emphasis font-numeral tracking-tight">
                   {isTickerLoading && !price ? (
-                    <Skeleton variant="text" width={80} height={24} />
+                    <Skeleton variant="text" width={100} height={28} />
                   ) : (
-                    <span className="text-[18px] leading-[-0.25px]">
+                    <span className="text-[20px] leading-tight">
                       <span className="whitespace-nowrap">{displayPrice}</span>
                     </span>
                   )}
@@ -125,14 +97,14 @@ export const MarketBar = ({ market }: MarketBarProps) => {
               </div>
             </div>
 
-            {/* Price Change */}
+            {/* Price Change - Imperial colors */}
             <div className="outline-none focus:outline-none flex mr-20 sm:mr-0">
               <div className="flex flex-col left-10">
                 <div className="block overflow-hidden">
                   {isTickerLoading ? (
                     <Skeleton variant="text" width={50} height={16} />
                   ) : (
-                    <span className="font-semibold text-[13px] leading-[16px]">
+                    <span className="font-semibold text-[13px] leading-[16px] font-numeral">
                       <span
                         className={`flex items-center transition-colors duration-150 ${
                           priceChange.isPositive
@@ -152,24 +124,18 @@ export const MarketBar = ({ market }: MarketBarProps) => {
           </div>
         </div>
 
-        {/* Stats Section */}
+        {/* Stats Section - Imperial styling */}
         {isTickerLoading ? (
           <>
-            <div className="px-2 xl:px-6 hidden md:flex">
-              <StatSkeleton />
-            </div>
-            <div className="px-2 xl:px-6 hidden md:flex">
-              <StatSkeleton />
-            </div>
-            <div className="px-2 xl:px-6 hidden md:flex">
-              <StatSkeleton />
-            </div>
+            <ImperialStatSkeleton />
+            <ImperialStatSkeleton />
+            <ImperialStatSkeleton />
           </>
         ) : (
           <>
-            <StatItem label="24h Volume" value={formatCompact(ticker?.volume)} />
-            <StatItem label="24h High" value={formatUSD(ticker?.high)} />
-            <StatItem label="24h Low" value={formatUSD(ticker?.low)} />
+            <ImperialStatItem label="VOLUME" value={formatCompact(ticker?.volume)} />
+            <ImperialStatItem label="HIGH" value={formatUSD(ticker?.high)} />
+            <ImperialStatItem label="LOW" value={formatUSD(ticker?.low)} />
           </>
         )}
       </div>
@@ -178,19 +144,30 @@ export const MarketBar = ({ market }: MarketBarProps) => {
 };
 
 /**
- * Stat item component for cleaner rendering
+ * Imperial stat item with gold accent
  */
-function StatItem({ label, value }: { label: string; value: string }) {
+function ImperialStatItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="px-2 xl:px-6 hidden md:flex flex-col justify-center">
+    <div className="px-3 xl:px-5 hidden md:flex flex-col justify-center border-l border-imperial-gold-dim/20">
       <div className="flex flex-col">
-        <span className="text-[11px] leading-[12px] tracking-[.15px] text-text-secondary">
+        <span className="text-[9px] leading-[10px] tracking-[.2em] text-imperial-gold-dim font-imperial">
           {label}
         </span>
-        <span className="font-semibold text-[13px] leading-[16px] text-text-default mt-0.5">
+        <span className="font-semibold text-[14px] leading-[18px] text-text-default mt-0.5 font-numeral">
           {value}
         </span>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Skeleton for imperial stat
+ */
+function ImperialStatSkeleton() {
+  return (
+    <div className="px-3 xl:px-5 hidden md:flex flex-col justify-center border-l border-imperial-gold-dim/20">
+      <StatSkeleton />
     </div>
   );
 }

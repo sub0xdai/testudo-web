@@ -19,9 +19,14 @@ function OrderBookRow({ price, size, cumulativeWidth, sizeWidth, side }: OrderBo
   const priceColor = isBid ? 'text-positive-green' : 'text-negative-red';
   const bgColor = isBid ? 'bg-positive-green' : 'bg-negative-red';
   const bgColorPressed = isBid ? 'bg-positive-green/30' : 'bg-negative-red/30';
+  const sideLabel = isBid ? 'Buy' : 'Sell';
 
   return (
-    <div className="relative w-full group">
+    <div
+      className="relative w-full group"
+      role="listitem"
+      aria-label={`${sideLabel} ${size} at ${price}`}
+    >
       <div className="w-full h-[22px] flex relative box-border text-xs leading-7 justify-between font-display">
         <div className="flex flex-row mx-2 justify-between font-numeral w-full">
           <div className={`z-10 text-xs leading-6 ${priceColor}`}>
@@ -127,15 +132,19 @@ export const OrderBook = () => {
   const hasData = bidsWithCumulative.length > 0 || asksWithCumulative.length > 0;
 
   return (
-    <div className="h-full">
+    <div className="h-full" role="region" aria-label="Order book">
       <div className="relative h-full bg-container-bg">
         <div className="flex flex-col h-full text-text-label bg-container-bg xs:min-h-[25vh] md:min-h-0">
           {/* Header */}
-          <div className="flex justify-between text-xs px-2 py-1 text-text-secondary border-b border-container-border">
-            <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px]">
+          <div
+            className="flex justify-between text-xs px-2 py-1 text-text-secondary border-b border-container-border"
+            role="row"
+            aria-label="Order book column headers"
+          >
+            <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px]" role="columnheader">
               Price
             </span>
-            <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px]">
+            <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px]" role="columnheader">
               Size
             </span>
           </div>
@@ -145,6 +154,8 @@ export const OrderBook = () => {
             <div
               ref={bidsRef}
               className="flex-1 overflow-y-auto flex flex-col gap-0.5"
+              role="list"
+              aria-label={`Buy orders (${bidsWithCumulative.length} bids)`}
               style={{
                 scrollbarWidth: "none",
                 msOverflowStyle: "none",
@@ -192,6 +203,8 @@ export const OrderBook = () => {
             <div
               ref={asksRef}
               className="flex-1 overflow-y-auto flex flex-col-reverse gap-0.5"
+              role="list"
+              aria-label={`Sell orders (${asksWithCumulative.length} asks)`}
               style={{
                 scrollbarWidth: "none",
                 msOverflowStyle: "none",

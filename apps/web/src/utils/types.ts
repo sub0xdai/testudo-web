@@ -84,3 +84,19 @@ export interface OrderHistory {
   createdAt: number;
   completedAt: number;
 }
+
+export interface PriceAlert {
+  id: string;
+  market: string;
+  targetPrice: number;
+  condition: 'above' | 'below';
+  createdAt: number;
+  triggered: boolean;
+}
+
+export interface Market {
+  symbol: string;
+  baseAsset: string;
+  quoteAsset: string;
+  status: 'TRADING' | 'HALTED';
+}

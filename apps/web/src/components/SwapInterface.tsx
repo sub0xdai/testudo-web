@@ -6,7 +6,11 @@ import { TradesContext } from "../state/TradesProvider";
 import { formatUSD, formatQuantity, parseMarketSymbol } from "../utils/format";
 import { Skeleton } from "./ui/Skeleton";
 import { BalanceDisplay } from "./ui/BalanceDisplay";
+import { TradeConfirmationModal } from "./ui/TradeConfirmationModal";
 import { useKeyboardShortcuts, TRADING_SHORTCUTS } from "../hooks/useKeyboardShortcuts";
+
+const LARGE_ORDER_THRESHOLD = 1000; // USD threshold for confirmation modal
+const DEV_FALLBACK_PRICE = 200; // Fallback price for testing when backend unavailable
 
 type OrderSide = 'BUY' | 'SELL';
 type OrderType = 'Limit' | 'Market';
@@ -17,7 +21,11 @@ interface SwapInterfaceProps {
 
 export const SwapInterface = ({ market }: SwapInterfaceProps) => {
   const { price, isSubmitting, setIsSubmitting, setError, loading } = useContext(TradesContext);
-  const currentPrice = useMemo(() => parseFloat(price ?? "0"), [price]);
+  // Use fallback price for testing when backend is unavailable
+  const currentPrice = useMemo(() => {
+    const backendPrice = parseFloat(price ?? "0");
+    return backendPrice > 0 ? backendPrice : DEV_FALLBACK_PRICE;
+  }, [price]);
 
   const { base, quote } = useMemo(() => parseMarketSymbol(market), [market]);
 
@@ -25,6 +33,7 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
   const [orderType, setOrderType] = useState<OrderType>("Limit");
   const [limitPrice, setLimitPrice] = useState<string>("");
   const [size, setSize] = useState<string>("");
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const sizeInputRef = useRef<HTMLInputElement>(null);
 
@@ -34,7 +43,6 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
   const clearForm = useCallback(() => {
     setSize("");
     setLimitPrice("");
-    // Blur any focused input
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
@@ -53,7 +61,7 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
     const priceValue = orderType === "Market" ? currentPrice : parseFloat(limitPrice) || 0;
     const sizeValue = parseFloat(size) || 0;
     const calculatedValue = priceValue * sizeValue;
-    const calculatedFees = calculatedValue * 0.001; // 0.1% fees
+    const calculatedFees = calculatedValue * 0.001;
 
     return {
       maxUSD: calculatedValue,
@@ -62,7 +70,7 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
     };
   }, [size, limitPrice, orderType, currentPrice]);
 
-  // Handle USD input change - calculate size from USD
+  // Handle USD input change
   const handleUSDChange = useCallback((value: string) => {
     const usdValue = parseFloat(value) || 0;
     const priceValue = orderType === "Market" ? currentPrice : parseFloat(limitPrice) || 0;
@@ -95,13 +103,8 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
     return null;
   }, [size, limitPrice, orderType, currentPrice]);
 
-  const handleCreateOrder = useCallback(async () => {
-    const validationError = validateOrder();
-    if (validationError) {
-      toast.error(validationError);
-      return;
-    }
-
+  // Execute the actual order submission
+  const executeOrder = useCallback(async () => {
     const quantity = parseFloat(size);
     const orderPrice = orderType === "Market" ? currentPrice : parseFloat(limitPrice);
 
@@ -124,8 +127,8 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
         { duration: 5000 }
       );
 
-      // Reset form on success
       setSize("");
+      setShowConfirmModal(false);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to create order";
       setError('submission', errorMessage);
@@ -133,7 +136,31 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [validateOrder, size, limitPrice, orderType, currentPrice, market, orderSide, base, setIsSubmitting, setError]);
+  }, [size, limitPrice, orderType, currentPrice, market, orderSide, base, setIsSubmitting, setError]);
+
+  // Handle order button click
+  const handleCreateOrder = useCallback(async () => {
+    const validationError = validateOrder();
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
+    if (maxUSD >= LARGE_ORDER_THRESHOLD) {
+      setShowConfirmModal(true);
+      return;
+    }
+
+    await executeOrder();
+  }, [validateOrder, maxUSD, executeOrder]);
+
+  const handleConfirmOrder = useCallback(async () => {
+    await executeOrder();
+  }, [executeOrder]);
+
+  const handleCancelConfirmation = useCallback(() => {
+    setShowConfirmModal(false);
+  }, []);
 
   const isFormValid = useMemo(() => {
     return validateOrder() === null;
@@ -148,7 +175,7 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
       handler: () => {
         setOrderSide("BUY");
         sizeInputRef.current?.focus();
-        toast.info("Buy mode", { duration: 1500 });
+        toast.info("Acquire mode", { duration: 1500 });
       },
     },
     {
@@ -156,7 +183,7 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
       handler: () => {
         setOrderSide("SELL");
         sizeInputRef.current?.focus();
-        toast.info("Sell mode", { duration: 1500 });
+        toast.info("Liquidate mode", { duration: 1500 });
       },
     },
     {
@@ -175,18 +202,33 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
 
   return (
     <div className="h-fit lg:h-[600px]">
-      <div className="h-full bg-container-bg border-container-border rounded-xl border overflow-hidden">
-        <div className="p-4 relative flex flex-col h-full overflow-auto thin-scroll justify-start">
-          <div className="flex flex-col h-full justify-start gap-4">
-            {/* Buy/Sell Toggle */}
-            <div className="flex rounded-xl overflow-hidden border border-container-border">
-              <SideButton
+      {/* Imperial Panel */}
+      <div className="h-full panel-imperial overflow-hidden">
+        {/* Gold header bar */}
+        <div className="h-1 bg-gradient-to-r from-transparent via-imperial-gold/60 to-transparent" />
+
+        <div className="p-5 relative flex flex-col h-full overflow-auto thin-scroll justify-start">
+          {/* Panel Title */}
+          <h2 className="imperial-header text-sm mb-5 text-center text-imperial-gold">
+            Execute Order
+          </h2>
+
+          <div className="flex flex-col h-full justify-start gap-5">
+            {/* ACQUIRE / LIQUIDATE Toggle */}
+            <div
+              className="flex border border-imperial-gold-dim overflow-hidden"
+              role="group"
+              aria-label="Order side selection"
+            >
+              <ImperialSideButton
                 side="BUY"
+                label="ACQUIRE"
                 isActive={isBuyMode}
                 onClick={() => setOrderSide("BUY")}
               />
-              <SideButton
+              <ImperialSideButton
                 side="SELL"
+                label="LIQUIDATE"
                 isActive={!isBuyMode}
                 onClick={() => setOrderSide("SELL")}
               />
@@ -196,52 +238,53 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
             <div className="flex flex-col gap-2">
               <label
                 htmlFor="orderType"
-                className="text-text-secondary text-xs font-semibold tracking-wide"
+                className="imperial-inscription text-[10px] tracking-widest"
               >
-                Order Type
+                ORDER TYPE
               </label>
               <select
                 id="orderType"
-                className="px-3 py-2 bg-container-bg-hover border border-container-border rounded-lg
-                         text-text-default text-sm focus:outline-none focus:ring-2 focus:ring-interactive-link/50
-                         transition-colors duration-150"
+                className="w-full py-2 bg-transparent border-b border-imperial-gold-dim
+                         text-text-default text-sm font-numeral
+                         focus:border-imperial-gold transition-colors cursor-pointer"
                 value={orderType}
                 onChange={(e) => setOrderType(e.target.value as OrderType)}
               >
-                <option value="Limit">Limit</option>
-                <option value="Market">Market</option>
+                <option value="Limit" className="bg-container-bg">Limit</option>
+                <option value="Market" className="bg-container-bg">Market</option>
               </select>
             </div>
 
-            {/* Price Input */}
+            {/* Price Input - Inscription Style */}
             <div className="flex flex-col gap-2">
-              <label className="text-text-secondary text-xs font-semibold tracking-wide">
-                {orderType === "Limit" ? "Limit Price" : "Market Price"}
+              <label
+                htmlFor="limitPrice"
+                className="imperial-inscription text-[10px] tracking-widest"
+              >
+                {orderType === "Limit" ? "LIMIT PRICE" : "MARKET PRICE"}
               </label>
 
               {orderType === "Limit" ? (
                 <div className="relative">
                   <input
+                    id="limitPrice"
                     type="number"
                     step="0.01"
                     min="0"
                     value={limitPrice}
                     onChange={(e) => setLimitPrice(e.target.value)}
-                    className="w-full px-3 py-2 pr-12 bg-container-bg-hover border border-container-border rounded-lg
-                             text-text-default text-sm font-numeral
-                             focus:outline-none focus:ring-2 focus:ring-interactive-link/50
-                             transition-colors duration-150"
+                    aria-label={`Limit price in ${quote}`}
+                    className="input-imperial w-full pr-12 text-lg"
                     placeholder="0.00"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary text-xs">
+                  <span className="absolute right-0 bottom-3 text-imperial-gold-dim text-xs font-imperial tracking-wider">
                     {quote}
                   </span>
                 </div>
               ) : (
-                <div className="px-3 py-2 bg-container-bg-hover/50 border border-container-border rounded-lg
-                              text-text-default text-sm font-numeral">
+                <div className="py-3 border-b border-imperial-gold-dim text-lg font-numeral text-text-default">
                   {isLoading ? (
-                    <Skeleton variant="text" width={80} height={16} />
+                    <Skeleton variant="text" width={100} height={24} />
                   ) : (
                     formatUSD(currentPrice)
                   )}
@@ -249,80 +292,73 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
               )}
             </div>
 
-            {/* Size and USD Value */}
-            <div className="grid grid-cols-2 gap-3">
+            {/* Size and Total - Side by Side */}
+            <div className="grid grid-cols-2 gap-4">
               {/* Size Input */}
               <div className="flex flex-col gap-2">
-                <label className="text-text-secondary text-xs font-semibold tracking-wide">
-                  Size
+                <label
+                  htmlFor="orderSize"
+                  className="imperial-inscription text-[10px] tracking-widest"
+                >
+                  QUANTITY
                 </label>
                 <div className="relative">
                   <input
+                    id="orderSize"
                     ref={sizeInputRef}
                     type="number"
                     step="0.001"
                     min="0"
                     value={size}
                     onChange={(e) => setSize(e.target.value)}
-                    className="w-full px-3 py-2 pr-12 bg-container-bg-hover border border-container-border rounded-lg
-                             text-text-default text-sm font-numeral
-                             focus:outline-none focus:ring-2 focus:ring-interactive-link/50
-                             transition-colors duration-150"
+                    aria-label={`Order size in ${base}`}
+                    aria-required="true"
+                    className="input-imperial w-full pr-10 text-lg"
                     placeholder="0.00"
                   />
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                    <img
-                      src={`/${base.toLowerCase()}.svg`}
-                      alt={base}
-                      className="w-4 h-4 rounded-full"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  </div>
+                  <span className="absolute right-0 bottom-3 text-imperial-gold-dim text-xs font-imperial tracking-wider">
+                    {base}
+                  </span>
                 </div>
               </div>
 
-              {/* USD Value */}
+              {/* Total Value */}
               <div className="flex flex-col gap-2">
-                <label className="text-text-secondary text-xs font-semibold tracking-wide">
-                  Total
+                <label
+                  htmlFor="orderTotal"
+                  className="imperial-inscription text-[10px] tracking-widest"
+                >
+                  TOTAL VALUE
                 </label>
                 <div className="relative">
                   <input
+                    id="orderTotal"
                     type="number"
                     step="0.01"
                     min="0"
                     value={maxUSD > 0 ? maxUSD.toFixed(2) : ""}
                     onChange={(e) => handleUSDChange(e.target.value)}
-                    className="w-full px-3 py-2 pr-12 bg-container-bg-hover border border-container-border rounded-lg
-                             text-text-default text-sm font-numeral
-                             focus:outline-none focus:ring-2 focus:ring-interactive-link/50
-                             transition-colors duration-150"
+                    aria-label={`Total order value in ${quote}`}
+                    className="input-imperial w-full pr-12 text-lg"
                     placeholder="0.00"
                   />
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                    <img
-                      src={`/${quote.toLowerCase()}.svg`}
-                      alt={quote}
-                      className="w-4 h-4 rounded-full"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  </div>
+                  <span className="absolute right-0 bottom-3 text-imperial-gold-dim text-xs font-imperial tracking-wider">
+                    {quote}
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Order Summary */}
-            <div className="flex flex-col gap-2 py-3 border-t border-container-border">
+            {/* Order Summary - Imperial Divider */}
+            <div className="divider-imperial my-2" />
+
+            <div className="flex flex-col gap-2">
               <div className="flex justify-between text-xs">
-                <span className="text-text-secondary">Fees (0.1%)</span>
-                <span className="text-text-default font-numeral">{formatUSD(fees)}</span>
+                <span className="text-text-secondary tracking-wide">TRIBUTE (0.1%)</span>
+                <span className="text-imperial-gold font-numeral">{formatUSD(fees)}</span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-text-secondary">Position</span>
+                <span className="text-text-secondary tracking-wide">POSITION</span>
                 <span className="text-text-default font-numeral">
                   {formatQuantity(position)} {base}
                 </span>
@@ -330,55 +366,72 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
             </div>
 
             {/* Balance Display */}
-            <div className="py-3 border-t border-container-border">
-              <BalanceDisplay market={market} currentPrice={currentPrice} />
-            </div>
+            <div className="divider-imperial my-2" />
+            <BalanceDisplay market={market} currentPrice={currentPrice} />
 
-            {/* Submit Button */}
+            {/* Execute Button - Metallic Gradient */}
             <button
               onClick={handleCreateOrder}
               disabled={!isFormValid || isSubmitting}
               className={`
-                w-full py-3 px-4 rounded-xl font-semibold text-sm
-                transition-all duration-150
-                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-container-bg
-                disabled:opacity-50 disabled:cursor-not-allowed
+                w-full py-4 px-4 font-imperial font-semibold text-sm tracking-widest
+                transition-all duration-200
+                disabled:opacity-40 disabled:cursor-not-allowed
                 ${isBuyMode
-                  ? "bg-positive-green hover:bg-positive-green-hover text-black focus:ring-positive-green"
-                  : "bg-negative-red hover:bg-negative-red-hover text-white focus:ring-negative-red"
+                  ? "btn-acquire"
+                  : "btn-liquidate"
                 }
               `}
             >
               {isSubmitting ? (
                 <span className="flex items-center justify-center gap-2">
                   <LoadingSpinner />
-                  Processing...
+                  EXECUTING...
                 </span>
               ) : (
                 <span>
-                  {isBuyMode ? "Buy" : "Sell"} {base}
+                  {isBuyMode ? "ACQUIRE" : "LIQUIDATE"} {base}
                 </span>
               )}
             </button>
 
-            {/* Keyboard Shortcuts Hint */}
+            {/* Keyboard Shortcuts */}
             <KeyboardShortcutsHint />
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <TradeConfirmationModal
+        isOpen={showConfirmModal}
+        order={{
+          side: orderSide,
+          baseAsset: base,
+          quoteAsset: quote,
+          quantity: parseFloat(size) || 0,
+          price: orderType === "Market" ? currentPrice : parseFloat(limitPrice) || 0,
+          total: maxUSD,
+          fees: fees,
+        }}
+        onConfirm={handleConfirmOrder}
+        onCancel={handleCancelConfirmation}
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 };
 
 /**
- * Buy/Sell side toggle button
+ * Imperial side toggle button (ACQUIRE / LIQUIDATE)
  */
-function SideButton({
+function ImperialSideButton({
   side,
+  label,
   isActive,
   onClick,
 }: {
   side: OrderSide;
+  label: string;
   isActive: boolean;
   onClick: () => void;
 }) {
@@ -387,29 +440,32 @@ function SideButton({
   return (
     <button
       onClick={onClick}
+      role="radio"
+      aria-checked={isActive}
+      aria-label={`${label} order`}
       className={`
-        flex-1 py-2.5 font-semibold text-sm transition-all duration-150
-        focus:outline-none focus:ring-2 focus:ring-inset
+        flex-1 py-3 font-imperial font-semibold text-xs tracking-widest
+        transition-all duration-200
         ${isActive
           ? isBuy
-            ? "bg-positive-green text-black focus:ring-positive-green-hover"
-            : "bg-negative-red text-white focus:ring-negative-red-hover"
-          : "bg-transparent text-text-secondary hover:text-text-default hover:bg-container-bg-hover"
+            ? "bg-metallic-green text-text-emphasis shadow-lg"
+            : "bg-metallic-red text-text-emphasis shadow-lg"
+          : "bg-transparent text-text-secondary hover:text-imperial-gold hover:bg-charcoal"
         }
       `}
     >
-      {isBuy ? "Buy" : "Sell"}
+      {label}
     </button>
   );
 }
 
 /**
- * Simple loading spinner
+ * Loading spinner with gold color
  */
 function LoadingSpinner() {
   return (
     <svg
-      className="animate-spin h-4 w-4"
+      className="animate-spin h-4 w-4 text-imperial-gold"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
@@ -432,22 +488,22 @@ function LoadingSpinner() {
 }
 
 /**
- * Keyboard shortcuts hint (hidden on mobile)
+ * Keyboard shortcuts hint - Imperial style
  */
 function KeyboardShortcutsHint() {
   return (
-    <div className="hidden sm:flex items-center justify-center gap-3 pt-2 text-[10px] text-text-secondary">
-      <span className="flex items-center gap-1">
-        <kbd className="px-1.5 py-0.5 bg-container-bg-hover rounded text-text-default">Ctrl+B</kbd>
-        Buy
+    <div className="hidden sm:flex items-center justify-center gap-4 pt-3 text-[9px] text-text-tertiary tracking-wider">
+      <span className="flex items-center gap-1.5">
+        <kbd className="px-1.5 py-0.5 border border-imperial-gold-dim text-imperial-gold-dim">^B</kbd>
+        ACQUIRE
       </span>
-      <span className="flex items-center gap-1">
-        <kbd className="px-1.5 py-0.5 bg-container-bg-hover rounded text-text-default">Ctrl+S</kbd>
-        Sell
+      <span className="flex items-center gap-1.5">
+        <kbd className="px-1.5 py-0.5 border border-imperial-gold-dim text-imperial-gold-dim">^S</kbd>
+        LIQUIDATE
       </span>
-      <span className="flex items-center gap-1">
-        <kbd className="px-1.5 py-0.5 bg-container-bg-hover rounded text-text-default">Esc</kbd>
-        Clear
+      <span className="flex items-center gap-1.5">
+        <kbd className="px-1.5 py-0.5 border border-imperial-gold-dim text-imperial-gold-dim">ESC</kbd>
+        CLEAR
       </span>
     </div>
   );

@@ -24,7 +24,7 @@ npm run dev    # Start dev server on localhost:5173
 
 ---
 
-## What's Been Done (Iterations 1-4)
+## What's Been Done (Iterations 1-5)
 
 ### Critical Bug Fixes
 - **OrderBook cumulative size calculation** - Was broken (never reset between renders)
@@ -116,27 +116,76 @@ npm run dev    # Start dev server on localhost:5173
 - Compact mini-headers inside each tab for filtering/refresh
 - Increased panel height (250px mobile, 300px desktop)
 
+### Iteration 5 - Price Alerts & Market Selector
+| File | Purpose |
+|------|---------|
+| `src/hooks/usePriceAlerts.ts` | Price alert management with localStorage |
+| `src/components/PriceAlerts.tsx` | Price alerts UI panel |
+| `src/components/MarketSelector.tsx` | Dropdown for switching trading pairs |
+
+#### Price Alerts
+- Set alerts for when price goes above or below a target
+- Quick-select buttons (+2%, +5%, -2%, -5% from current price)
+- Alerts persist in localStorage across sessions
+- Audio notification + toast when alert triggers
+- Integrated as third tab in orders panel
+
+#### Market Selector
+- Dropdown with search functionality in MarketBar
+- Shows SOL, BTC, ETH paired with USDC
+- Market icons with fallback
+- Keyboard navigation (Escape to close, Enter to select)
+- Updates URL on market change (`/trade/SOL_USDC`, `/trade/BTC_USDC`, etc.)
+
+#### Multi-Market Support
+- Trade.tsx now accepts any valid market (SOL_USDC, BTC_USDC, ETH_USDC)
+- Invalid markets redirect to SOL_USDC
+- getMarkets() API with fallback to hardcoded list
+
+### Iteration 6 - Trade Confirmation, Accessibility & Real-time Balances
+| File | Purpose |
+|------|---------|
+| `src/components/ui/TradeConfirmationModal.tsx` | Modal for confirming orders over $1000 |
+| `src/hooks/useBalances.ts` | Custom hook for balance management with WebSocket |
+
+#### Trade Confirmation Modal
+- Shows warning for orders exceeding $1000 threshold
+- Displays order details: side, size, price, total, fees
+- Focus trap within modal for keyboard users
+- Keyboard support: Enter to confirm, Escape to cancel
+- Proper ARIA attributes for accessibility
+
+#### Accessibility Improvements
+- Skip-to-content link for keyboard navigation
+- ARIA labels on all interactive elements (inputs, buttons)
+- `role="radio"` with `aria-checked` on Buy/Sell toggle
+- `role="tablist"`, `role="tab"`, `role="tabpanel"` for Orders panel
+- `role="region"` with `aria-label` on major sections
+- `aria-live="polite"` on dynamic balance display
+- Proper `htmlFor` and `id` linking on form inputs
+
+#### Real-time Balance Updates
+- Custom `useBalances` hook with WebSocket subscription
+- Automatic reconnection with polling fallback (10s interval)
+- Balance updates via WebSocket when backend supports it
+- Graceful degradation to REST API polling
+
 ### Build Status
-✅ **Build passes** - 0 TypeScript errors
+✅ **Build passes** - 0 TypeScript errors (121 modules)
 
 ---
 
 ## What's Remaining
 
 ### High Priority (Next Iteration)
-1. **Price Alerts** - Toast notification when price hits user-defined target
-2. **Market Selector** - Dropdown to switch between trading pairs
-3. **Trade Confirmation Modal** - Confirm before submitting large orders
+1. **Dark/Light Theme Toggle** - User-selectable theme with system preference
+2. **Notification Center** - Centralized notification history panel
+3. **Quick Trade Mode** - One-click buy/sell at market price
 
 ### Medium Priority
-4. **Accessibility Audit** - ARIA labels, focus management
-5. **Multi-market Support** - Currently hardcoded to SOL_USDC
-6. **Dark/Light Theme Toggle**
-
-### Polish
-7. **Performance Optimization** - React.memo on more components
-8. **Unit Tests** - Component testing with React Testing Library
-9. **E2E Tests** - Playwright for critical user flows
+4. **Performance Optimization** - React.memo on more components
+5. **Unit Tests** - Component testing with React Testing Library
+6. **E2E Tests** - Playwright for critical user flows
 
 ---
 
@@ -147,28 +196,35 @@ src/
 ├── state/
 │   └── TradesProvider.tsx     # Global state (loading, errors, connection)
 ├── hooks/
-│   └── useKeyboardShortcuts.ts # Keyboard shortcuts hook
+│   ├── useKeyboardShortcuts.ts # Keyboard shortcuts hook
+│   ├── usePriceAlerts.ts      # Price alert management
+│   └── useBalances.ts         # Balance management with WebSocket
 ├── utils/
 │   ├── format.ts              # Number formatting utilities
-│   ├── requests.ts            # API calls (axios) + balances/orders
+│   ├── requests.ts            # API calls (axios) + balances/orders/markets
 │   ├── ws_manager.ts          # WebSocket with exponential backoff
 │   ├── types.ts               # TypeScript interfaces
 │   └── chart_manager.ts       # Lightweight Charts wrapper
 ├── components/
 │   ├── ui/
 │   │   ├── Skeleton.tsx       # Loading skeletons
-│   │   ├── BalanceDisplay.tsx # User balance display
+│   │   ├── BalanceDisplay.tsx # User balance display (uses useBalances)
+│   │   ├── TradeConfirmationModal.tsx # Large order confirmation
 │   │   ├── ConnectionStatus.tsx
 │   │   └── ErrorBoundary.tsx
-│   ├── MarketBar.tsx          # Price ticker header
+│   ├── MarketBar.tsx          # Price header + MarketSelector
+│   ├── MarketSelector.tsx     # Trading pair dropdown
+│   ├── PriceAlerts.tsx        # Price alert management UI
 │   ├── Depth.tsx              # OrderBook + RecentTrades tabs
-│   ├── SwapInterface.tsx      # Buy/Sell form + balance + shortcuts
+│   ├── depth/
+│   │   └── OrderBook.tsx      # Order book with ARIA accessibility
+│   ├── SwapInterface.tsx      # Buy/Sell form + confirmation modal
 │   ├── OpenOrders.tsx         # Open orders with cancel
 │   ├── OrderHistory.tsx       # Completed/cancelled orders
 │   └── trade_interface/
 │       └── TradeView.tsx      # Candlestick chart
 └── pages/
-    └── Trade.tsx              # Main trading page + tabbed orders
+    └── Trade.tsx              # Main trading page (skip-link, ARIA tabs)
 ```
 
 ---
@@ -182,13 +238,12 @@ Continue the Ralph loop for testudo-web frontend transformation.
 
 Context:
 - Read /home/m0xu/1-projects/testudo/testudo-web/HANDOFF.md for what's done
-- Read /home/m0xu/1-projects/testudo/testudo-web/.claude/ralph-loop.local.md for iteration history
 - Build should pass: `npm run build`
 
 Next tasks (in order):
-1. Add Price Alerts - toast notification when price hits user-defined target
-2. Add Market Selector - dropdown to switch between trading pairs (SOL_USDC, BTC_USDC)
-3. Add Trade Confirmation Modal - confirm before submitting orders over $1000
+1. Add Dark/Light Theme Toggle - user-selectable theme with system preference detection
+2. Add Notification Center - centralized notification history panel
+3. Add Quick Trade Mode - one-click buy/sell at market price
 
 Design principles:
 - Loading skeletons for all async data
@@ -197,6 +252,7 @@ Design principles:
 - Mobile-first responsive design
 - No console.log in production code
 - Memoize expensive computations
+- ARIA accessibility on all interactive elements
 
 The goal is the slickest trading UX in the world.
 ```

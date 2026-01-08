@@ -265,8 +265,63 @@
 ✅ Build passes with no TypeScript errors
 
 ### Remaining Issues for Next Iteration
-1. Price alerts (toast when price hits target)
-2. Market selector (switch trading pairs)
+1. Price alerts (toast when price hits target) ✅ (done in iteration 5)
+2. Market selector (switch trading pairs) ✅ (done in iteration 5)
 3. Trade confirmation modal (for large orders)
 4. Accessibility audit (ARIA labels)
-5. Multi-market support
+5. Multi-market support ✅ (done in iteration 5)
+
+---
+
+## Iteration 5 - Price Alerts & Market Selector (COMPLETED)
+
+### Changes Made
+
+#### 1. Created `src/hooks/usePriceAlerts.ts`
+- Custom hook for managing price alerts
+- LocalStorage persistence
+- Tracks price changes and triggers alerts when target hit
+- Audio notification (base64 embedded sound)
+- Toast notification with dismiss action
+- Methods: addAlert, removeAlert, clearTriggered, clearAll
+
+#### 2. Created `src/components/PriceAlerts.tsx`
+- Price alerts management UI panel
+- Set alerts for price above or below target
+- Quick-select buttons (+2%, +5%, -2%, -5%)
+- Above/Below toggle with color coding
+- List view of active alerts with distance from current price
+- Remove individual alerts
+
+#### 3. Created `src/components/MarketSelector.tsx`
+- Dropdown for selecting trading pairs
+- Search functionality for filtering markets
+- Shows market icons with fallback
+- Keyboard navigation (Escape, Enter)
+- Updates URL via react-router navigate
+- Closes on click outside
+
+#### 4. Updated `src/utils/types.ts`
+- Added `PriceAlert` interface
+- Added `Market` interface
+
+#### 5. Updated `src/utils/requests.ts`
+- Added `getMarkets()` API with fallback to hardcoded list
+
+#### 6. Updated `src/pages/Trade.tsx`
+- Now supports multiple markets (SOL_USDC, BTC_USDC, ETH_USDC)
+- Added Price Alerts tab with badge count
+- Integrated usePriceAlerts hook
+- Invalid markets redirect to SOL_USDC
+
+#### 7. Updated `src/components/MarketBar.tsx`
+- Replaced static market display with MarketSelector dropdown
+
+### Build Status
+✅ Build passes with no TypeScript errors
+
+### Remaining Issues for Next Iteration
+1. Trade confirmation modal (for large orders)
+2. Accessibility audit (ARIA labels)
+3. Real-time balance updates (WebSocket)
+4. Dark/Light theme toggle

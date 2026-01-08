@@ -1,78 +1,53 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Balance } from '../../utils/types';
-import { getBalances } from '../../utils/requests';
+import { useMemo } from 'react';
 import { formatQuantity, formatUSD, parseMarketSymbol } from '../../utils/format';
 import { Skeleton } from './Skeleton';
+import { useBalances } from '../../hooks/useBalances';
 
 interface BalanceDisplayProps {
   market: string;
   currentPrice: number;
 }
 
-type LoadingState = 'idle' | 'loading' | 'success' | 'error';
-
 /**
  * Displays user's balances for the current trading pair
  * Shows available and locked amounts with USD value
+ * Uses WebSocket for real-time updates with polling fallback
  */
 export function BalanceDisplay({ market, currentPrice }: BalanceDisplayProps) {
-  const [balances, setBalances] = useState<Balance[]>([]);
-  const [loadingState, setLoadingState] = useState<LoadingState>('idle');
-  const [error, setError] = useState<string | null>(null);
-
   const { base, quote } = useMemo(() => parseMarketSymbol(market), [market]);
 
-  const fetchBalances = useCallback(async () => {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
-      setLoadingState('idle');
-      return;
-    }
-
-    setLoadingState('loading');
-    setError(null);
-
-    try {
-      const data = await getBalances(userId);
-      setBalances(data);
-      setLoadingState('success');
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load balances';
-      setError(message);
-      setLoadingState('error');
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchBalances();
-  }, [fetchBalances]);
-
-  const baseBalance = useMemo(() => {
-    return balances.find(b => b.asset === base);
-  }, [balances, base]);
-
-  const quoteBalance = useMemo(() => {
-    return balances.find(b => b.asset === quote);
-  }, [balances, quote]);
+  const {
+    baseBalance,
+    quoteBalance,
+    isLoading,
+    error,
+    refresh,
+  } = useBalances({
+    market,
+    pollInterval: 10000, // Poll every 10 seconds as fallback
+    enableWebSocket: true,
+  });
 
   const baseAvailable = parseFloat(baseBalance?.available ?? '0');
   const quoteAvailable = parseFloat(quoteBalance?.available ?? '0');
   const baseUsdValue = baseAvailable * currentPrice;
 
-  if (loadingState === 'idle') {
+  // Show nothing if no user logged in
+  const userId = localStorage.getItem('user_id');
+  if (!userId) {
     return null;
   }
 
-  if (loadingState === 'loading') {
+  if (isLoading && !baseBalance && !quoteBalance) {
     return <BalanceSkeleton />;
   }
 
-  if (loadingState === 'error') {
+  if (error && !baseBalance && !quoteBalance) {
     return (
       <div className="flex items-center justify-between px-3 py-2 bg-negative-red/10 rounded-lg">
         <span className="text-xs text-negative-red">{error}</span>
         <button
-          onClick={fetchBalances}
+          onClick={refresh}
           className="text-xs text-interactive-link hover:text-interactive-link-hover transition-colors"
         >
           Retry
@@ -82,11 +57,11 @@ export function BalanceDisplay({ market, currentPrice }: BalanceDisplayProps) {
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2" role="region" aria-label="Account balances" aria-live="polite">
       <div className="flex items-center justify-between text-xs text-text-secondary">
         <span>Balances</span>
         <button
-          onClick={fetchBalances}
+          onClick={refresh}
           className="text-interactive-link hover:text-interactive-link-hover transition-colors"
           aria-label="Refresh balances"
         >

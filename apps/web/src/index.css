@@ -2,17 +2,271 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 600;
+/* ============================================
+   TESTUDO - Imperial Roman Trading Terminal
+   "The Senate meets the Terminal"
+   ============================================ */
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  /* background-color: #242424; */
+:root {
+  /* Imperial color system */
+  --imperial-gold: #c5a059;
+  --imperial-gold-dim: #8b7340;
+  --imperial-gold-bright: #d4b06a;
+  --obsidian: #0a0a0c;
+  --slate: #121214;
+  --charcoal: #1c1c1e;
+  --marble: #f5f5f0;
+  --laurel: #3a7f5d;
+  --tyrian: #990011;
+
+  /* Typography */
+  font-family: 'Inter', system-ui, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: var(--marble);
+  background-color: var(--obsidian);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   BASE LAYER - Imperial Foundation
+   ============================================ */
+
+@layer base {
+  /* Remove all rounded corners globally */
+  * {
+    border-radius: 0 !important;
+  }
+
+  /* Imperial selection color */
+  ::selection {
+    background: rgba(197, 160, 89, 0.3);
+    color: var(--marble);
+  }
+
+  /* Scrollbar styling - Imperial gold accent */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--slate);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--imperial-gold-dim);
+    border: 1px solid var(--slate);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--imperial-gold);
+  }
+
+  /* Focus states - Gold outline */
+  :focus-visible {
+    outline: 1px solid var(--imperial-gold);
+    outline-offset: 2px;
+  }
+
+  /* Input reset */
+  input, select, textarea {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--imperial-gold-dim);
+    transition: border-color 0.2s ease;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-bottom-color: var(--imperial-gold);
+    outline: none;
+  }
+
+  /* Number input - hide spinners */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+/* ============================================
+   COMPONENT LAYER - Imperial Elements
+   ============================================ */
+
+@layer components {
+  /* Imperial serif headers */
+  .imperial-header {
+    font-family: 'Cinzel', 'Times New Roman', serif;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--marble);
+  }
+
+  /* Gold inscription text */
+  .imperial-inscription {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--imperial-gold);
+  }
+
+  /* Monospace data display */
+  .imperial-data {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Double border - Column effect */
+  .imperial-border {
+    border: 1px solid var(--imperial-gold-dim);
+    box-shadow: inset 0 0 0 1px rgba(197, 160, 89, 0.1);
+  }
+
+  .imperial-border-double {
+    border: 2px solid var(--imperial-gold-dim);
+    box-shadow:
+      inset 0 0 0 3px var(--slate),
+      inset 0 0 0 4px var(--imperial-gold-dim);
+  }
+
+  /* Metallic gradient button */
+  .btn-imperial {
+    background: linear-gradient(135deg, var(--imperial-gold) 0%, var(--imperial-gold-dim) 50%, var(--imperial-gold) 100%);
+    color: var(--obsidian);
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    transition: all 0.2s ease;
+  }
+
+  .btn-imperial:hover {
+    background: linear-gradient(135deg, var(--imperial-gold-bright) 0%, var(--imperial-gold) 50%, var(--imperial-gold-bright) 100%);
+    box-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
+  }
+
+  /* Acquire (Buy) button */
+  .btn-acquire {
+    background: linear-gradient(135deg, #3a7f5d 0%, #2d6349 50%, #4a9970 100%);
+    color: var(--marble);
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .btn-acquire:hover {
+    background: linear-gradient(135deg, #4a9970 0%, #3a7f5d 50%, #4a9970 100%);
+    box-shadow: 0 0 20px rgba(58, 127, 93, 0.3);
+  }
+
+  /* Liquidate (Sell) button */
+  .btn-liquidate {
+    background: linear-gradient(135deg, #990011 0%, #7a000e 50%, #b31a2b 100%);
+    color: var(--marble);
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .btn-liquidate:hover {
+    background: linear-gradient(135deg, #b31a2b 0%, #990011 50%, #b31a2b 100%);
+    box-shadow: 0 0 20px rgba(153, 0, 17, 0.3);
+  }
+
+  /* Imperial input field - inscription style */
+  .input-imperial {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--imperial-gold-dim);
+    padding: 0.75rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--marble);
+    transition: border-color 0.2s ease;
+  }
+
+  .input-imperial:focus {
+    border-bottom-color: var(--imperial-gold);
+    outline: none;
+  }
+
+  .input-imperial::placeholder {
+    color: rgba(168, 168, 160, 0.5);
+  }
+
+  /* Imperial panel */
+  .panel-imperial {
+    background: var(--slate);
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    box-shadow:
+      inset 0 1px 0 rgba(197, 160, 89, 0.05),
+      0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Gold separator line */
+  .divider-imperial {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--imperial-gold-dim) 50%, transparent 100%);
+  }
+
+  /* Keystone shape for spread */
+  .keystone {
+    clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+  }
+
+  /* Thin scroll */
+  .thin-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+}
+
+/* ============================================
+   UTILITY LAYER - Imperial Modifiers
+   ============================================ */
+
+@layer utilities {
+  /* Text utilities */
+  .text-gold { color: var(--imperial-gold); }
+  .text-gold-dim { color: var(--imperial-gold-dim); }
+  .text-marble { color: var(--marble); }
+  .text-laurel { color: var(--laurel); }
+  .text-tyrian { color: var(--tyrian); }
+
+  /* Background utilities */
+  .bg-obsidian { background-color: var(--obsidian); }
+  .bg-slate { background-color: var(--slate); }
+  .bg-charcoal { background-color: var(--charcoal); }
+
+  /* Border utilities */
+  .border-gold { border-color: var(--imperial-gold); }
+  .border-gold-dim { border-color: var(--imperial-gold-dim); }
+
+  /* Tracking for serif headers */
+  .tracking-imperial { letter-spacing: 0.15em; }
+
+  /* Gold glow effect */
+  .glow-gold {
+    box-shadow: 0 0 20px rgba(197, 160, 89, 0.2);
+  }
+
+  /* Imperial gradient overlay */
+  .imperial-overlay {
+    background: linear-gradient(180deg, rgba(197, 160, 89, 0.05) 0%, transparent 100%);
+  }
 }
