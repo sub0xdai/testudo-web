@@ -116,9 +116,9 @@ export function MarketSelector({ currentMarket }: MarketSelectorProps) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Search markets..."
-                className="w-full pl-9 pr-3 py-2 bg-container-bg-hover border border-container-border rounded-lg
-                         text-text-default text-sm placeholder:text-text-secondary
-                         focus:outline-none focus:ring-2 focus:ring-interactive-link/50"
+                className="w-full pl-9 pr-3 py-2 bg-container-bg-hover border border-container-border
+                         text-text-default text-xs font-imperial tracking-wider uppercase placeholder:text-text-secondary placeholder:normal-case
+                         focus:outline-none focus:ring-1 focus:ring-steel-primary/50"
               />
             </div>
           </div>
@@ -126,7 +126,7 @@ export function MarketSelector({ currentMarket }: MarketSelectorProps) {
           {/* Markets List */}
           <div className="max-h-64 overflow-auto thin-scroll">
             {filteredMarkets.length === 0 ? (
-              <div className="p-4 text-center text-sm text-text-secondary">
+              <div className="p-4 text-center text-[10px] text-text-secondary font-imperial tracking-wider uppercase">
                 No markets found
               </div>
             ) : (
@@ -182,11 +182,11 @@ function MarketOption({ market, isSelected, onClick }: MarketOptionProps) {
       </div>
 
       {isSelected && (
-        <CheckIcon className="w-4 h-4 text-interactive-link" />
+        <CheckIcon className="w-4 h-4 text-steel-primary" />
       )}
 
       {market.status === 'HALTED' && (
-        <span className="px-1.5 py-0.5 text-[10px] bg-negative-red/20 text-negative-red rounded">
+        <span className="px-1.5 py-0.5 text-[9px] font-imperial tracking-wider uppercase bg-negative-red/20 text-negative-red">
           Halted
         </span>
       )}

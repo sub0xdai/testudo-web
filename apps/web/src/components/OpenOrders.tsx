@@ -4,6 +4,7 @@ import { getOpenOrders, cancelOrder } from '../utils/requests';
 import { formatPrice, formatQuantity, formatTime, parseMarketSymbol } from '../utils/format';
 import { Skeleton } from './ui/Skeleton';
 import { toast } from 'sonner';
+import { WsManager } from '../utils/ws_manager';
 
 interface OpenOrdersProps {
   market: string;
@@ -42,10 +43,64 @@ export function OpenOrders({ market, onOrderCancelled }: OpenOrdersProps) {
     }
   }, [market]);
 
+  // WebSocket subscription for real-time order updates
+  useEffect(() => {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) return;
+
+    const wsManager = WsManager.getInstance();
+    const callbackId = `orders-${userId}-${market}`;
+
+    // Handle order updates from WebSocket
+    wsManager.registerCallback(
+      'order',
+      (rawData) => {
+        const data = rawData as {
+          orderId: string;
+          status: 'OPEN' | 'FILLED' | 'PARTIALLY_FILLED' | 'CANCELLED';
+          filledQuantity?: string;
+        };
+
+        if (data.status === 'FILLED' || data.status === 'CANCELLED') {
+          // Remove from open orders
+          setOrders((prev) => prev.filter((o) => o.orderId !== data.orderId));
+          if (data.status === 'FILLED') {
+            toast.success('Order filled');
+          }
+        } else if (data.status === 'PARTIALLY_FILLED' && data.filledQuantity) {
+          // Update filled quantity
+          setOrders((prev) =>
+            prev.map((o) =>
+              o.orderId === data.orderId
+                ? { ...o, filledQuantity: data.filledQuantity!, status: 'PARTIALLY_FILLED' }
+                : o
+            )
+          );
+        }
+      },
+      callbackId
+    );
+
+    // Subscribe to order updates for this user
+    wsManager.sendMessage({
+      method: 'SUBSCRIBE',
+      params: [`order.${userId}`],
+    });
+
+    return () => {
+      wsManager.deRegisterCallback('order', callbackId);
+      wsManager.sendMessage({
+        method: 'UNSUBSCRIBE',
+        params: [`order.${userId}`],
+      });
+    };
+  }, [market]);
+
+  // Initial fetch and polling fallback (reduced frequency with WebSocket)
   useEffect(() => {
     fetchOrders();
-    // Poll for updates every 5 seconds
-    const interval = setInterval(fetchOrders, 5000);
+    // Poll every 10 seconds as fallback (WebSocket provides real-time updates)
+    const interval = setInterval(fetchOrders, 10000);
     return () => clearInterval(interval);
   }, [fetchOrders]);
 
@@ -79,17 +134,17 @@ export function OpenOrders({ market, onOrderCancelled }: OpenOrdersProps) {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Mini Header with count and refresh */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-container-border bg-container-bg-hover/20">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-container-border">
         <div className="flex items-center gap-2">
           {orders.length > 0 && (
-            <span className="px-2 py-0.5 text-xs bg-interactive-link/20 text-interactive-link rounded-full">
+            <span className="px-2 py-0.5 text-[10px] font-imperial tracking-wider uppercase bg-steel-primary/20 text-steel-primary">
               {orders.length} open
             </span>
           )}
         </div>
         <button
           onClick={fetchOrders}
-          className="text-text-secondary hover:text-text-default transition-colors p-1"
+          className="text-text-secondary hover:text-steel-primary transition-colors p-1"
           aria-label="Refresh orders"
         >
           <RefreshIcon className="w-3.5 h-3.5" />
@@ -102,17 +157,17 @@ export function OpenOrders({ market, onOrderCancelled }: OpenOrdersProps) {
           <OrdersSkeleton />
         ) : loadingState === 'error' ? (
           <div className="flex flex-col items-center justify-center h-full p-4 text-center">
-            <span className="text-sm text-negative-red mb-2">{error}</span>
+            <span className="text-xs text-negative-red mb-2">{error}</span>
             <button
               onClick={fetchOrders}
-              className="text-sm text-interactive-link hover:text-interactive-link-hover transition-colors"
+              className="text-[10px] text-steel-primary hover:text-steel-bright transition-colors font-imperial tracking-wider uppercase"
             >
               Try again
             </button>
           </div>
         ) : orders.length === 0 ? (
           <div className="flex items-center justify-center h-full p-4">
-            <span className="text-sm text-text-secondary">No open orders</span>
+            <span className="text-[10px] text-text-secondary font-imperial tracking-wider uppercase">No open orders</span>
           </div>
         ) : (
           <div className="divide-y divide-container-border">
@@ -149,7 +204,7 @@ function OrderRow({ order, onCancel, isCancelling }: OrderRowProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span
-              className={`text-xs font-semibold px-1.5 py-0.5 rounded ${
+              className={`text-[10px] font-imperial font-semibold tracking-wider px-1.5 py-0.5 uppercase ${
                 isBuy
                   ? 'bg-positive-green/20 text-positive-green'
                   : 'bg-negative-red/20 text-negative-red'
@@ -157,23 +212,23 @@ function OrderRow({ order, onCancel, isCancelling }: OrderRowProps) {
             >
               {order.side}
             </span>
-            <span className="text-xs text-text-secondary">
+            <span className="text-[10px] text-text-secondary font-imperial tracking-wider">
               {base}/{quote}
             </span>
-            <span className="text-xs text-text-secondary">
+            <span className="text-[10px] text-text-secondary font-numeral">
               {formatTime(order.createdAt)}
             </span>
           </div>
 
-          <div className="flex items-baseline gap-3 text-sm">
+          <div className="flex items-baseline gap-4 text-xs">
             <div>
-              <span className="text-text-secondary">Price: </span>
+              <span className="text-text-secondary font-imperial text-[9px] tracking-wider uppercase">Price: </span>
               <span className="font-numeral text-text-default">
                 {formatPrice(order.price)}
               </span>
             </div>
             <div>
-              <span className="text-text-secondary">Size: </span>
+              <span className="text-text-secondary font-imperial text-[9px] tracking-wider uppercase">Size: </span>
               <span className="font-numeral text-text-default">
                 {formatQuantity(order.quantity)}
               </span>
@@ -184,14 +239,14 @@ function OrderRow({ order, onCancel, isCancelling }: OrderRowProps) {
           {order.status === 'PARTIALLY_FILLED' && (
             <div className="mt-2">
               <div className="flex items-center justify-between text-xs mb-1">
-                <span className="text-text-secondary">Filled</span>
+                <span className="text-text-secondary font-imperial text-[9px] tracking-wider uppercase">Filled</span>
                 <span className="text-text-default font-numeral">
                   {filledPercent.toFixed(1)}%
                 </span>
               </div>
-              <div className="h-1 bg-container-bg-hover rounded-full overflow-hidden">
+              <div className="h-1 bg-container-bg-hover overflow-hidden">
                 <div
-                  className={`h-full rounded-full ${isBuy ? 'bg-positive-green' : 'bg-negative-red'}`}
+                  className={`h-full ${isBuy ? 'bg-positive-green' : 'bg-negative-red'}`}
                   style={{ width: `${filledPercent}%` }}
                 />
               </div>

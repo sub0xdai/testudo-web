@@ -131,21 +131,21 @@ export function TradeConfirmationModal({
           <div>
             <h2
               id="modal-title"
-              className="text-lg font-semibold text-text-default"
+              className="text-base font-imperial font-semibold tracking-wider uppercase text-text-default"
             >
               Confirm Large Order
             </h2>
-            <p id="modal-description" className="text-sm text-text-secondary">
+            <p id="modal-description" className="text-xs text-text-secondary mt-1">
               This order exceeds $1,000. Please review before confirming.
             </p>
           </div>
         </div>
 
         {/* Order Details */}
-        <div className="bg-container-bg-hover/50 rounded-lg p-4 mb-6">
+        <div className="bg-container-bg-hover/30 border border-container-border p-4 mb-6">
           <div className="flex items-center justify-between mb-3">
             <span
-              className={`text-sm font-semibold px-2 py-1 rounded ${
+              className={`text-[10px] font-imperial font-semibold tracking-wider uppercase px-2 py-1 ${
                 isBuy
                   ? 'bg-positive-green/20 text-positive-green'
                   : 'bg-negative-red/20 text-negative-red'
@@ -153,7 +153,7 @@ export function TradeConfirmationModal({
             >
               {order.side}
             </span>
-            <span className="text-sm text-text-secondary">
+            <span className="text-xs text-text-secondary font-imperial tracking-wider">
               {order.baseAsset}/{order.quoteAsset}
             </span>
           </div>
@@ -187,10 +187,10 @@ export function TradeConfirmationModal({
           <button
             onClick={onCancel}
             disabled={isSubmitting}
-            className="flex-1 py-3 px-4 rounded-xl font-semibold text-sm
+            className="flex-1 py-3 px-4 font-imperial font-semibold text-xs tracking-wider uppercase
                      bg-container-bg-hover text-text-default
                      hover:bg-container-bg-hover/80
-                     focus:outline-none focus:ring-2 focus:ring-interactive-link/50
+                     focus:outline-none focus:ring-1 focus:ring-steel-primary/50
                      disabled:opacity-50 disabled:cursor-not-allowed
                      transition-colors duration-150"
             aria-label="Cancel order"
@@ -201,8 +201,8 @@ export function TradeConfirmationModal({
             ref={confirmButtonRef}
             onClick={onConfirm}
             disabled={isSubmitting}
-            className={`flex-1 py-3 px-4 rounded-xl font-semibold text-sm
-                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-container-bg
+            className={`flex-1 py-3 px-4 font-imperial font-semibold text-xs tracking-wider uppercase
+                     focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-offset-container-bg
                      disabled:opacity-50 disabled:cursor-not-allowed
                      transition-colors duration-150
                      ${
@@ -249,11 +249,11 @@ interface DetailRowProps {
 function DetailRow({ label, value, highlight = false, muted = false }: DetailRowProps) {
   return (
     <div className="flex items-center justify-between">
-      <span className={`text-sm ${muted ? 'text-text-secondary/70' : 'text-text-secondary'}`}>
+      <span className={`text-[10px] font-imperial tracking-wider uppercase ${muted ? 'text-text-secondary/70' : 'text-text-secondary'}`}>
         {label}
       </span>
       <span
-        className={`text-sm font-numeral ${
+        className={`text-xs font-numeral ${
           highlight
             ? 'text-text-default font-semibold'
             : muted

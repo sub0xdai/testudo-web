@@ -47,19 +47,19 @@ export function PriceAlerts({
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-container-border bg-container-bg-hover/20">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-container-border">
         <div className="flex items-center gap-2">
-          <BellIcon className="w-4 h-4 text-text-secondary" />
-          <span className="text-xs font-medium text-text-default">Price Alerts</span>
+          <BellIcon className="w-4 h-4 text-steel-dim" />
+          <span className="text-[10px] font-imperial font-semibold tracking-wider uppercase text-text-default">Price Alerts</span>
           {alerts.length > 0 && (
-            <span className="px-1.5 py-0.5 text-[10px] bg-interactive-link/20 text-interactive-link rounded-full">
+            <span className="px-1.5 py-0.5 text-[10px] font-numeral bg-steel-primary/20 text-steel-primary">
               {alerts.length}
             </span>
           )}
         </div>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="p-1 text-text-secondary hover:text-text-default transition-colors"
+          className="p-1 text-text-secondary hover:text-steel-primary transition-colors"
           aria-label={isAdding ? 'Cancel' : 'Add alert'}
         >
           {isAdding ? <CloseIcon className="w-4 h-4" /> : <PlusIcon className="w-4 h-4" />}
@@ -68,14 +68,14 @@ export function PriceAlerts({
 
       {/* Add Alert Form */}
       {isAdding && (
-        <form onSubmit={handleSubmit} className="p-3 border-b border-container-border bg-container-bg-hover/10">
+        <form onSubmit={handleSubmit} className="p-3 border-b border-container-border">
           <div className="flex flex-col gap-2">
             {/* Condition Toggle */}
-            <div className="flex rounded-lg overflow-hidden border border-container-border">
+            <div className="flex overflow-hidden border border-container-border">
               <button
                 type="button"
                 onClick={() => setCondition('above')}
-                className={`flex-1 py-1.5 text-xs font-medium transition-colors ${
+                className={`flex-1 py-1.5 text-[10px] font-imperial font-semibold tracking-wider uppercase transition-colors ${
                   condition === 'above'
                     ? 'bg-positive-green/20 text-positive-green'
                     : 'text-text-secondary hover:text-text-default'
@@ -86,7 +86,7 @@ export function PriceAlerts({
               <button
                 type="button"
                 onClick={() => setCondition('below')}
-                className={`flex-1 py-1.5 text-xs font-medium transition-colors ${
+                className={`flex-1 py-1.5 text-[10px] font-imperial font-semibold tracking-wider uppercase transition-colors ${
                   condition === 'below'
                     ? 'bg-negative-red/20 text-negative-red'
                     : 'text-text-secondary hover:text-text-default'
@@ -98,16 +98,16 @@ export function PriceAlerts({
 
             {/* Price Input */}
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-xs">$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-xs font-numeral">$</span>
               <input
                 type="number"
                 step="0.01"
                 value={targetPrice}
                 onChange={(e) => setTargetPrice(e.target.value)}
                 placeholder={currentPrice.toFixed(2)}
-                className="w-full pl-6 pr-3 py-2 bg-container-bg-hover border border-container-border rounded-lg
+                className="w-full pl-6 pr-3 py-2 bg-container-bg-hover border border-container-border
                          text-text-default text-sm font-numeral
-                         focus:outline-none focus:ring-2 focus:ring-interactive-link/50"
+                         focus:outline-none focus:ring-1 focus:ring-steel-primary/50"
               />
             </div>
 
@@ -121,8 +121,8 @@ export function PriceAlerts({
                     setTargetPrice(price.toFixed(2));
                     setCondition(price > currentPrice ? 'above' : 'below');
                   }}
-                  className="flex-1 py-1 text-[10px] bg-container-bg-hover hover:bg-container-bg-hover/80
-                           text-text-secondary rounded transition-colors"
+                  className="flex-1 py-1 text-[10px] font-imperial tracking-wider bg-container-bg-hover hover:bg-container-bg-hover/80
+                           text-text-secondary transition-colors"
                 >
                   {label}
                 </button>
@@ -133,8 +133,8 @@ export function PriceAlerts({
             <button
               type="submit"
               disabled={!targetPrice || parseFloat(targetPrice) <= 0}
-              className="w-full py-2 text-xs font-medium bg-interactive-link hover:bg-interactive-link-hover
-                       text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2 text-[10px] font-imperial font-semibold tracking-wider uppercase bg-steel-primary hover:bg-steel-bright
+                       text-main-bg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Set Alert
             </button>
@@ -147,10 +147,10 @@ export function PriceAlerts({
         {alerts.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full p-4 text-center">
             <BellOffIcon className="w-8 h-8 text-text-secondary/50 mb-2" />
-            <span className="text-xs text-text-secondary">No active alerts</span>
+            <span className="text-[10px] text-text-secondary font-imperial tracking-wider uppercase">No active alerts</span>
             <button
               onClick={() => setIsAdding(true)}
-              className="mt-2 text-xs text-interactive-link hover:text-interactive-link-hover"
+              className="mt-2 text-[10px] text-steel-primary hover:text-steel-bright font-imperial tracking-wider uppercase"
             >
               Create one
             </button>
@@ -188,20 +188,20 @@ function AlertRow({ alert, currentPrice, onRemove }: AlertRowProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div
-            className={`w-1.5 h-1.5 rounded-full ${
+            className={`w-1.5 h-1.5 ${
               isAbove ? 'bg-positive-green' : 'bg-negative-red'
             }`}
           />
           <div>
-            <div className="flex items-baseline gap-1">
+            <div className="flex items-baseline gap-1.5">
               <span className="text-sm font-numeral text-text-default">
                 {formatUSD(alert.targetPrice)}
               </span>
-              <span className={`text-[10px] ${isAbove ? 'text-positive-green' : 'text-negative-red'}`}>
+              <span className={`text-[10px] font-numeral ${isAbove ? 'text-positive-green' : 'text-negative-red'}`}>
                 {isAbove ? '↑' : '↓'} {distanceAbs.toFixed(1)}%
               </span>
             </div>
-            <span className="text-[10px] text-text-secondary">
+            <span className="text-[9px] text-text-secondary font-imperial tracking-wider uppercase">
               Alert when {isAbove ? 'above' : 'below'}
             </span>
           </div>

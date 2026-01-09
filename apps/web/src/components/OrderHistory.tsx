@@ -84,7 +84,7 @@ export function OrderHistory({ market }: OrderHistoryProps) {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Mini Header with filters and refresh */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-container-border bg-container-bg-hover/20">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-container-border">
         {/* Filter Tabs */}
         <div className="flex items-center gap-1">
           <FilterTab
@@ -108,7 +108,7 @@ export function OrderHistory({ market }: OrderHistoryProps) {
         </div>
         <button
           onClick={fetchOrders}
-          className="text-text-secondary hover:text-text-default transition-colors p-1"
+          className="text-text-secondary hover:text-steel-primary transition-colors p-1"
           aria-label="Refresh history"
         >
           <RefreshIcon className="w-3.5 h-3.5" />
@@ -121,17 +121,17 @@ export function OrderHistory({ market }: OrderHistoryProps) {
           <HistorySkeleton />
         ) : loadingState === 'error' ? (
           <div className="flex flex-col items-center justify-center h-full p-4 text-center">
-            <span className="text-sm text-negative-red mb-2">{error}</span>
+            <span className="text-xs text-negative-red mb-2">{error}</span>
             <button
               onClick={fetchOrders}
-              className="text-sm text-interactive-link hover:text-interactive-link-hover transition-colors"
+              className="text-[10px] text-steel-primary hover:text-steel-bright transition-colors font-imperial tracking-wider uppercase"
             >
               Try again
             </button>
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="flex items-center justify-center h-full p-4">
-            <span className="text-sm text-text-secondary">
+            <span className="text-[10px] text-text-secondary font-imperial tracking-wider uppercase">
               {filterStatus === 'all' ? 'No order history' : `No ${filterStatus.toLowerCase()} orders`}
             </span>
           </div>
@@ -139,7 +139,7 @@ export function OrderHistory({ market }: OrderHistoryProps) {
           <div className="divide-y divide-container-border">
             {Array.from(groupedOrders.entries()).map(([date, dateOrders]) => (
               <div key={date}>
-                <div className="sticky top-0 px-3 py-1.5 bg-container-bg-hover/50 text-xs text-text-secondary font-medium">
+                <div className="sticky top-0 px-3 py-1.5 bg-container-bg-hover/50 text-[10px] text-text-secondary font-imperial tracking-wider uppercase">
                   {date}
                 </div>
                 {dateOrders.map((order) => (
@@ -166,16 +166,16 @@ function FilterTab({ label, isActive, onClick, count }: FilterTabProps) {
     <button
       onClick={onClick}
       className={`
-        px-2 py-1 text-xs font-medium rounded transition-colors
+        px-2 py-1 text-[10px] font-imperial font-semibold tracking-wider uppercase transition-colors
         ${isActive
-          ? 'text-text-default bg-container-bg-hover'
-          : 'text-text-secondary hover:text-text-default'
+          ? 'text-text-default border-b-2 border-steel-primary'
+          : 'text-text-secondary hover:text-text-default border-b-2 border-transparent'
         }
       `}
     >
       {label}
       {count > 0 && (
-        <span className="ml-0.5 text-[10px] opacity-70">({count})</span>
+        <span className="ml-0.5 text-[9px] font-numeral opacity-70">({count})</span>
       )}
     </button>
   );
@@ -198,7 +198,7 @@ function HistoryRow({ order }: HistoryRowProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span
-              className={`text-xs font-semibold px-1.5 py-0.5 rounded ${
+              className={`text-[10px] font-imperial font-semibold tracking-wider px-1.5 py-0.5 uppercase ${
                 isBuy
                   ? 'bg-positive-green/20 text-positive-green'
                   : 'bg-negative-red/20 text-negative-red'
@@ -206,21 +206,21 @@ function HistoryRow({ order }: HistoryRowProps) {
             >
               {order.side}
             </span>
-            <span className="text-xs text-text-secondary">
+            <span className="text-[10px] text-text-secondary font-imperial tracking-wider">
               {base}/{quote}
             </span>
             <StatusBadge status={order.status} />
           </div>
 
-          <div className="flex items-baseline gap-3 text-sm">
+          <div className="flex items-baseline gap-4 text-xs">
             <div>
-              <span className="text-text-secondary">Price: </span>
+              <span className="text-text-secondary font-imperial text-[9px] tracking-wider uppercase">Price: </span>
               <span className="font-numeral text-text-default">
                 {formatPrice(order.price)}
               </span>
             </div>
             <div>
-              <span className="text-text-secondary">
+              <span className="text-text-secondary font-imperial text-[9px] tracking-wider uppercase">
                 {isFilled ? 'Filled: ' : 'Size: '}
               </span>
               <span className="font-numeral text-text-default">
@@ -234,7 +234,7 @@ function HistoryRow({ order }: HistoryRowProps) {
 
           {/* Partial fill indicator for cancelled orders */}
           {order.status === 'CANCELLED' && filledPercent > 0 && (
-            <div className="mt-1.5 text-xs text-text-secondary">
+            <div className="mt-1.5 text-[10px] text-text-secondary font-numeral">
               Partially filled: {filledPercent.toFixed(1)}%
             </div>
           )}
@@ -242,7 +242,7 @@ function HistoryRow({ order }: HistoryRowProps) {
 
         {/* Completion Time */}
         <div className="text-right">
-          <span className="text-xs text-text-secondary">
+          <span className="text-[10px] text-text-secondary font-numeral">
             {formatTime(order.completedAt)}
           </span>
         </div>
@@ -259,8 +259,8 @@ function StatusBadge({ status }: { status: OrderHistoryType['status'] }) {
       label: 'Filled',
     },
     CANCELLED: {
-      bg: 'bg-amber-500/10',
-      text: 'text-amber-500',
+      bg: 'bg-steel-dim/10',
+      text: 'text-steel-dim',
       label: 'Cancelled',
     },
     EXPIRED: {
@@ -273,7 +273,7 @@ function StatusBadge({ status }: { status: OrderHistoryType['status'] }) {
   const { bg, text, label } = config[status];
 
   return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded ${bg} ${text}`}>
+    <span className={`text-[9px] font-imperial tracking-wider uppercase px-1.5 py-0.5 ${bg} ${text}`}>
       {label}
     </span>
   );

@@ -33,8 +33,8 @@ function ChartSkeleton() {
   return (
     <div className="w-full h-full flex items-center justify-center bg-container-bg">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-8 h-8 border-2 border-interactive-link border-t-transparent rounded-full animate-spin" />
-        <span className="text-text-secondary text-sm">Loading chart...</span>
+        <div className="w-8 h-8 border-2 border-steel-primary border-t-transparent animate-spin" />
+        <span className="text-text-secondary text-[10px] font-imperial tracking-wider uppercase">Loading chart...</span>
       </div>
     </div>
   );
@@ -50,12 +50,12 @@ function ChartError({ message, onRetry }: { message: string; onRetry: () => void
         <svg className="w-8 h-8 text-negative-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
-        <span className="text-text-secondary text-sm">{message}</span>
+        <span className="text-text-secondary text-xs">{message}</span>
         <button
           onClick={onRetry}
-          className="px-4 py-2 bg-container-bg-hover text-text-default text-sm rounded-lg
+          className="px-4 py-2 bg-container-bg-hover text-text-default text-[10px] font-imperial tracking-wider uppercase
                    hover:bg-container-bg-selected transition-colors duration-150
-                   focus:outline-none focus:ring-2 focus:ring-interactive-link/50"
+                   focus:outline-none focus:ring-1 focus:ring-steel-primary/50"
         >
           Retry
         </button>
@@ -74,7 +74,7 @@ function ChartEmpty() {
         <svg className="w-8 h-8 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
-        <span className="text-text-secondary text-sm">No chart data available</span>
+        <span className="text-text-secondary text-[10px] font-imperial tracking-wider uppercase">No chart data available</span>
       </div>
     </div>
   );
@@ -172,17 +172,17 @@ export const TradeView = ({ market }: TradeViewProps) => {
   }, [fetchKlineData, selectedTime]);
 
   return (
-    <div className="h-full bg-container-bg border-container-border rounded-xl border overflow-hidden flex flex-col">
+    <div className="h-full bg-container-bg border-container-border border overflow-hidden flex flex-col">
       {/* Header */}
       <div className="w-full py-2 px-3 flex items-center justify-between border-b border-container-border">
         {/* Market Pair */}
-        <div className="text-text-emphasis text-sm font-semibold">
+        <div className="text-text-emphasis text-xs font-imperial font-semibold tracking-wider">
           {base} / {quote}
         </div>
 
         {/* Time Interval Selector */}
         <div className="flex items-center gap-1">
-          <span className="text-text-secondary text-xs mr-2">Interval</span>
+          <span className="text-text-secondary text-[9px] font-imperial tracking-wider uppercase mr-2">Interval</span>
           {TIME_OPTIONS.map((option) => (
             <TimeButton
               key={option.value}
@@ -194,7 +194,7 @@ export const TradeView = ({ market }: TradeViewProps) => {
         </div>
 
         {/* Chart Type Indicator */}
-        <div className="text-text-secondary text-xs">
+        <div className="text-text-secondary text-[9px] font-imperial tracking-wider uppercase">
           TradingView
         </div>
       </div>
@@ -231,11 +231,11 @@ function TimeButton({
     <button
       onClick={onClick}
       className={`
-        px-2 py-1 text-xs rounded transition-all duration-150
-        focus:outline-none focus:ring-2 focus:ring-interactive-link/50
+        px-2 py-1 text-[10px] font-numeral transition-all duration-150
+        focus:outline-none focus:ring-1 focus:ring-steel-primary/50
         ${isSelected
-          ? "bg-container-bg-selected text-text-emphasis font-semibold"
-          : "text-text-secondary hover:text-text-default hover:bg-container-bg-hover"
+          ? "bg-container-bg-selected text-text-emphasis font-semibold border-b-2 border-steel-primary"
+          : "text-text-secondary hover:text-text-default hover:bg-container-bg-hover border-b-2 border-transparent"
         }
       `}
     >

@@ -63,33 +63,35 @@ export const MarketBar = ({ market }: MarketBarProps) => {
 
   return (
     <div className="inline-flex items-center justify-center w-full h-full thin-scroll">
-      {/* Market Selector - Imperial Style */}
-      <div className="h-full panel-imperial overflow-hidden flex items-center justify-center min-w-[160px] px-3 border-r border-imperial-gold-dim/30">
+      {/* Logo */}
+      <div className="h-full panel-imperial overflow-hidden flex items-center justify-center px-4 border-r border-grid">
+        <img src="/logo.png" alt="Testudo" className="h-6 w-auto" />
+      </div>
+
+      {/* Market Selector */}
+      <div className="h-full panel-imperial overflow-hidden flex items-center justify-center min-w-[140px] px-3 border-r border-grid">
         <MarketSelector currentMarket={market} />
       </div>
 
       {/* Price and Stats Section */}
       <div className="relative flex items-center justify-start w-full panel-imperial h-full hidden-scroll sm:thin-scroll">
-        {/* Gold accent line at top */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-imperial-gold/30 to-transparent" />
-
         <div className="flex justify-between sm:justify-start font-display whitespace-nowrap">
           <div className="flex flex-row items-center justify-between px-4 py-2 space-x-4 xl:space-x-5 xl:px-6 sm:py-0">
-            {/* Connection Indicator - Gold pulse */}
+            {/* Connection Indicator - Steel pulse */}
             <div className="outline-none focus:outline-none flex">
               <div className="flex flex-col">
-                <div className="block h-2 w-2 bg-imperial-gold animate-gold-pulse" />
+                <div className="block h-2 w-2 bg-steel-primary animate-steel-pulse" />
               </div>
             </div>
 
-            {/* Price Display - Large monospace */}
+            {/* Price Display - Monospace */}
             <div className="outline-none focus:outline-none flex mr-0 sm:mr-0">
               <div className="flex flex-col">
-                <div className="overflow-hidden text-xl text-text-emphasis font-numeral tracking-tight">
+                <div className="overflow-hidden text-text-emphasis font-numeral tracking-tight">
                   {isTickerLoading && !price ? (
-                    <Skeleton variant="text" width={100} height={28} />
+                    <Skeleton variant="text" width={80} height={20} />
                   ) : (
-                    <span className="text-[20px] leading-tight">
+                    <span className="text-[15px] leading-tight">
                       <span className="whitespace-nowrap">{displayPrice}</span>
                     </span>
                   )}
@@ -97,21 +99,21 @@ export const MarketBar = ({ market }: MarketBarProps) => {
               </div>
             </div>
 
-            {/* Price Change - Imperial colors */}
+            {/* Price Change */}
             <div className="outline-none focus:outline-none flex mr-20 sm:mr-0">
               <div className="flex flex-col left-10">
                 <div className="block overflow-hidden">
                   {isTickerLoading ? (
-                    <Skeleton variant="text" width={50} height={16} />
+                    <Skeleton variant="text" width={45} height={14} />
                   ) : (
-                    <span className="font-semibold text-[13px] leading-[16px] font-numeral">
+                    <span className="font-semibold text-[11px] leading-[14px] font-numeral">
                       <span
                         className={`flex items-center transition-colors duration-150 ${
                           priceChange.isPositive
-                            ? 'text-positive-green'
+                            ? 'text-signal-green'
                             : priceChange.isNegative
-                            ? 'text-negative-red'
-                            : 'text-text-secondary'
+                            ? 'text-signal-red'
+                            : 'text-grey'
                         }`}
                       >
                         {priceChange.text}
@@ -144,16 +146,16 @@ export const MarketBar = ({ market }: MarketBarProps) => {
 };
 
 /**
- * Imperial stat item with gold accent
+ * Stat item with industrial styling
  */
 function ImperialStatItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="px-3 xl:px-5 hidden md:flex flex-col justify-center border-l border-imperial-gold-dim/20">
+    <div className="px-3 xl:px-4 hidden md:flex flex-col justify-center border-l border-grid">
       <div className="flex flex-col">
-        <span className="text-[9px] leading-[10px] tracking-[.2em] text-imperial-gold-dim font-imperial">
+        <span className="text-[8px] leading-[10px] tracking-[.12em] text-grey-dim font-display uppercase">
           {label}
         </span>
-        <span className="font-semibold text-[14px] leading-[18px] text-text-default mt-0.5 font-numeral">
+        <span className="font-semibold text-[12px] leading-[16px] text-white mt-0.5 font-numeral">
           {value}
         </span>
       </div>
@@ -162,11 +164,11 @@ function ImperialStatItem({ label, value }: { label: string; value: string }) {
 }
 
 /**
- * Skeleton for imperial stat
+ * Skeleton for stat item
  */
 function ImperialStatSkeleton() {
   return (
-    <div className="px-3 xl:px-5 hidden md:flex flex-col justify-center border-l border-imperial-gold-dim/20">
+    <div className="px-3 xl:px-4 hidden md:flex flex-col justify-center border-l border-grid">
       <StatSkeleton />
     </div>
   );

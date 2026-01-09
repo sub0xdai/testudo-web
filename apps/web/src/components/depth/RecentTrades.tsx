@@ -50,14 +50,14 @@ export const RecentTrades = () => {
   return (
     <div className="h-full flex flex-col bg-container-bg">
       {/* Header */}
-      <div className="grid grid-cols-3 gap-4 py-2 px-3 border-b border-container-border text-text-secondary">
-        <span className="font-semibold text-[11px] leading-[14px] tracking-[0.15px] text-left uppercase">
+      <div className="grid grid-cols-3 gap-4 py-1.5 px-3 border-b border-container-border text-text-secondary">
+        <span className="font-imperial font-semibold text-[10px] leading-[12px] tracking-[0.1em] text-left uppercase">
           Price
         </span>
-        <span className="font-semibold text-[11px] leading-[14px] tracking-[0.15px] text-center uppercase">
+        <span className="font-imperial font-semibold text-[10px] leading-[12px] tracking-[0.1em] text-center uppercase">
           Size
         </span>
-        <span className="font-semibold text-[11px] leading-[14px] tracking-[0.15px] text-right uppercase">
+        <span className="font-imperial font-semibold text-[10px] leading-[12px] tracking-[0.1em] text-right uppercase">
           Time
         </span>
       </div>

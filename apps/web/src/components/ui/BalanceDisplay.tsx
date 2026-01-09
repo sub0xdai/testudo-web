@@ -48,7 +48,7 @@ export function BalanceDisplay({ market, currentPrice }: BalanceDisplayProps) {
         <span className="text-xs text-negative-red">{error}</span>
         <button
           onClick={refresh}
-          className="text-xs text-interactive-link hover:text-interactive-link-hover transition-colors"
+          className="text-xs text-steel-primary hover:text-steel-bright transition-colors"
         >
           Retry
         </button>
@@ -59,10 +59,10 @@ export function BalanceDisplay({ market, currentPrice }: BalanceDisplayProps) {
   return (
     <div className="flex flex-col gap-2" role="region" aria-label="Account balances" aria-live="polite">
       <div className="flex items-center justify-between text-xs text-text-secondary">
-        <span>Balances</span>
+        <span className="font-imperial text-[10px] tracking-wider uppercase">Balances</span>
         <button
           onClick={refresh}
-          className="text-interactive-link hover:text-interactive-link-hover transition-colors"
+          className="text-steel-primary hover:text-steel-bright transition-colors"
           aria-label="Refresh balances"
         >
           <RefreshIcon className="w-3.5 h-3.5" />
@@ -103,17 +103,17 @@ function BalanceItem({ asset, amount, usdValue, locked, isQuote = false }: Balan
   const hasLocked = locked > 0;
 
   return (
-    <div className="flex flex-col gap-1 p-2 bg-container-bg-hover/50 rounded-lg">
+    <div className="flex flex-col gap-1 p-2 bg-container-bg-hover/30 border border-container-border">
       <div className="flex items-center gap-1.5">
         <img
           src={`/${asset.toLowerCase()}.svg`}
           alt={asset}
-          className="w-4 h-4 rounded-full"
+          className="w-4 h-4"
           onError={(e) => {
             (e.target as HTMLImageElement).style.display = 'none';
           }}
         />
-        <span className="text-xs text-text-secondary">{asset}</span>
+        <span className="text-[10px] text-text-secondary font-imperial tracking-wider">{asset}</span>
       </div>
 
       <div className="font-numeral text-sm text-text-default">
@@ -125,7 +125,7 @@ function BalanceItem({ asset, amount, usdValue, locked, isQuote = false }: Balan
           {formatUSD(usdValue)}
         </span>
         {hasLocked && (
-          <span className="text-xs text-amber-500 font-numeral" title="Locked in orders">
+          <span className="text-[10px] text-steel-dim font-numeral" title="Locked in orders">
             {formatQuantity(locked)} locked
           </span>
         )}

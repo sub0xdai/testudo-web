@@ -1,32 +1,50 @@
+/* Google Fonts - Industrial Typography - MUST BE FIRST */
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ============================================
-   TESTUDO - Imperial Roman Trading Terminal
-   "The Senate meets the Terminal"
+   TESTUDO - INDUSTRIAL PROTOCOL
+   "The Machine Never Sleeps"
+   Modern Brutalist Trading Terminal
    ============================================ */
 
 :root {
-  /* Imperial color system */
-  --imperial-gold: #c5a059;
-  --imperial-gold-dim: #8b7340;
-  --imperial-gold-bright: #d4b06a;
-  --obsidian: #0a0a0c;
-  --slate: #121214;
-  --charcoal: #1c1c1e;
-  --marble: #f5f5f0;
-  --laurel: #3a7f5d;
-  --tyrian: #990011;
+  /* === THE INDUSTRIAL PALETTE === */
 
-  /* Typography */
-  font-family: 'Inter', system-ui, sans-serif;
-  line-height: 1.5;
+  /* Core Backgrounds - The Void */
+  --bg-core: #050505;
+  --bg-panel: #0A0A0A;
+  --bg-elevated: #111111;
+  --bg-hover: #1A1A1A;
+
+  /* The Grid - Visible Structure */
+  --border-color: #333333;
+  --border-active: #FFFFFF;
+  --border-width: 2px;
+
+  /* Signal Colors - Maximum Impact */
+  --signal-green: #00FF41;
+  --signal-red: #FF003C;
+  --signal-orange: #FF5F00;
+  --white: #FFFFFF;
+  --grey: #A0A0A0;
+  --grey-dim: #686868;
+
+  /* Typography - Industrial Fonts */
+  --font-display: 'Unbounded', 'Archivo Black', system-ui, sans-serif;
+  --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
+
+  /* Root Styles */
+  font-family: var(--font-mono);
+  line-height: 1.4;
   font-weight: 400;
 
   color-scheme: dark;
-  color: var(--marble);
-  background-color: var(--obsidian);
+  color: var(--white);
+  background-color: var(--bg-core);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -35,60 +53,84 @@
 }
 
 /* ============================================
-   BASE LAYER - Imperial Foundation
+   BASE LAYER - Industrial Foundation
    ============================================ */
 
 @layer base {
-  /* Remove all rounded corners globally */
+  /* HARD EDGES - No curves anywhere */
   * {
     border-radius: 0 !important;
   }
 
-  /* Imperial selection color */
+  /* Selection - Signal Green */
   ::selection {
-    background: rgba(197, 160, 89, 0.3);
-    color: var(--marble);
+    background: var(--signal-green);
+    color: var(--bg-core);
   }
 
-  /* Scrollbar styling - Imperial gold accent */
+  /* Scrollbar - Industrial Minimal */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: var(--slate);
+    background: var(--bg-core);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: var(--imperial-gold-dim);
-    border: 1px solid var(--slate);
+    background: var(--border-color);
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--imperial-gold);
+    background: var(--grey);
   }
 
-  /* Focus states - Gold outline */
+  /* Focus States - High Visibility */
   :focus-visible {
-    outline: 1px solid var(--imperial-gold);
+    outline: 2px solid var(--signal-green);
     outline-offset: 2px;
   }
 
-  /* Input reset */
+  /* Global Typography */
+  body {
+    font-family: var(--font-mono);
+    background-color: var(--bg-core);
+    color: var(--white);
+  }
+
+  /* Headers - Heavy Industrial */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    color: var(--white);
+  }
+
+  /* All UI Labels - Display Font */
+  button, label {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  /* Data/Inputs - Monospace */
   input, select, textarea {
+    font-family: var(--font-mono);
     background: transparent;
     border: none;
-    border-bottom: 1px solid var(--imperial-gold-dim);
-    transition: border-color 0.2s ease;
+    border-bottom: 3px solid var(--border-color);
+    color: var(--white);
+    transition: border-color 0s; /* Instant, no fade */
   }
 
   input:focus, select:focus, textarea:focus {
-    border-bottom-color: var(--imperial-gold);
+    border-bottom-color: var(--signal-green);
     outline: none;
   }
 
-  /* Number input - hide spinners */
+  /* Number inputs - hide spinners */
   input[type="number"]::-webkit-inner-spin-button,
   input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
@@ -101,172 +143,328 @@
 }
 
 /* ============================================
-   COMPONENT LAYER - Imperial Elements
+   COMPONENT LAYER - Industrial Elements
    ============================================ */
 
 @layer components {
-  /* Imperial serif headers */
-  .imperial-header {
-    font-family: 'Cinzel', 'Times New Roman', serif;
-    font-weight: 600;
-    letter-spacing: 0.15em;
+  /* Industrial Header - Massive & Aggressive */
+  .industrial-header {
+    font-family: var(--font-display);
+    font-weight: 800;
     text-transform: uppercase;
-    color: var(--marble);
+    letter-spacing: -0.02em;
+    color: var(--white);
   }
 
-  /* Gold inscription text */
+  /* Legacy alias */
+  .imperial-header {
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    color: var(--white);
+  }
+
+  /* Industrial Label - Smaller but sharp */
+  .industrial-label {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--grey);
+  }
+
+  /* Legacy alias */
   .imperial-inscription {
-    font-family: 'Cinzel', serif;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    color: var(--imperial-gold);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--grey);
   }
 
-  /* Monospace data display */
-  .imperial-data {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 500;
+  /* Monospace Data Display */
+  .font-numeral, .industrial-data, .imperial-data {
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
   }
 
-  /* Double border - Column effect */
+  /* Thick Grid Border */
+  .industrial-border {
+    border: 2px solid var(--border-color);
+  }
+
+  /* Legacy alias */
   .imperial-border {
-    border: 1px solid var(--imperial-gold-dim);
-    box-shadow: inset 0 0 0 1px rgba(197, 160, 89, 0.1);
+    border: 2px solid var(--border-color);
   }
 
-  .imperial-border-double {
-    border: 2px solid var(--imperial-gold-dim);
-    box-shadow:
-      inset 0 0 0 3px var(--slate),
-      inset 0 0 0 4px var(--imperial-gold-dim);
+  /* Industrial Panel - Exposed Grid */
+  .panel-industrial {
+    background: var(--bg-panel);
+    border: 2px solid var(--border-color);
   }
 
-  /* Metallic gradient button */
-  .btn-imperial {
-    background: linear-gradient(135deg, var(--imperial-gold) 0%, var(--imperial-gold-dim) 50%, var(--imperial-gold) 100%);
-    color: var(--obsidian);
-    font-family: 'Cinzel', serif;
-    font-weight: 600;
-    letter-spacing: 0.1em;
+  /* Legacy alias */
+  .panel-imperial {
+    background: var(--bg-panel);
+    border: 2px solid var(--border-color);
+  }
+
+  /* Industrial Divider - Thick line */
+  .divider-industrial {
+    height: 2px;
+    background: var(--border-color);
+  }
+
+  /* Legacy alias */
+  .divider-imperial {
+    height: 2px;
+    background: var(--border-color);
+  }
+
+  /* === BUTTONS - Solid Blocks with Inversion === */
+
+  /* Base Industrial Button */
+  .btn-industrial {
+    background: transparent;
+    border: 2px solid var(--white);
+    color: var(--white);
+    font-family: var(--font-display);
+    font-weight: 700;
     text-transform: uppercase;
-    padding: 0.75rem 1.5rem;
-    border: none;
-    transition: all 0.2s ease;
+    letter-spacing: 0.02em;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: all 0s; /* INSTANT - no fade */
+  }
+
+  .btn-industrial:hover {
+    background: var(--white);
+    color: var(--bg-core);
+  }
+
+  /* Legacy alias */
+  .btn-imperial {
+    background: transparent;
+    border: 2px solid var(--white);
+    color: var(--white);
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    transition: all 0s;
   }
 
   .btn-imperial:hover {
-    background: linear-gradient(135deg, var(--imperial-gold-bright) 0%, var(--imperial-gold) 50%, var(--imperial-gold-bright) 100%);
-    box-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
+    background: var(--white);
+    color: var(--bg-core);
   }
 
-  /* Acquire (Buy) button */
+  /* ACQUIRE (Buy) - Signal Green */
   .btn-acquire {
-    background: linear-gradient(135deg, #3a7f5d 0%, #2d6349 50%, #4a9970 100%);
-    color: var(--marble);
-    font-family: 'Cinzel', serif;
-    font-weight: 600;
-    letter-spacing: 0.1em;
+    background: transparent;
+    border: 2px solid var(--signal-green);
+    color: var(--signal-green);
+    font-family: var(--font-display);
+    font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.02em;
+    transition: all 0s;
   }
 
   .btn-acquire:hover {
-    background: linear-gradient(135deg, #4a9970 0%, #3a7f5d 50%, #4a9970 100%);
-    box-shadow: 0 0 20px rgba(58, 127, 93, 0.3);
+    background: var(--signal-green);
+    color: var(--bg-core);
   }
 
-  /* Liquidate (Sell) button */
+  .btn-acquire:disabled {
+    border-color: var(--grey-dim);
+    color: var(--grey-dim);
+    cursor: not-allowed;
+  }
+
+  /* LIQUIDATE (Sell) - Signal Red */
   .btn-liquidate {
-    background: linear-gradient(135deg, #990011 0%, #7a000e 50%, #b31a2b 100%);
-    color: var(--marble);
-    font-family: 'Cinzel', serif;
-    font-weight: 600;
-    letter-spacing: 0.1em;
+    background: transparent;
+    border: 2px solid var(--signal-red);
+    color: var(--signal-red);
+    font-family: var(--font-display);
+    font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.02em;
+    transition: all 0s;
   }
 
   .btn-liquidate:hover {
-    background: linear-gradient(135deg, #b31a2b 0%, #990011 50%, #b31a2b 100%);
-    box-shadow: 0 0 20px rgba(153, 0, 17, 0.3);
+    background: var(--signal-red);
+    color: var(--white);
   }
 
-  /* Imperial input field - inscription style */
+  .btn-liquidate:disabled {
+    border-color: var(--grey-dim);
+    color: var(--grey-dim);
+    cursor: not-allowed;
+  }
+
+  /* Industrial Input - Thick Bottom Border */
+  .input-industrial {
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid var(--border-color);
+    padding: 12px 0;
+    font-family: var(--font-mono);
+    color: var(--white);
+    transition: border-color 0s;
+  }
+
+  .input-industrial:focus {
+    border-bottom-color: var(--signal-green);
+    outline: none;
+  }
+
+  .input-industrial::placeholder {
+    color: var(--grey-dim);
+    text-transform: uppercase;
+    font-family: var(--font-display);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Legacy alias */
   .input-imperial {
     background: transparent;
     border: none;
-    border-bottom: 1px solid var(--imperial-gold-dim);
-    padding: 0.75rem 0;
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--marble);
-    transition: border-color 0.2s ease;
+    border-bottom: 3px solid var(--border-color);
+    padding: 12px 0;
+    font-family: var(--font-mono);
+    color: var(--white);
+    transition: border-color 0s;
   }
 
   .input-imperial:focus {
-    border-bottom-color: var(--imperial-gold);
+    border-bottom-color: var(--signal-green);
     outline: none;
   }
 
   .input-imperial::placeholder {
-    color: rgba(168, 168, 160, 0.5);
+    color: var(--grey-dim);
   }
 
-  /* Imperial panel */
-  .panel-imperial {
-    background: var(--slate);
-    border: 1px solid rgba(197, 160, 89, 0.2);
-    box-shadow:
-      inset 0 1px 0 rgba(197, 160, 89, 0.05),
-      0 4px 20px rgba(0, 0, 0, 0.3);
+  /* Tab Active - Thick underline */
+  .tab-active {
+    border-bottom: 3px solid var(--signal-green);
+    color: var(--white);
   }
 
-  /* Gold separator line */
-  .divider-imperial {
-    height: 1px;
-    background: linear-gradient(90deg, transparent 0%, var(--imperial-gold-dim) 50%, transparent 100%);
-  }
-
-  /* Keystone shape for spread */
-  .keystone {
-    clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
-  }
-
-  /* Thin scroll */
+  /* Thin scroll utility */
   .thin-scroll::-webkit-scrollbar {
     width: 4px;
   }
 }
 
 /* ============================================
-   UTILITY LAYER - Imperial Modifiers
+   UTILITY LAYER - Industrial Modifiers
    ============================================ */
 
 @layer utilities {
-  /* Text utilities */
-  .text-gold { color: var(--imperial-gold); }
-  .text-gold-dim { color: var(--imperial-gold-dim); }
-  .text-marble { color: var(--marble); }
-  .text-laurel { color: var(--laurel); }
-  .text-tyrian { color: var(--tyrian); }
+  /* Signal Colors */
+  .text-signal-green { color: var(--signal-green); }
+  .text-signal-red { color: var(--signal-red); }
+  .text-signal-orange { color: var(--signal-orange); }
 
-  /* Background utilities */
-  .bg-obsidian { background-color: var(--obsidian); }
-  .bg-slate { background-color: var(--slate); }
-  .bg-charcoal { background-color: var(--charcoal); }
+  /* Greyscale */
+  .text-white { color: var(--white); }
+  .text-grey { color: var(--grey); }
+  .text-grey-dim { color: var(--grey-dim); }
 
-  /* Border utilities */
-  .border-gold { border-color: var(--imperial-gold); }
-  .border-gold-dim { border-color: var(--imperial-gold-dim); }
+  /* Legacy aliases */
+  .text-steel { color: var(--grey); }
+  .text-steel-dim { color: var(--grey-dim); }
+  .text-steel-bright { color: var(--white); }
+  .text-steel-primary { color: var(--grey); }
+  .text-gold { color: var(--grey); }
 
-  /* Tracking for serif headers */
-  .tracking-imperial { letter-spacing: 0.15em; }
+  /* Backgrounds */
+  .bg-void { background-color: var(--bg-core); }
+  .bg-panel { background-color: var(--bg-panel); }
+  .bg-elevated { background-color: var(--bg-elevated); }
 
-  /* Gold glow effect */
-  .glow-gold {
-    box-shadow: 0 0 20px rgba(197, 160, 89, 0.2);
+  /* Legacy aliases */
+  .bg-obsidian { background-color: var(--bg-core); }
+  .bg-slate { background-color: var(--bg-panel); }
+  .bg-charcoal { background-color: var(--bg-elevated); }
+
+  /* Borders */
+  .border-grid { border-color: var(--border-color); }
+  .border-active { border-color: var(--border-active); }
+  .border-signal-green { border-color: var(--signal-green); }
+  .border-signal-red { border-color: var(--signal-red); }
+
+  /* Legacy aliases */
+  .border-steel { border-color: var(--border-color); }
+  .border-steel-dim { border-color: var(--border-color); }
+  .border-gold { border-color: var(--border-color); }
+
+  /* Industrial Typography */
+  .font-display { font-family: var(--font-display); }
+  .font-mono { font-family: var(--font-mono); }
+  .tracking-industrial { letter-spacing: -0.02em; }
+  .tracking-tight { letter-spacing: -0.01em; }
+
+  /* Legacy aliases */
+  .font-imperial { font-family: var(--font-display); }
+  .tracking-imperial { letter-spacing: 0.02em; }
+
+  /* Signal Glow Effects */
+  .glow-green {
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.4);
   }
 
-  /* Imperial gradient overlay */
-  .imperial-overlay {
-    background: linear-gradient(180deg, rgba(197, 160, 89, 0.05) 0%, transparent 100%);
+  .glow-red {
+    box-shadow: 0 0 20px rgba(255, 0, 60, 0.4);
   }
+
+  /* Legacy aliases */
+  .glow-steel { box-shadow: none; }
+  .glow-gold { box-shadow: none; }
+  .imperial-overlay { background: none; }
+  .steel-overlay { background: none; }
+}
+
+/* ============================================
+   COMPONENT OVERRIDES - Buy/Sell Specific
+   ============================================ */
+
+/* Buy Side Indicator */
+.bg-metallic-green {
+  background: var(--signal-green);
+}
+
+/* Sell Side Indicator */
+.bg-metallic-red {
+  background: var(--signal-red);
+}
+
+/* Status Indicators - Square not Circle */
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  background: var(--signal-green);
+}
+
+.status-indicator.offline {
+  background: var(--signal-red);
+}
+
+.status-indicator.connecting {
+  background: var(--signal-orange);
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }

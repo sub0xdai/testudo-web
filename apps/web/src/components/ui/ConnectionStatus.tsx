@@ -1,5 +1,6 @@
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { TradesContext, ConnectionStatus as ConnectionStatusType } from '../../state/TradesProvider';
+import { WsManager } from '../../utils/ws_manager';
 
 interface StatusConfig {
   color: string;
@@ -8,10 +9,15 @@ interface StatusConfig {
   animate: boolean;
 }
 
+interface ReconnectionInfo {
+  attempts: number;
+  nextDelay: number;
+}
+
 const STATUS_CONFIG: Record<ConnectionStatusType, StatusConfig> = {
   connecting: {
-    color: 'bg-yellow-500',
-    bgColor: 'bg-yellow-500/20',
+    color: 'bg-steel-primary',
+    bgColor: 'bg-steel-primary/20',
     label: 'Connecting...',
     animate: true,
   },
@@ -86,26 +92,64 @@ export function ConnectionStatus({ showLabel = false, size = 'sm' }: ConnectionS
 }
 
 /**
- * Inline connection status badge
+ * Inline connection status badge with reconnection info
  */
 export function ConnectionBadge() {
   const { connectionStatus } = useContext(TradesContext);
+  const [reconnectInfo, setReconnectInfo] = useState<ReconnectionInfo>({ attempts: 0, nextDelay: 1000 });
 
   const config = STATUS_CONFIG[connectionStatus];
+
+  // Poll reconnection info when disconnected or in error state
+  useEffect(() => {
+    if (connectionStatus !== 'disconnected' && connectionStatus !== 'error' && connectionStatus !== 'connecting') {
+      return;
+    }
+
+    const updateReconnectInfo = () => {
+      const ws = WsManager.getInstance();
+      setReconnectInfo(ws.getReconnectionInfo());
+    };
+
+    updateReconnectInfo();
+    const interval = setInterval(updateReconnectInfo, 1000);
+    return () => clearInterval(interval);
+  }, [connectionStatus]);
 
   if (connectionStatus === 'connected') {
     return null; // Don't show badge when connected (clean UI)
   }
 
+  const showAttempts = reconnectInfo.attempts > 0 && (connectionStatus === 'disconnected' || connectionStatus === 'error');
+
   return (
     <div
       className={`
-        inline-flex items-center gap-1.5 px-2 py-1 rounded-full
-        ${config.bgColor} text-text-default text-xs
+        inline-flex items-center gap-2 px-3 py-1.5
+        ${config.bgColor} text-text-default text-xs font-imperial tracking-wider uppercase
+        border border-steel-dim/30
       `}
     >
-      <span className={`w-1.5 h-1.5 rounded-full ${config.color}`} />
-      {config.label}
+      <div className="relative">
+        {config.animate && (
+          <span className={`absolute inline-flex h-full w-full ${config.color} opacity-75 animate-ping`} />
+        )}
+        <span className={`relative w-2 h-2 ${config.color} inline-block`} />
+      </div>
+      <span>{config.label}</span>
+      {showAttempts && (
+        <span className="text-text-secondary font-numeral text-[10px] normal-case">
+          (Attempt {reconnectInfo.attempts})
+        </span>
+      )}
+      {connectionStatus !== 'connecting' && (
+        <button
+          onClick={() => WsManager.getInstance().reconnect()}
+          className="ml-1 text-steel-primary hover:text-steel-bright transition-colors text-[10px] font-imperial tracking-wider"
+        >
+          RETRY
+        </button>
+      )}
     </div>
   );
 }

@@ -45,10 +45,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
       // Default error UI
       return (
-        <div className="flex items-center justify-center min-h-[200px] bg-container-bg rounded-xl border border-container-border p-6">
+        <div className="flex items-center justify-center min-h-[200px] bg-container-bg border border-container-border p-6">
           <div className="flex flex-col items-center gap-4 text-center max-w-md">
             {/* Error Icon */}
-            <div className="w-12 h-12 rounded-full bg-negative-red/20 flex items-center justify-center">
+            <div className="w-12 h-12 bg-negative-red/20 flex items-center justify-center">
               <svg
                 className="w-6 h-6 text-negative-red"
                 fill="none"
@@ -66,10 +66,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
             {/* Error Message */}
             <div className="space-y-2">
-              <h3 className="text-text-emphasis font-semibold text-lg">
+              <h3 className="text-text-emphasis font-imperial font-semibold tracking-wider uppercase text-base">
                 Something went wrong
               </h3>
-              <p className="text-text-secondary text-sm">
+              <p className="text-text-secondary text-xs">
                 {this.state.error?.message || 'An unexpected error occurred'}
               </p>
             </div>
@@ -77,9 +77,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             {/* Retry Button */}
             <button
               onClick={this.handleRetry}
-              className="px-4 py-2 bg-interactive-link text-white text-sm rounded-lg
-                       hover:bg-interactive-link-hover transition-colors duration-150
-                       focus:outline-none focus:ring-2 focus:ring-interactive-link/50"
+              className="px-4 py-2 bg-steel-primary text-main-bg text-[10px] font-imperial font-semibold tracking-wider uppercase
+                       hover:bg-steel-bright transition-colors duration-150
+                       focus:outline-none focus:ring-1 focus:ring-steel-primary/50"
             >
               Try Again
             </button>

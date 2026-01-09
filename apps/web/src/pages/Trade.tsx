@@ -65,8 +65,9 @@ export const Trade = () => {
       <a
         href="#main-trading"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50
-                   focus:px-4 focus:py-2 focus:bg-interactive-link focus:text-white focus:rounded-lg
-                   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-interactive-link"
+                   focus:px-4 focus:py-2 focus:bg-steel-primary focus:text-main-bg
+                   focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-steel-primary
+                   font-imperial text-[10px] tracking-wider uppercase"
       >
         Skip to trading interface
       </a>
@@ -187,7 +188,7 @@ export const Trade = () => {
 };
 
 /**
- * Tab button for orders panel with proper ARIA attributes
+ * Tab button for orders panel - Legionary steel underline style
  */
 function OrdersTabButton({
   id,
@@ -213,18 +214,19 @@ function OrdersTabButton({
       tabIndex={isActive ? 0 : -1}
       onClick={onClick}
       className={`
-        flex-1 py-2.5 px-4 text-sm font-medium transition-colors relative
-        focus:outline-none focus:ring-2 focus:ring-inset focus:ring-interactive-link/50
+        flex-1 py-2.5 px-4 text-xs font-imperial font-semibold tracking-wider uppercase
+        transition-colors relative
+        focus:outline-none focus:ring-1 focus:ring-steel-primary/50
         ${isActive
-          ? 'text-text-default border-b-2 border-interactive-link bg-container-bg-hover/30'
-          : 'text-text-secondary hover:text-text-default hover:bg-container-bg-hover/20'
+          ? 'text-text-default border-b-2 border-steel-primary'
+          : 'text-text-secondary hover:text-text-default border-b-2 border-transparent'
         }
       `}
     >
       <span className="flex items-center justify-center gap-1.5">
         {label}
         {badge !== undefined && badge > 0 && (
-          <span className="px-1.5 py-0.5 text-[10px] bg-interactive-link/20 text-interactive-link rounded-full">
+          <span className="px-1.5 py-0.5 text-[10px] bg-steel-primary/20 text-steel-primary font-numeral">
             {badge}
           </span>
         )}

@@ -7,76 +7,79 @@ export default {
   theme: {
     extend: {
       colors: {
-        // === IMPERIAL ROMAN PALETTE ===
+        // === INDUSTRIAL BRUTALIST PALETTE ===
+        // "The Machine" - Raw, functional, aggressive
 
-        // Background colors - Deep Obsidian/Slate
-        'main-bg': '#0a0a0c',
-        'container-bg': '#121214',
-        'container-bg-hover': '#1c1c1e',
-        'container-bg-selected': '#28282c',
-        'container-bg-tweet': '#111d2e',
-        'container-border': '#2a2a2e',
+        // Core Backgrounds - The Void
+        'main-bg': '#050505',
+        'container-bg': '#0A0A0A',
+        'container-bg-hover': '#111111',
+        'container-bg-selected': '#1A1A1A',
+        'panel-bg': '#0A0A0A',
 
-        // Primary Accent - Antiqued Gold
-        'imperial-gold': '#c5a059',
-        'imperial-gold-dim': '#8b7340',
-        'imperial-gold-bright': '#d4b06a',
+        // The Grid - Thick visible structure
+        'container-border': '#333333',
+        'border-thick': '#333333',
+        'border-active': '#FFFFFF',
 
-        // Positive (Laurel Green/Emerald) - Muted, Regal
-        'positive-green': '#3a7f5d',
-        'positive-green-hover': '#4a9970',
-        'positive-green-pressed': '#2d6349',
-        'positive-green-bg': '#0d1a14',
+        // Signal Green - Terminal / Buy
+        'signal-green': '#00FF41',
+        'positive-green': '#00FF41',
+        'positive-green-hover': '#00CC33',
+        'positive-green-pressed': '#009926',
+        'positive-green-bg': '#001A0A',
 
-        // Negative (Pompeian Red/Tyrian) - Deep Crimson
-        'negative-red': '#990011',
-        'negative-red-hover': '#b31a2b',
-        'negative-red-pressed': '#7a000e',
-        'negative-red-bg': '#1a0a0c',
+        // Signal Red - Reactor / Sell
+        'signal-red': '#FF003C',
+        'signal-orange': '#FF5F00',
+        'negative-red': '#FF003C',
+        'negative-red-hover': '#CC0030',
+        'negative-red-pressed': '#990024',
+        'negative-red-bg': '#1A0008',
 
-        // Tooltip
-        'tooltip-bg': '#1a1a1e',
+        // Text - Maximum Contrast
+        'text-default': '#FFFFFF',
+        'text-primary': '#FFFFFF',
+        'text-secondary': '#888888',
+        'text-tertiary': '#555555',
+        'text-disabled': '#333333',
+        'text-emphasis': '#FFFFFF',
+        'text-inverted': '#050505',
 
-        // Text colors - Marble White
-        'text-default': '#f5f5f0',
-        'text-selected': '#0a0a0c',
-        'text-inverted-selected': '#000',
-        'text-secondary': '#a8a8a0',
-        'text-tertiary': '#6e6e68',
-        'text-disabled': '#404040',
-        'text-emphasis': '#fafaf5',
-        'text-positive-green-button': '#c5e0d0',
-        'text-negative-red-button': '#f0d0d4',
+        // Interactive
+        'interactive-link': '#00FF41',
+        'interactive-link-hover': '#FFFFFF',
 
-        // Interactive colors - Gold-tinted
-        'interactive-link': '#c5a059',
-        'interactive-link-hover': '#d4b06a',
-        'text-interactive': '#a08050',
+        // Input
+        'input-bg': '#0A0A0A',
+        'input-border': '#333333',
+        'input-border-focus': '#00FF41',
 
-        // Input colors
-        'input-bg': '#18181a',
-        'input-border': '#c5a059',
-        'input-border-dim': '#3a3a3e',
-
-        // Static colors
-        'static-default': '#f5f5f0',
+        // Legacy aliases for migration
+        'steel-primary': '#888888',
+        'steel-dim': '#555555',
+        'steel-bright': '#FFFFFF',
+        'imperial-gold': '#888888',
       },
       fontFamily: {
-        // Imperial serif for headers - carved stone inscriptions
-        imperial: ['Cinzel', 'Trajan Pro', 'Times New Roman', 'serif'],
-        // Technical monospace for data - terminal precision
-        numeral: ['JetBrains Mono', 'SF Mono', 'Menlo', 'Courier New', 'monospace'],
-        // Clean geometric sans for UI labels
-        display: ['Inter', 'system-ui', 'sans-serif'],
+        // Industrial Display - Heavy, aggressive
+        display: ['Unbounded', 'Archivo Black', 'system-ui', 'sans-serif'],
+        // Technical Monospace - Terminal precision
+        mono: ['Space Mono', 'JetBrains Mono', 'SF Mono', 'monospace'],
+        numeral: ['Space Mono', 'JetBrains Mono', 'monospace'],
+        // Legacy
+        imperial: ['Unbounded', 'system-ui', 'sans-serif'],
       },
       fontWeight: {
         normal: '400',
         medium: '500',
         semibold: '600',
         bold: '700',
+        heavy: '800',
+        black: '900',
       },
       borderRadius: {
-        // Imperial decree: NO rounded corners. Sharp 90° angles only.
+        // INDUSTRIAL DECREE: NO CURVES. HARD 90-DEGREE ANGLES ONLY.
         'none': '0',
         DEFAULT: '0',
         'sm': '0',
@@ -87,6 +90,14 @@ export default {
         '3xl': '0',
         'full': '0',
       },
+      borderWidth: {
+        DEFAULT: '1px',
+        '0': '0',
+        '1': '1px',
+        '2': '2px',
+        '3': '3px',
+        '4': '4px',
+      },
       padding: {
         'l': '16px',
         's': '8px',
@@ -94,31 +105,41 @@ export default {
         'xl': '32px',
       },
       boxShadow: {
-        'imperial': '0 0 0 1px #c5a059',
-        'imperial-glow': '0 0 20px rgba(197, 160, 89, 0.15)',
-        'imperial-inset': 'inset 0 1px 0 rgba(197, 160, 89, 0.1)',
+        'none': 'none',
+        'grid': '0 0 0 2px #333333',
+        'grid-active': '0 0 0 2px #FFFFFF',
+        'signal-green': '0 0 20px rgba(0, 255, 65, 0.3)',
+        'signal-red': '0 0 20px rgba(255, 0, 60, 0.3)',
+        // Legacy
+        'steel': '0 0 0 2px #333333',
+        'imperial': '0 0 0 2px #333333',
       },
       backgroundImage: {
-        'imperial-gradient': 'linear-gradient(180deg, rgba(197, 160, 89, 0.08) 0%, transparent 100%)',
-        'metallic-gold': 'linear-gradient(135deg, #c5a059 0%, #8b7340 50%, #c5a059 100%)',
-        'metallic-green': 'linear-gradient(135deg, #3a7f5d 0%, #2d6349 50%, #4a9970 100%)',
-        'metallic-red': 'linear-gradient(135deg, #990011 0%, #7a000e 50%, #b31a2b 100%)',
+        'none': 'none',
+        // No gradients in brutalism - solid colors only
+      },
+      letterSpacing: {
+        'tighter': '-0.05em',
+        'tight': '-0.025em',
+        'normal': '0',
+        'wide': '0.025em',
+        'wider': '0.05em',
+        'widest': '0.1em',
+        'industrial': '-0.02em',
       },
       animation: {
-        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'shimmer': 'shimmer 2s ease-in-out infinite',
-        'spin': 'spin 1s linear infinite',
-        'gold-pulse': 'goldPulse 3s ease-in-out infinite',
+        'none': 'none',
+        'pulse-signal': 'pulseSignal 1s ease-in-out infinite',
+        'blink': 'blink 1s step-end infinite',
       },
       keyframes: {
-        shimmer: {
-          '0%': { opacity: '1' },
+        pulseSignal: {
+          '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.5' },
-          '100%': { opacity: '1' },
         },
-        goldPulse: {
-          '0%, 100%': { boxShadow: '0 0 0 1px rgba(197, 160, 89, 0.3)' },
-          '50%': { boxShadow: '0 0 0 1px rgba(197, 160, 89, 0.6)' },
+        blink: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0' },
         },
       },
     },

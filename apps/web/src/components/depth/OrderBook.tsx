@@ -137,14 +137,14 @@ export const OrderBook = () => {
         <div className="flex flex-col h-full text-text-label bg-container-bg xs:min-h-[25vh] md:min-h-0">
           {/* Header */}
           <div
-            className="flex justify-between text-xs px-2 py-1 text-text-secondary border-b border-container-border"
+            className="flex justify-between text-xs px-2 py-1.5 text-text-secondary border-b border-container-border"
             role="row"
             aria-label="Order book column headers"
           >
-            <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px]" role="columnheader">
+            <span className="font-imperial font-semibold text-[10px] leading-[12px] tracking-[0.1em] uppercase" role="columnheader">
               Price
             </span>
-            <span className="font-semibold text-[12px] leading-[14px] tracking-[0.15px]" role="columnheader">
+            <span className="font-imperial font-semibold text-[10px] leading-[12px] tracking-[0.1em] uppercase" role="columnheader">
               Size
             </span>
           </div>
@@ -182,7 +182,7 @@ export const OrderBook = () => {
             </div>
 
             {/* Spread / Current Price Row */}
-            <div className="relative w-full px-2 inline-flex justify-between items-center min-h-[28px] bg-container-bg-hover text-text-default z-20 border-y border-container-border">
+            <div className="relative w-full px-2 inline-flex justify-between items-center min-h-[28px] bg-container-bg-hover/50 text-text-default z-20 border-y border-container-border">
               <div className="flex items-center space-x-2">
                 <span className="font-semibold text-[14px] leading-[16px] text-text-emphasis font-numeral">
                   {formatUSD(price)}
@@ -190,10 +190,10 @@ export const OrderBook = () => {
               </div>
               <button
                 onClick={handleRecenter}
-                className="text-interactive-link hover:text-interactive-link-hover transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-interactive-link/50 rounded px-1"
+                className="text-steel-primary hover:text-steel-bright transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-steel-primary/50 px-1"
                 aria-label="Re-center order book"
               >
-                <span className="font-semibold text-[11px] leading-[12px] tracking-[.15px]">
+                <span className="font-imperial font-semibold text-[9px] leading-[10px] tracking-[0.1em] uppercase">
                   Re-center
                 </span>
               </button>

@@ -9,6 +9,11 @@ interface CallbackEntry {
   id: string;
 }
 
+interface SubscriptionEntry {
+  type: string;
+  params: string[];
+}
+
 const INITIAL_RECONNECT_DELAY = 1000;
 const MAX_RECONNECT_DELAY = 30000;
 const RECONNECT_MULTIPLIER = 2;
@@ -22,6 +27,7 @@ export class WsManager {
   private bufferedMessages: unknown[] = [];
   private callbacks: Record<string, CallbackEntry[]> = {};
   private connectionCallbacks: Set<ConnectionCallback> = new Set();
+  private activeSubscriptions: Map<string, SubscriptionEntry> = new Map();
   private id: number = 1;
   private initialized: boolean = false;
   private connectionState: ConnectionState = 'disconnected';
@@ -172,37 +178,53 @@ export class WsManager {
   }
 
   private resubscribeAll(): void {
-    // Re-send subscription messages for all registered callbacks
-    const subscriptionTypes = Object.keys(this.callbacks);
+    // Re-send subscription messages for all tracked subscriptions
+    if (this.activeSubscriptions.size === 0) {
+      return;
+    }
 
-    subscriptionTypes.forEach((type) => {
-      if (this.callbacks[type].length > 0) {
-        // Determine the correct subscription params based on type
-        let params: string[] = [];
-        if (type === 'depth') {
-          params = ['depth.SOL_USDC'];
-        } else if (type === 'trade') {
-          params = ['trade.SOL_USDC'];
-        }
+    // Group subscriptions by batch for efficiency
+    const allParams = Array.from(this.activeSubscriptions.keys());
 
-        if (params.length > 0) {
-          this.sendMessage({
-            method: 'SUBSCRIBE',
-            params,
-          });
-        }
+    // Send in batches of 10 to avoid message size issues
+    const batchSize = 10;
+    for (let i = 0; i < allParams.length; i += batchSize) {
+      const batch = allParams.slice(i, i + batchSize);
+      // Directly send without tracking (already tracked)
+      const messageToSend = {
+        method: 'SUBSCRIBE',
+        params: batch,
+        id: this.id++,
+      };
+
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        this.ws.send(JSON.stringify(messageToSend));
       }
-    });
+    }
   }
 
   /**
    * Send a message through the WebSocket
+   * Tracks subscriptions for automatic resubscription on reconnect
    */
   sendMessage(message: unknown): void {
+    const msg = message as { method?: string; params?: string[] };
     const messageToSend = {
-      ...(message as object),
+      ...msg,
       id: this.id++,
     };
+
+    // Track subscriptions for reconnection
+    if (msg.method === 'SUBSCRIBE' && msg.params) {
+      for (const param of msg.params) {
+        const [type] = param.split('.');
+        this.activeSubscriptions.set(param, { type, params: [param] });
+      }
+    } else if (msg.method === 'UNSUBSCRIBE' && msg.params) {
+      for (const param of msg.params) {
+        this.activeSubscriptions.delete(param);
+      }
+    }
 
     if (!this.initialized || this.ws?.readyState !== WebSocket.OPEN) {
       this.bufferedMessages.push(messageToSend);

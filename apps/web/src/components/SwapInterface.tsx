@@ -202,21 +202,18 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
 
   return (
     <div className="h-fit lg:h-[600px]">
-      {/* Imperial Panel */}
+      {/* Legionary Panel */}
       <div className="h-full panel-imperial overflow-hidden">
-        {/* Gold header bar */}
-        <div className="h-1 bg-gradient-to-r from-transparent via-imperial-gold/60 to-transparent" />
-
         <div className="p-5 relative flex flex-col h-full overflow-auto thin-scroll justify-start">
           {/* Panel Title */}
-          <h2 className="imperial-header text-sm mb-5 text-center text-imperial-gold">
+          <h2 className="imperial-header text-sm mb-5 text-center text-steel-primary">
             Execute Order
           </h2>
 
           <div className="flex flex-col h-full justify-start gap-5">
             {/* ACQUIRE / LIQUIDATE Toggle */}
             <div
-              className="flex border border-imperial-gold-dim overflow-hidden"
+              className="flex border border-steel-dim overflow-hidden"
               role="group"
               aria-label="Order side selection"
             >
@@ -244,9 +241,9 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
               </label>
               <select
                 id="orderType"
-                className="w-full py-2 bg-transparent border-b border-imperial-gold-dim
+                className="w-full py-2 bg-transparent border-b border-steel-dim
                          text-text-default text-sm font-numeral
-                         focus:border-imperial-gold transition-colors cursor-pointer"
+                         focus:border-steel-primary transition-colors cursor-pointer"
                 value={orderType}
                 onChange={(e) => setOrderType(e.target.value as OrderType)}
               >
@@ -277,12 +274,12 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
                     className="input-imperial w-full pr-12 text-lg"
                     placeholder="0.00"
                   />
-                  <span className="absolute right-0 bottom-3 text-imperial-gold-dim text-xs font-imperial tracking-wider">
+                  <span className="absolute right-0 bottom-3 text-steel-dim text-xs font-imperial tracking-wider">
                     {quote}
                   </span>
                 </div>
               ) : (
-                <div className="py-3 border-b border-imperial-gold-dim text-lg font-numeral text-text-default">
+                <div className="py-3 border-b border-steel-dim text-lg font-numeral text-text-default">
                   {isLoading ? (
                     <Skeleton variant="text" width={100} height={24} />
                   ) : (
@@ -316,7 +313,7 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
                     className="input-imperial w-full pr-10 text-lg"
                     placeholder="0.00"
                   />
-                  <span className="absolute right-0 bottom-3 text-imperial-gold-dim text-xs font-imperial tracking-wider">
+                  <span className="absolute right-0 bottom-3 text-steel-dim text-xs font-imperial tracking-wider">
                     {base}
                   </span>
                 </div>
@@ -342,7 +339,7 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
                     className="input-imperial w-full pr-12 text-lg"
                     placeholder="0.00"
                   />
-                  <span className="absolute right-0 bottom-3 text-imperial-gold-dim text-xs font-imperial tracking-wider">
+                  <span className="absolute right-0 bottom-3 text-steel-dim text-xs font-imperial tracking-wider">
                     {quote}
                   </span>
                 </div>
@@ -355,7 +352,7 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
             <div className="flex flex-col gap-2">
               <div className="flex justify-between text-xs">
                 <span className="text-text-secondary tracking-wide">TRIBUTE (0.1%)</span>
-                <span className="text-imperial-gold font-numeral">{formatUSD(fees)}</span>
+                <span className="text-steel-primary font-numeral">{formatUSD(fees)}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-text-secondary tracking-wide">POSITION</span>
@@ -422,7 +419,7 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
 };
 
 /**
- * Imperial side toggle button (ACQUIRE / LIQUIDATE)
+ * Legionary side toggle button (ACQUIRE / LIQUIDATE)
  */
 function ImperialSideButton({
   side,
@@ -445,12 +442,12 @@ function ImperialSideButton({
       aria-label={`${label} order`}
       className={`
         flex-1 py-3 font-imperial font-semibold text-xs tracking-widest
-        transition-all duration-200
+        transition-all duration-150
         ${isActive
           ? isBuy
-            ? "bg-metallic-green text-text-emphasis shadow-lg"
-            : "bg-metallic-red text-text-emphasis shadow-lg"
-          : "bg-transparent text-text-secondary hover:text-imperial-gold hover:bg-charcoal"
+            ? "bg-metallic-green text-text-emphasis"
+            : "bg-metallic-red text-text-emphasis"
+          : "bg-transparent text-text-secondary hover:text-steel-primary hover:bg-charcoal"
         }
       `}
     >
@@ -460,12 +457,12 @@ function ImperialSideButton({
 }
 
 /**
- * Loading spinner with gold color
+ * Loading spinner with steel color
  */
 function LoadingSpinner() {
   return (
     <svg
-      className="animate-spin h-4 w-4 text-imperial-gold"
+      className="animate-spin h-4 w-4 text-steel-primary"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
@@ -494,15 +491,15 @@ function KeyboardShortcutsHint() {
   return (
     <div className="hidden sm:flex items-center justify-center gap-4 pt-3 text-[9px] text-text-tertiary tracking-wider">
       <span className="flex items-center gap-1.5">
-        <kbd className="px-1.5 py-0.5 border border-imperial-gold-dim text-imperial-gold-dim">^B</kbd>
+        <kbd className="px-1.5 py-0.5 border border-steel-dim text-steel-dim">^B</kbd>
         ACQUIRE
       </span>
       <span className="flex items-center gap-1.5">
-        <kbd className="px-1.5 py-0.5 border border-imperial-gold-dim text-imperial-gold-dim">^S</kbd>
+        <kbd className="px-1.5 py-0.5 border border-steel-dim text-steel-dim">^S</kbd>
         LIQUIDATE
       </span>
       <span className="flex items-center gap-1.5">
-        <kbd className="px-1.5 py-0.5 border border-imperial-gold-dim text-imperial-gold-dim">ESC</kbd>
+        <kbd className="px-1.5 py-0.5 border border-steel-dim text-steel-dim">ESC</kbd>
         CLEAR
       </span>
     </div>

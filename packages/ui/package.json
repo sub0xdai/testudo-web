@@ -8,8 +8,8 @@
     "./code": "./src/code.tsx"
   },
   "scripts": {
-    "lint": "eslint . --max-warnings 0",
-    "generate:component": "turbo gen react-component"
+    "lint": "bun eslint . --max-warnings 0",
+    "generate:component": "bunx turbo gen react-component"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",

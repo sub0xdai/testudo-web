@@ -262,7 +262,7 @@ export const Depth = ({ market }: DepthProps) => {
 };
 
 /**
- * Tab button component for cleaner code
+ * Tab button component - Legionary steel underline style
  */
 function TabButton({
   label,
@@ -279,18 +279,17 @@ function TabButton({
       aria-selected={isActive}
       onClick={onClick}
       className={`
-        py-2 px-3 flex items-center font-semibold relative
-        hover:bg-container-bg-hover rounded-lg m-2
+        py-2.5 px-4 flex items-center font-imperial font-semibold relative
         justify-center leading-[16px] flex-1
-        transition-colors duration-150
-        focus:outline-none focus:ring-2 focus:ring-interactive-link/50
+        transition-colors duration-150 tracking-wider
+        focus:outline-none focus:ring-1 focus:ring-steel-primary/50
         ${isActive
-          ? "text-text-emphasis bg-container-bg-selected"
-          : "text-text-secondary hover:text-text-default"
+          ? "text-text-emphasis border-b-2 border-steel-primary"
+          : "text-text-secondary hover:text-text-default border-b-2 border-transparent"
         }
       `}
     >
-      <span className="flex items-center justify-center text-sm">
+      <span className="flex items-center justify-center text-xs uppercase">
         {label}
       </span>
     </button>
