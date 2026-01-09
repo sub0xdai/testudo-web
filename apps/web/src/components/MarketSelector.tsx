@@ -82,51 +82,47 @@ export function MarketSelector({ currentMarket }: MarketSelectorProps) {
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 bg-container-bg-hover hover:bg-container-bg-hover/80
-                 border border-container-border rounded-lg transition-colors"
+        className="flex items-center px-2 py-1 hover:bg-elevated transition-colors"
       >
-        <div className="flex items-center gap-2">
-          <img
-            src={`/${base.toLowerCase()}.svg`}
-            alt={base}
-            className="w-5 h-5 rounded-full"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
-          <span className="font-semibold text-text-default">{base}</span>
-          <span className="text-text-secondary">/</span>
-          <span className="text-text-secondary">{quote}</span>
-        </div>
-        <ChevronIcon className={`w-4 h-4 text-text-secondary transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <img
+          src={`/${base.toLowerCase()}.svg`}
+          alt={base}
+          className="w-4 h-4 mr-1.5"
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
+        />
+        <span className="font-semibold text-[12px] text-white font-mono">{base}</span>
+        <span className="text-grey-dim text-[12px] mx-0.5">/</span>
+        <span className="text-grey text-[12px]">{quote}</span>
+        <ChevronIcon className={`w-3 h-3 text-grey ml-2 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-64 bg-container-bg border border-container-border
-                      rounded-xl shadow-xl z-50 overflow-hidden">
+        <div className="absolute top-full left-0 mt-1 w-48 bg-panel border-2 border-grid shadow-xl z-50 overflow-hidden">
           {/* Search Input */}
-          <div className="p-2 border-b border-container-border">
+          <div className="p-1.5 border-b border-grid">
             <div className="relative">
-              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+              <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-grey" />
               <input
                 ref={inputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Search markets..."
-                className="w-full pl-9 pr-3 py-2 bg-container-bg-hover border border-container-border
-                         text-text-default text-xs font-imperial tracking-wider uppercase placeholder:text-text-secondary placeholder:normal-case
-                         focus:outline-none focus:ring-1 focus:ring-steel-primary/50"
+                placeholder="Search..."
+                className="w-full pl-7 pr-2 py-1.5 bg-transparent border border-grid
+                         text-white text-[11px] font-mono placeholder:text-grey-dim
+                         focus:outline-none focus:border-grey"
               />
             </div>
           </div>
 
           {/* Markets List */}
-          <div className="max-h-64 overflow-auto thin-scroll">
+          <div className="max-h-48 overflow-auto thin-scroll">
             {filteredMarkets.length === 0 ? (
-              <div className="p-4 text-center text-[10px] text-text-secondary font-imperial tracking-wider uppercase">
+              <div className="p-3 text-center text-[10px] text-grey font-mono">
                 No markets found
               </div>
             ) : (
@@ -157,37 +153,35 @@ function MarketOption({ market, isSelected, onClick }: MarketOptionProps) {
     <button
       onClick={onClick}
       className={`
-        w-full flex items-center justify-between px-3 py-2.5 transition-colors
+        w-full flex items-center justify-between px-2 py-2 transition-colors text-[11px]
         ${isSelected
-          ? 'bg-interactive-link/10 text-text-default'
-          : 'hover:bg-container-bg-hover text-text-default'
+          ? 'bg-elevated text-white'
+          : 'hover:bg-elevated text-grey hover:text-white'
         }
       `}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <img
           src={`/${market.baseAsset.toLowerCase()}.svg`}
           alt={market.baseAsset}
-          className="w-6 h-6 rounded-full"
+          className="w-4 h-4"
           onError={(e) => {
             (e.target as HTMLImageElement).style.display = 'none';
           }}
         />
-        <div className="text-left">
-          <div className="font-medium">
-            {market.baseAsset}
-            <span className="text-text-secondary font-normal">/{market.quoteAsset}</span>
-          </div>
-        </div>
+        <span className="font-mono font-medium">
+          {market.baseAsset}
+          <span className="text-grey-dim">/{market.quoteAsset}</span>
+        </span>
       </div>
 
       {isSelected && (
-        <CheckIcon className="w-4 h-4 text-steel-primary" />
+        <CheckIcon className="w-3 h-3 text-signal-green" />
       )}
 
       {market.status === 'HALTED' && (
-        <span className="px-1.5 py-0.5 text-[9px] font-imperial tracking-wider uppercase bg-negative-red/20 text-negative-red">
-          Halted
+        <span className="px-1 py-0.5 text-[8px] font-mono bg-signal-red/20 text-signal-red">
+          HALT
         </span>
       )}
     </button>

@@ -8,7 +8,6 @@ import { OrderHistory } from "../components/OrderHistory";
 import { PriceAlerts } from "../components/PriceAlerts";
 import { useEffect, useCallback, useState, useContext } from "react";
 import { createUser } from "../utils/requests";
-import { ConnectionBadge } from "../components/ui/ConnectionStatus";
 import { usePriceAlerts } from "../hooks/usePriceAlerts";
 import { TradesContext } from "../state/TradesProvider";
 
@@ -71,11 +70,6 @@ export const Trade = () => {
       >
         Skip to trading interface
       </a>
-
-      {/* Connection Status Banner - shown when not connected */}
-      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50">
-        <ConnectionBadge />
-      </div>
 
       {/* Main Layout */}
       <main
