@@ -12,6 +12,21 @@ export function Header() {
 
         <nav className="flex items-center gap-4 md:gap-6">
           <a
+            href="https://bags.fm"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono text-sm text-text-secondary hover:text-signal-green transition-colors hidden md:block"
+          >
+            BAGS.FM
+          </a>
+          <span
+            className="font-mono text-xs text-text-secondary hover:text-signal-green transition-colors cursor-pointer hidden lg:block"
+            title="84DLtsGugS6gA1rAnYGceEZtubZrVzwWT8avUFFKBAGS"
+            onClick={() => navigator.clipboard.writeText('84DLtsGugS6gA1rAnYGceEZtubZrVzwWT8avUFFKBAGS')}
+          >
+            CA: 84DLts...BAGS
+          </span>
+          <a
             href="#pricing"
             className="font-mono text-sm text-text-secondary hover:text-signal-green transition-colors hidden md:block"
           >
