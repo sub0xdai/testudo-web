@@ -1,33 +1,50 @@
 export function Header() {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-6 md:px-8 py-6 bg-main-bg/70 backdrop-blur-md border-b border-container-border/50">
-      <div className="flex items-center justify-between">
-        <a href="/">
-          <img
-            src="/logo.png"
-            alt="Testudo"
-            className="h-10 w-auto"
-          />
-        </a>
-
-        <nav className="flex items-center gap-4 md:gap-6">
-          <a
-            href="https://bags.fm"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-mono text-sm text-text-secondary hover:text-signal-green transition-colors hidden md:block"
-          >
-            BAGS.FM
-          </a>
+    <header className="fixed top-0 left-0 right-0 z-50 px-6 md:px-8 py-4 bg-main-bg/70 backdrop-blur-md border-b border-container-border/50">
+      <div className="flex flex-col gap-2">
+        {/* Mobile CA - shows above main nav on small screens */}
+        <div className="flex md:hidden justify-center">
           <span
-            className="font-mono text-xs text-text-secondary hover:text-signal-green transition-colors cursor-pointer hidden lg:block"
-            title="84DLtsGugS6gA1rAnYGceEZtubZrVzwWT8avUFFKBAGS"
+            className="font-mono text-xs text-signal-green cursor-pointer px-3 py-1 border border-signal-green/30 rounded"
+            title="Click to copy"
             onClick={() => navigator.clipboard.writeText('84DLtsGugS6gA1rAnYGceEZtubZrVzwWT8avUFFKBAGS')}
           >
             CA: 84DLts...BAGS
           </span>
-          <a
-            href="#pricing"
+        </div>
+
+        {/* Main nav row */}
+        <div className="flex items-center justify-between">
+          {/* Left side - Logo + CA */}
+          <div className="flex items-center gap-4">
+            <a href="/">
+              <img
+                src="/logo.png"
+                alt="Testudo"
+                className="h-10 w-auto"
+              />
+            </a>
+            <span
+              className="font-mono text-xs text-signal-green cursor-pointer hidden md:block hover:text-white transition-colors"
+              title="Click to copy: 84DLtsGugS6gA1rAnYGceEZtubZrVzwWT8avUFFKBAGS"
+              onClick={() => navigator.clipboard.writeText('84DLtsGugS6gA1rAnYGceEZtubZrVzwWT8avUFFKBAGS')}
+            >
+              CA: 84DLts...BAGS
+            </span>
+          </div>
+
+          {/* Right side - Nav items */}
+          <nav className="flex items-center gap-4 md:gap-6">
+            <a
+              href="https://bags.fm"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono text-sm text-text-secondary hover:text-signal-green transition-colors hidden md:block"
+            >
+              BAGS.FM
+            </a>
+            <a
+              href="#pricing"
             className="font-mono text-sm text-text-secondary hover:text-signal-green transition-colors hidden md:block"
           >
             PRICING
@@ -61,7 +78,8 @@ export function Header() {
           <button className="px-6 py-2 bg-signal-green text-main-bg font-mono font-bold text-sm hover:bg-white transition-colors">
             JOIN WAITLIST
           </button>
-        </nav>
+          </nav>
+        </div>
       </div>
     </header>
   )
