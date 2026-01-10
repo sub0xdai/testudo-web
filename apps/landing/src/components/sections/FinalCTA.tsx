@@ -12,22 +12,29 @@ export function FinalCTA() {
     setStatus('submitting')
 
     try {
+      const formData = new FormData()
+      formData.append('email', email)
+
       const res = await fetch(FORMSPREE_ENDPOINT, {
         method: 'POST',
+        body: formData,
         headers: {
-          'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify({ email }),
       })
+
+      const data = await res.json()
+      console.log('Formspree response:', data)
 
       if (res.ok) {
         setStatus('success')
         setEmail('')
       } else {
+        console.error('Formspree error:', data)
         setStatus('error')
       }
-    } catch {
+    } catch (err) {
+      console.error('Fetch error:', err)
       setStatus('error')
     }
   }
