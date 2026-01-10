@@ -117,7 +117,7 @@ export async function createTrade(trade: CreateTradeRequest, userId: string): Pr
   return response.data.data;
 }
 
-export async function getTrades(userId: string): Promise<TradeGroup[]> {
+export async function getTradeGroups(userId: string): Promise<TradeGroup[]> {
   const response = await axios.get<ApiResponse<TradeGroup[]>>(
     `${BASE_URL}/trades`,
     { headers: { 'X-User-Id': userId } }

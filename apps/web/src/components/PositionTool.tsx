@@ -27,7 +27,7 @@ export function PositionTool({
   riskPercent = 2,
   onCreateTrade,
 }: PositionToolProps) {
-  const { ticker } = useContext(TradesContext);
+  const { ticker: _ticker } = useContext(TradesContext);
 
   const [isActive, setIsActive] = useState(false);
   const [side, setSide] = useState<'LONG' | 'SHORT'>('LONG');
@@ -116,12 +116,6 @@ export function PositionTool({
     setStopLossPrice(0);
     setTakeProfitPrice(0);
   }, [currentPrice]);
-
-  // Format price for display
-  const formatPrice = (price: number) => price.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 8,
-  });
 
   // Format currency
   const formatCurrency = (amount: number) => `$${amount.toLocaleString(undefined, {
@@ -286,8 +280,8 @@ export function PositionTool({
 export function PositionOverlay({
   side,
   entryPrice,
-  stopLossPrice,
-  takeProfitPrice,
+  stopLossPrice: _stopLossPrice,
+  takeProfitPrice: _takeProfitPrice,
   quantity,
   riskRewardRatio,
   currentPrice,
