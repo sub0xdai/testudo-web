@@ -1,8 +1,7 @@
 import { Card } from '../ui/Card'
 import { useState } from 'react'
 
-// TODO: Replace with your Formspree endpoint from https://formspree.io
-const FORMSPREE_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID'
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xnjjavqa'
 
 export function FinalCTA() {
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
