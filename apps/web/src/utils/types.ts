@@ -100,3 +100,50 @@ export interface Market {
   quoteAsset: string;
   status: 'TRADING' | 'HALTED';
 }
+
+// Position Tool Types (D.0)
+export interface PositionDraft {
+  side: 'LONG' | 'SHORT';
+  entryPrice: number;
+  stopLossPrice: number;
+  takeProfitPrice: number;
+  quantity: number;
+  riskAmount: number;
+  riskRewardRatio: number;
+}
+
+export interface TakeProfitTarget {
+  price: number;
+  percentToClose: number;
+}
+
+export interface CreateTradeRequest {
+  symbol: string;
+  side: 'buy' | 'sell';
+  quantity: number;
+  entry_price: number;
+  stop_loss_price?: number;
+  take_profit_price?: number;
+  take_profit_targets?: TakeProfitTarget[];
+  break_even_trigger_percent?: number;
+  break_even_offset?: number;
+}
+
+export interface TradeGroup {
+  id: string;
+  symbol: string;
+  entry_order_id: string;
+  entry_price: number | null;
+  entry_quantity: number;
+  stop_loss_price: number | null;
+  stop_loss_order_id: string | null;
+  take_profit_targets: {
+    price: number;
+    percent_to_close: number;
+    order_id: string | null;
+    filled: boolean;
+  }[];
+  status: string;
+  break_even_enabled: boolean;
+  break_even_triggered: boolean;
+}

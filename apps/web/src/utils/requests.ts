@@ -1,5 +1,5 @@
 import axios from "axios";
-import { CreateOrder, Depth, KLine, Ticker, Trade, UserId, Balance, OpenOrder, OrderHistory, Market } from "./types";
+import { CreateOrder, Depth, KLine, Ticker, Trade, UserId, Balance, OpenOrder, OrderHistory, Market, CreateTradeRequest, TradeGroup } from "./types";
 
 const BASE_URL = "http://localhost:8080/api/v1";
 
@@ -94,5 +94,103 @@ export async function getMarkets(): Promise<Market[]> {
       { symbol: 'BTC_USDC', baseAsset: 'BTC', quoteAsset: 'USDC', status: 'TRADING' },
       { symbol: 'ETH_USDC', baseAsset: 'ETH', quoteAsset: 'USDC', status: 'TRADING' },
     ];
+  }
+}
+
+// Trade Management API (D.0)
+
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+export async function createTrade(trade: CreateTradeRequest, userId: string): Promise<TradeGroup> {
+  const response = await axios.post<ApiResponse<TradeGroup>>(
+    `${BASE_URL}/trades`,
+    trade,
+    { headers: { 'X-User-Id': userId } }
+  );
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.error || 'Failed to create trade');
+  }
+  return response.data.data;
+}
+
+export async function getTrades(userId: string): Promise<TradeGroup[]> {
+  const response = await axios.get<ApiResponse<TradeGroup[]>>(
+    `${BASE_URL}/trades`,
+    { headers: { 'X-User-Id': userId } }
+  );
+  if (!response.data.success) {
+    throw new Error(response.data.error || 'Failed to get trades');
+  }
+  return response.data.data || [];
+}
+
+export async function getTrade(tradeId: string, userId: string): Promise<TradeGroup> {
+  const response = await axios.get<ApiResponse<TradeGroup>>(
+    `${BASE_URL}/trades/${tradeId}`,
+    { headers: { 'X-User-Id': userId } }
+  );
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.error || 'Trade not found');
+  }
+  return response.data.data;
+}
+
+export async function updateStopLoss(tradeId: string, price: number, userId: string): Promise<TradeGroup> {
+  const response = await axios.put<ApiResponse<TradeGroup>>(
+    `${BASE_URL}/trades/${tradeId}/sl`,
+    { price },
+    { headers: { 'X-User-Id': userId } }
+  );
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.error || 'Failed to update stop loss');
+  }
+  return response.data.data;
+}
+
+export async function updateTakeProfit(
+  tradeId: string,
+  price: number,
+  percentToClose: number,
+  userId: string
+): Promise<TradeGroup> {
+  const response = await axios.put<ApiResponse<TradeGroup>>(
+    `${BASE_URL}/trades/${tradeId}/tp`,
+    { price, percent_to_close: percentToClose },
+    { headers: { 'X-User-Id': userId } }
+  );
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.error || 'Failed to update take profit');
+  }
+  return response.data.data;
+}
+
+export async function enableBreakEven(
+  tradeId: string,
+  triggerPercent: number,
+  offset: number | undefined,
+  userId: string
+): Promise<TradeGroup> {
+  const response = await axios.put<ApiResponse<TradeGroup>>(
+    `${BASE_URL}/trades/${tradeId}/breakeven`,
+    { trigger_percent: triggerPercent, offset },
+    { headers: { 'X-User-Id': userId } }
+  );
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.error || 'Failed to enable break-even');
+  }
+  return response.data.data;
+}
+
+export async function cancelTrade(tradeId: string, userId: string): Promise<void> {
+  const response = await axios.delete<ApiResponse<string>>(
+    `${BASE_URL}/trades/${tradeId}`,
+    { headers: { 'X-User-Id': userId } }
+  );
+  if (!response.data.success) {
+    throw new Error(response.data.error || 'Failed to cancel trade');
   }
 }
