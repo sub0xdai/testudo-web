@@ -5,7 +5,7 @@
     "buildCommand": "bun install && bunx vite build"
   },
   "deploy": {
-    "startCommand": "bun run start",
+    "startCommand": "npx serve dist -s -l $PORT",
     "healthcheckPath": "/",
     "restartPolicyType": "ON_FAILURE"
   }
