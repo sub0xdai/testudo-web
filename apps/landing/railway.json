@@ -5,7 +5,7 @@
     "buildCommand": "bun install && bunx vite build"
   },
   "deploy": {
-    "startCommand": "bunx serve dist -s -l 3000",
+    "startCommand": "bun run start",
     "healthcheckPath": "/",
     "restartPolicyType": "ON_FAILURE"
   }

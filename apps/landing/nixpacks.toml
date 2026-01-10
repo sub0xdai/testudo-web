@@ -8,4 +8,4 @@ cmds = ["bun install"]
 cmds = ["bunx vite build"]
 
 [start]
-cmd = "bunx serve dist -s -l ${PORT:-3000}"
+cmd = "bun run start"
