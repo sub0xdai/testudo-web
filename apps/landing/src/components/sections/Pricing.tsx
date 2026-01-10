@@ -3,67 +3,77 @@ import { Card } from '../ui/Card'
 export function Pricing() {
   const tiers = [
     {
-      name: "FREE",
-      price: "$0",
-      period: "",
-      features: ["2 exchanges", "Manual sizing", "Limited volume"],
+      name: "BASIC",
+      price: "0.1%",
+      subtitle: "per trade",
+      features: [
+        "Multi-exchange trading",
+        "Basic order types",
+        "Real-time data",
+        "No holding required"
+      ],
       cta: "GET STARTED",
       highlight: false,
     },
     {
-      name: "PRO",
-      price: "$49",
-      period: "/mo",
-      features: ["Unlimited exchanges", "Full risk engine", "Smart routing"],
+      name: "HOLDER",
+      price: "0.05%",
+      subtitle: "per trade",
+      requirement: "Hold 0.1% $BAGS",
+      features: [
+        "Everything in Basic",
+        "Full risk engine",
+        "Volatility-based sizing",
+        "Smart order routing",
+        "50% fee discount"
+      ],
       cta: "JOIN WAITLIST",
       highlight: true,
-    },
-    {
-      name: "ELITE",
-      price: "$149",
-      period: "/mo",
-      features: ["Everything in Pro", "API access", "Custom risk rules"],
-      cta: "CONTACT US",
-      highlight: false,
     },
   ]
 
   return (
     <section id="pricing" className="relative z-10 px-6 md:px-12 lg:px-24 py-24">
-      <div className="max-w-5xl">
+      <div className="max-w-4xl">
         <Card>
           <p className="font-mono text-signal-green text-sm tracking-widest mb-4">
             PRICING
           </p>
 
           <h2 className="font-display text-3xl md:text-4xl font-bold text-text-primary mb-3">
-            SUBSCRIPTION ONLY
+            HOLD $BAGS. PAY LESS.
           </h2>
 
           <p className="font-mono text-text-secondary mb-10">
-            No volume fees. No hidden cuts. Ever.
+            No subscriptions. Just hold the bag and trade for less.
           </p>
 
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-2 gap-6 max-w-2xl">
             {tiers.map((tier) => (
               <div
                 key={tier.name}
-                className={`p-5 border bg-container-bg ${
+                className={`p-6 border bg-container-bg ${
                   tier.highlight
                     ? 'border-signal-green'
                     : 'border-container-border'
                 }`}
               >
-                <h3 className="font-display text-lg font-bold text-text-primary mb-2">
+                <h3 className="font-display text-lg font-bold text-text-primary mb-1">
                   {tier.name}
                 </h3>
 
+                {'requirement' in tier && (
+                  <p className="font-mono text-xs text-signal-green mb-3">
+                    {tier.requirement}
+                  </p>
+                )}
+
                 <div className="mb-5">
-                  <span className="font-display text-3xl font-black text-text-primary">
+                  <span className="font-display text-4xl font-black text-text-primary">
                     {tier.price}
                   </span>
-                  <span className="font-mono text-text-secondary text-sm">
-                    {tier.period}
+                  <span className="font-mono text-text-secondary text-sm ml-2">
+                    {tier.subtitle}
                   </span>
                 </div>
 
@@ -76,15 +86,16 @@ export function Pricing() {
                   ))}
                 </ul>
 
-                <button
-                  className={`w-full py-3 font-mono font-bold text-sm transition-colors ${
+                <a
+                  href="#waitlist"
+                  className={`block w-full py-3 font-mono font-bold text-sm transition-colors text-center ${
                     tier.highlight
                       ? 'bg-signal-green text-main-bg hover:bg-white'
                       : 'border border-container-border text-text-primary hover:border-signal-green'
                   }`}
                 >
                   {tier.cta}
-                </button>
+                </a>
               </div>
             ))}
           </div>
