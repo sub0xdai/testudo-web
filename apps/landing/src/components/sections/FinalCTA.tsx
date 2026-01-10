@@ -1,7 +1,7 @@
 import { Card } from '../ui/Card'
 import { useState } from 'react'
 
-const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xnjjavqa'
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xnjjavga'
 
 export function FinalCTA() {
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
