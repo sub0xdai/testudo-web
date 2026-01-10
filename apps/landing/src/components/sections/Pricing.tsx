@@ -19,7 +19,7 @@ export function Pricing() {
       name: "HOLDER",
       price: "0.05%",
       subtitle: "per trade",
-      requirement: "Hold 0.1% $BAGS",
+      requirement: "Hold 0.1% $TESTUDO",
       features: [
         "Everything in Basic",
         "Full risk engine",
@@ -41,7 +41,7 @@ export function Pricing() {
           </p>
 
           <h2 className="font-display text-3xl md:text-4xl font-bold text-text-primary mb-3">
-            HOLD $BAGS. PAY LESS.
+            HOLD $TESTUDO. PAY LESS.
           </h2>
 
           <p className="font-mono text-text-secondary mb-10">
