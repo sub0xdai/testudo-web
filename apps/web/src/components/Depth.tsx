@@ -2,7 +2,7 @@ import { useEffect, useState, useContext, useCallback } from "react";
 import { OrderBook } from "./depth/OrderBook";
 import { RecentTrades } from "./depth/RecentTrades";
 import { getDepth, getTrades } from "../utils/requests";
-import { WsManager } from "../utils/ws_manager";
+import { BinanceWsManager } from "../utils/binance_ws";
 import { TradesContext } from "../state/TradesProvider";
 import { Trade } from "../utils/types";
 
@@ -110,7 +110,7 @@ export const Depth = ({ market }: DepthProps) => {
 
   useEffect(() => {
     let mounted = true;
-    const ws = WsManager.getInstance();
+    const ws = BinanceWsManager.getInstance();
 
     // Subscribe to WebSocket connection state changes
     const unsubscribeConnection = ws.onConnectionChange((state) => {
@@ -119,20 +119,28 @@ export const Depth = ({ market }: DepthProps) => {
       }
     });
 
-    // Register WebSocket callbacks
-    ws.registerCallback("depth", handleDepthUpdate, `DEPTH-${market}`);
-    ws.registerCallback("trade", handleTradeUpdate, `TRADE-${market}`);
-
-    // Subscribe to streams
-    ws.sendMessage({
-      method: "SUBSCRIBE",
-      params: [`depth.${market}`],
+    // Register WebSocket callbacks for real-time updates
+    const unsubDepth = ws.onDepthUpdate(`DEPTH-${market}`, (data) => {
+      if (mounted) {
+        handleDepthUpdate({ bids: data.bids, asks: data.asks });
+      }
     });
 
-    ws.sendMessage({
-      method: "SUBSCRIBE",
-      params: [`trade.${market}`],
+    const unsubTrade = ws.onTradeUpdate(`TRADE-${market}`, (data) => {
+      if (mounted) {
+        const tradeData = {
+          t: data.id,
+          m: data.isBuyerMaker,
+          p: data.price,
+          q: data.quantity,
+          T: data.timestamp,
+        };
+        handleTradeUpdate(tradeData);
+      }
     });
+
+    // Start WebSocket subscription to Binance
+    ws.subscribe(market);
 
     // Fetch initial data
     const fetchInitialData = async () => {
@@ -199,52 +207,12 @@ export const Depth = ({ market }: DepthProps) => {
 
     fetchInitialData();
 
-    // Poll for updates every 2 seconds (fallback when WebSocket not streaming Binance data)
-    const pollInterval = setInterval(async () => {
-      if (!mounted) return;
-      try {
-        const depthData = await getDepth(market);
-        if (!mounted) return;
-
-        const { bids: bidsData, asks: asksData } = depthData;
-        if (bidsData || asksData) {
-          const filteredBids = (bidsData || [])
-            .filter((bid) => parseFloat(bid[1]) !== 0)
-            .sort((a, b) => parseFloat(b[0]) - parseFloat(a[0]))
-            .slice(0, 30);
-
-          const filteredAsks = (asksData || [])
-            .filter((ask) => parseFloat(ask[1]) !== 0)
-            .sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]))
-            .slice(0, 30);
-
-          setBids(filteredBids);
-          setAsks(filteredAsks);
-        }
-      } catch {
-        // Silently fail on poll errors - WebSocket may recover
-      }
-    }, 2000);
-
     // Cleanup
     return () => {
       mounted = false;
-      clearInterval(pollInterval);
-
-      // Unsubscribe from connection state changes
       unsubscribeConnection();
-
-      ws.deRegisterCallback("depth", `DEPTH-${market}`);
-      ws.sendMessage({
-        method: "UNSUBSCRIBE",
-        params: [`depth.${market}`],
-      });
-
-      ws.deRegisterCallback("trade", `TRADE-${market}`);
-      ws.sendMessage({
-        method: "UNSUBSCRIBE",
-        params: [`trade.${market}`],
-      });
+      unsubDepth();
+      unsubTrade();
     };
   }, [
     market,
