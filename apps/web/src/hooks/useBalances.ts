@@ -1,13 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Balance } from '../utils/types';
 import { getBalances } from '../utils/requests';
-import { WsManager } from '../utils/ws_manager';
 import { parseMarketSymbol } from '../utils/format';
 
 interface UseBalancesOptions {
   market: string;
   pollInterval?: number;
-  enableWebSocket?: boolean;
 }
 
 interface UseBalancesReturn {
@@ -20,13 +18,12 @@ interface UseBalancesReturn {
 }
 
 /**
- * Custom hook for managing user balances with real-time updates
- * Uses WebSocket when available, falls back to polling
+ * Custom hook for managing user balances
+ * Uses polling to fetch balance updates
  */
 export function useBalances({
   market,
   pollInterval = 10000,
-  enableWebSocket = true,
 }: UseBalancesOptions): UseBalancesReturn {
   const [balances, setBalances] = useState<Balance[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,62 +50,11 @@ export function useBalances({
     }
   }, []);
 
-  // WebSocket subscription for real-time updates
-  useEffect(() => {
-    if (!enableWebSocket) return;
-
-    const userId = localStorage.getItem('user_id');
-    if (!userId) return;
-
-    const wsManager = WsManager.getInstance();
-
-    // Subscribe to balance updates
-    // Note: Backend must support 'balance' WebSocket channel
-    wsManager.registerCallback(
-      'balance',
-      (data) => {
-        // Handle balance update from WebSocket
-        const balanceData = data as { asset: string; available: string; locked: string };
-        if (balanceData?.asset) {
-          setBalances((prev) => {
-            const existing = prev.findIndex((b) => b.asset === balanceData.asset);
-            if (existing !== -1) {
-              const updated = [...prev];
-              updated[existing] = {
-                ...updated[existing],
-                available: balanceData.available,
-                locked: balanceData.locked,
-              };
-              return updated;
-            }
-            return [...prev, balanceData];
-          });
-        }
-      },
-      `balance-${userId}`
-    );
-
-    // Send subscription request
-    wsManager.sendMessage({
-      method: 'SUBSCRIBE',
-      params: [`balance.${userId}`],
-    });
-
-    return () => {
-      // Unsubscribe on cleanup
-      wsManager.deRegisterCallback('balance', `balance-${userId}`);
-      wsManager.sendMessage({
-        method: 'UNSUBSCRIBE',
-        params: [`balance.${userId}`],
-      });
-    };
-  }, [enableWebSocket]);
-
-  // Initial fetch and polling fallback
+  // Initial fetch and polling
   useEffect(() => {
     fetchBalances();
 
-    // Set up polling as fallback/supplement to WebSocket
+    // Set up polling
     const interval = setInterval(fetchBalances, pollInterval);
 
     return () => clearInterval(interval);

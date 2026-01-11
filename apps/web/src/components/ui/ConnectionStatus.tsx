@@ -1,17 +1,12 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext } from 'react';
 import { TradesContext, ConnectionStatus as ConnectionStatusType } from '../../state/TradesProvider';
-import { WsManager } from '../../utils/ws_manager';
+import { BinanceWsManager } from '../../utils/binance_ws';
 
 interface StatusConfig {
   color: string;
   bgColor: string;
   label: string;
   animate: boolean;
-}
-
-interface ReconnectionInfo {
-  attempts: number;
-  nextDelay: number;
 }
 
 const STATUS_CONFIG: Record<ConnectionStatusType, StatusConfig> = {
@@ -92,35 +87,23 @@ export function ConnectionStatus({ showLabel = false, size = 'sm' }: ConnectionS
 }
 
 /**
- * Inline connection status badge with reconnection info
+ * Inline connection status badge
  */
 export function ConnectionBadge() {
   const { connectionStatus } = useContext(TradesContext);
-  const [reconnectInfo, setReconnectInfo] = useState<ReconnectionInfo>({ attempts: 0, nextDelay: 1000 });
 
   const config = STATUS_CONFIG[connectionStatus];
-
-  // Poll reconnection info when disconnected or in error state
-  useEffect(() => {
-    if (connectionStatus !== 'disconnected' && connectionStatus !== 'error' && connectionStatus !== 'connecting') {
-      return;
-    }
-
-    const updateReconnectInfo = () => {
-      const ws = WsManager.getInstance();
-      setReconnectInfo(ws.getReconnectionInfo());
-    };
-
-    updateReconnectInfo();
-    const interval = setInterval(updateReconnectInfo, 1000);
-    return () => clearInterval(interval);
-  }, [connectionStatus]);
 
   if (connectionStatus === 'connected') {
     return null; // Don't show badge when connected (clean UI)
   }
 
-  const showAttempts = reconnectInfo.attempts > 0 && (connectionStatus === 'disconnected' || connectionStatus === 'error');
+  const handleRetry = () => {
+    // Get current symbol from URL or default
+    const pathParts = window.location.pathname.split('/');
+    const market = pathParts[pathParts.length - 1] || 'SOLUSDT';
+    BinanceWsManager.getInstance().subscribe(market);
+  };
 
   return (
     <div
@@ -137,14 +120,9 @@ export function ConnectionBadge() {
         <span className={`relative w-2 h-2 ${config.color} inline-block`} />
       </div>
       <span>{config.label}</span>
-      {showAttempts && (
-        <span className="text-text-secondary font-numeral text-[10px] normal-case">
-          (Attempt {reconnectInfo.attempts})
-        </span>
-      )}
       {connectionStatus !== 'connecting' && (
         <button
-          onClick={() => WsManager.getInstance().reconnect()}
+          onClick={handleRetry}
           className="ml-1 text-steel-primary hover:text-steel-bright transition-colors text-[10px] font-imperial tracking-wider"
         >
           RETRY

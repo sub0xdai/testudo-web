@@ -11,7 +11,6 @@ interface BalanceDisplayProps {
 /**
  * Displays user's balances for the current trading pair
  * Shows available and locked amounts with USD value
- * Uses WebSocket for real-time updates with polling fallback
  */
 export function BalanceDisplay({ market, currentPrice }: BalanceDisplayProps) {
   const { base, quote } = useMemo(() => parseMarketSymbol(market), [market]);
@@ -24,8 +23,7 @@ export function BalanceDisplay({ market, currentPrice }: BalanceDisplayProps) {
     refresh,
   } = useBalances({
     market,
-    pollInterval: 10000, // Poll every 10 seconds as fallback
-    enableWebSocket: true,
+    pollInterval: 10000,
   });
 
   const baseAvailable = parseFloat(baseBalance?.available ?? '0');

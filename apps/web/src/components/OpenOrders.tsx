@@ -4,7 +4,6 @@ import { getOpenOrders, cancelOrder } from '../utils/requests';
 import { formatPrice, formatQuantity, formatTime, parseMarketSymbol } from '../utils/format';
 import { Skeleton } from './ui/Skeleton';
 import { toast } from 'sonner';
-import { WsManager } from '../utils/ws_manager';
 
 interface OpenOrdersProps {
   market: string;
@@ -43,63 +42,10 @@ export function OpenOrders({ market, onOrderCancelled }: OpenOrdersProps) {
     }
   }, [market]);
 
-  // WebSocket subscription for real-time order updates
-  useEffect(() => {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) return;
-
-    const wsManager = WsManager.getInstance();
-    const callbackId = `orders-${userId}-${market}`;
-
-    // Handle order updates from WebSocket
-    wsManager.registerCallback(
-      'order',
-      (rawData) => {
-        const data = rawData as {
-          orderId: string;
-          status: 'OPEN' | 'FILLED' | 'PARTIALLY_FILLED' | 'CANCELLED';
-          filledQuantity?: string;
-        };
-
-        if (data.status === 'FILLED' || data.status === 'CANCELLED') {
-          // Remove from open orders
-          setOrders((prev) => prev.filter((o) => o.orderId !== data.orderId));
-          if (data.status === 'FILLED') {
-            toast.success('Order filled');
-          }
-        } else if (data.status === 'PARTIALLY_FILLED' && data.filledQuantity) {
-          // Update filled quantity
-          setOrders((prev) =>
-            prev.map((o) =>
-              o.orderId === data.orderId
-                ? { ...o, filledQuantity: data.filledQuantity!, status: 'PARTIALLY_FILLED' }
-                : o
-            )
-          );
-        }
-      },
-      callbackId
-    );
-
-    // Subscribe to order updates for this user
-    wsManager.sendMessage({
-      method: 'SUBSCRIBE',
-      params: [`order.${userId}`],
-    });
-
-    return () => {
-      wsManager.deRegisterCallback('order', callbackId);
-      wsManager.sendMessage({
-        method: 'UNSUBSCRIBE',
-        params: [`order.${userId}`],
-      });
-    };
-  }, [market]);
-
-  // Initial fetch and polling fallback (reduced frequency with WebSocket)
+  // Initial fetch and polling
   useEffect(() => {
     fetchOrders();
-    // Poll every 10 seconds as fallback (WebSocket provides real-time updates)
+    // Poll every 10 seconds
     const interval = setInterval(fetchOrders, 10000);
     return () => clearInterval(interval);
   }, [fetchOrders]);
