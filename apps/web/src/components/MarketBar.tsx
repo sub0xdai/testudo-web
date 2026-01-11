@@ -86,6 +86,13 @@ export const MarketBar = ({ market }: MarketBarProps) => {
               </div>
             </div>
 
+            {/* PERP Badge */}
+            <div className="flex items-center">
+              <span className="px-1.5 py-0.5 text-[9px] font-imperial font-bold tracking-wider bg-signal-orange/20 text-signal-orange border border-signal-orange/30 uppercase">
+                PERP
+              </span>
+            </div>
+
             {/* Price Display - Monospace */}
             <div className="outline-none focus:outline-none flex mr-0 sm:mr-0">
               <div className="flex flex-col">

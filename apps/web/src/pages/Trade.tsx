@@ -13,8 +13,8 @@ import { TradesContext } from "../state/TradesProvider";
 
 type OrdersTab = 'open' | 'history' | 'alerts';
 
-// Valid markets
-const VALID_MARKETS = ['SOL_USDC', 'BTC_USDC', 'ETH_USDC'];
+// Default market for perpetual futures
+const DEFAULT_MARKET = 'SOLUSDT';
 
 export const Trade = () => {
   const { market } = useParams();
@@ -22,7 +22,8 @@ export const Trade = () => {
   const { price } = useContext(TradesContext);
 
   const currentPrice = parseFloat(price ?? '0');
-  const validMarket = market && VALID_MARKETS.includes(market) ? market : 'SOL_USDC';
+  // Accept any market symbol - API will validate
+  const validMarket = market || DEFAULT_MARKET;
 
   // Price alerts
   const {
@@ -53,9 +54,9 @@ export const Trade = () => {
     initializeUser();
   }, [initializeUser]);
 
-  // Redirect invalid markets to default
-  if (!market || !VALID_MARKETS.includes(market)) {
-    return <Navigate to="/trade/SOL_USDC" replace />;
+  // Redirect if no market specified
+  if (!market) {
+    return <Navigate to={`/trade/${DEFAULT_MARKET}`} replace />;
   }
 
   return (

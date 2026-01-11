@@ -77,8 +77,8 @@ export async function getTicker(market: string): Promise<Ticker> {
 }
 
 export async function getTickers(): Promise<Ticker[]> {
-  // Get ticker for common markets
-  const markets = ['SOL_USDC', 'BTC_USDC', 'ETH_USDC'];
+  // Get ticker for common perpetual futures markets
+  const markets = ['SOLUSDT', 'BTCUSDT', 'ETHUSDT'];
   const tickers = await Promise.all(
     markets.map(async (market) => {
       try {
@@ -148,11 +148,11 @@ export async function getMarkets(): Promise<Market[]> {
       status: 'TRADING' as const,
     }));
   } catch {
-    // Fallback to hardcoded markets if API doesn't support this endpoint
+    // Fallback to hardcoded perpetual futures markets if API doesn't support this endpoint
     return [
-      { symbol: 'SOL_USDC', baseAsset: 'SOL', quoteAsset: 'USDC', status: 'TRADING' },
-      { symbol: 'BTC_USDC', baseAsset: 'BTC', quoteAsset: 'USDC', status: 'TRADING' },
-      { symbol: 'ETH_USDC', baseAsset: 'ETH', quoteAsset: 'USDC', status: 'TRADING' },
+      { symbol: 'SOLUSDT', baseAsset: 'SOL', quoteAsset: 'USDT', status: 'TRADING' },
+      { symbol: 'BTCUSDT', baseAsset: 'BTC', quoteAsset: 'USDT', status: 'TRADING' },
+      { symbol: 'ETHUSDT', baseAsset: 'ETH', quoteAsset: 'USDT', status: 'TRADING' },
     ];
   }
 }

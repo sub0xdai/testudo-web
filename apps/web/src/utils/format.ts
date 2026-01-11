@@ -141,8 +141,27 @@ export function formatTime(timestamp: number | Date): string {
 
 /**
  * Parse a market symbol into base and quote assets
+ * Handles both formats:
+ * - Native Binance: SOLUSDT, BTCUSDT
+ * - Underscore: SOL_USDT, BTC_USDT
  */
 export function parseMarketSymbol(symbol: string): { base: string; quote: string } {
-  const [base, quote] = symbol.split('_');
-  return { base: base || '', quote: quote || '' };
+  // Handle underscore format first (SOL_USDT)
+  if (symbol.includes('_')) {
+    const [base, quote] = symbol.split('_');
+    return { base: base || '', quote: quote || '' };
+  }
+
+  // Handle native Binance format (SOLUSDT, BTCUSDT)
+  // Common quote assets to check for
+  const quoteAssets = ['USDT', 'USDC', 'BUSD', 'USD', 'BTC', 'ETH'];
+  for (const quote of quoteAssets) {
+    if (symbol.endsWith(quote)) {
+      const base = symbol.slice(0, -quote.length);
+      return { base, quote };
+    }
+  }
+
+  // Fallback - return as-is
+  return { base: symbol, quote: '' };
 }

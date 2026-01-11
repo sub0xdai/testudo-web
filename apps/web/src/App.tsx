@@ -30,7 +30,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/trade/:market" element={<Trade />} />
-            <Route path="*" element={<Navigate to="/trade/SOL_USDC" />} />
+            <Route path="*" element={<Navigate to="/trade/SOLUSDT" />} />
           </Routes>
         </BrowserRouter>
       </TradesProvider>

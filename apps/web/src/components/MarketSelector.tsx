@@ -24,11 +24,11 @@ export function MarketSelector({ currentMarket }: MarketSelectorProps) {
   // Fetch markets on mount
   useEffect(() => {
     getMarkets().then(setMarkets).catch(() => {
-      // Use fallback
+      // Use fallback - perpetual futures markets
       setMarkets([
-        { symbol: 'SOL_USDC', baseAsset: 'SOL', quoteAsset: 'USDC', status: 'TRADING' },
-        { symbol: 'BTC_USDC', baseAsset: 'BTC', quoteAsset: 'USDC', status: 'TRADING' },
-        { symbol: 'ETH_USDC', baseAsset: 'ETH', quoteAsset: 'USDC', status: 'TRADING' },
+        { symbol: 'SOLUSDT', baseAsset: 'SOL', quoteAsset: 'USDT', status: 'TRADING' },
+        { symbol: 'BTCUSDT', baseAsset: 'BTC', quoteAsset: 'USDT', status: 'TRADING' },
+        { symbol: 'ETHUSDT', baseAsset: 'ETH', quoteAsset: 'USDT', status: 'TRADING' },
       ]);
     });
   }, []);
