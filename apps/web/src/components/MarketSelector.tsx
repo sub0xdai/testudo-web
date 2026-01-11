@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Market } from '../utils/types';
 import { getMarkets } from '../utils/requests';
@@ -8,29 +8,37 @@ interface MarketSelectorProps {
   currentMarket: string;
 }
 
+// Popular markets to show at top when no search query
+const POPULAR_BASES = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE', 'ADA', 'AVAX', 'LINK'];
+
 /**
- * Dropdown for selecting trading pairs
+ * Dropdown for selecting trading pairs with fuzzy search
  */
 export function MarketSelector({ currentMarket }: MarketSelectorProps) {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [markets, setMarkets] = useState<Market[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { base, quote } = parseMarketSymbol(currentMarket);
+  const { base } = parseMarketSymbol(currentMarket);
 
   // Fetch markets on mount
   useEffect(() => {
-    getMarkets().then(setMarkets).catch(() => {
-      // Use fallback - perpetual futures markets
-      setMarkets([
-        { symbol: 'SOLUSDT', baseAsset: 'SOL', quoteAsset: 'USDT', status: 'TRADING' },
-        { symbol: 'BTCUSDT', baseAsset: 'BTC', quoteAsset: 'USDT', status: 'TRADING' },
-        { symbol: 'ETHUSDT', baseAsset: 'ETH', quoteAsset: 'USDT', status: 'TRADING' },
-      ]);
-    });
+    setIsLoading(true);
+    getMarkets()
+      .then(setMarkets)
+      .catch(() => {
+        // Use fallback - perpetual futures markets
+        setMarkets([
+          { symbol: 'SOLUSDT', baseAsset: 'SOL', quoteAsset: 'USDT', status: 'TRADING' },
+          { symbol: 'BTCUSDT', baseAsset: 'BTC', quoteAsset: 'USDT', status: 'TRADING' },
+          { symbol: 'ETHUSDT', baseAsset: 'ETH', quoteAsset: 'USDT', status: 'TRADING' },
+        ]);
+      })
+      .finally(() => setIsLoading(false));
   }, []);
 
   // Close dropdown when clicking outside
@@ -58,15 +66,34 @@ export function MarketSelector({ currentMarket }: MarketSelectorProps) {
     navigate(`/trade/${symbol}`);
   }, [navigate]);
 
-  const filteredMarkets = markets.filter((market) => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      market.symbol.toLowerCase().includes(query) ||
-      market.baseAsset.toLowerCase().includes(query) ||
-      market.quoteAsset.toLowerCase().includes(query)
-    );
-  });
+  // Filter and sort markets
+  const filteredMarkets = useMemo(() => {
+    let filtered = markets;
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = markets.filter((market) =>
+        market.symbol.toLowerCase().includes(query) ||
+        market.baseAsset.toLowerCase().includes(query)
+      );
+    } else {
+      // When no search, show popular markets first
+      filtered = [...markets].sort((a, b) => {
+        const aPopular = POPULAR_BASES.indexOf(a.baseAsset);
+        const bPopular = POPULAR_BASES.indexOf(b.baseAsset);
+        if (aPopular !== -1 && bPopular !== -1) return aPopular - bPopular;
+        if (aPopular !== -1) return -1;
+        if (bPopular !== -1) return 1;
+        return a.baseAsset.localeCompare(b.baseAsset);
+      });
+    }
+
+    // Limit to 100 for performance
+    return filtered.slice(0, 100);
+  }, [markets, searchQuery]);
+
+  const totalCount = markets.length;
+  const showingCount = filteredMarkets.length;
 
   // Keyboard navigation
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -79,51 +106,63 @@ export function MarketSelector({ currentMarket }: MarketSelectorProps) {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Trigger Button */}
+      {/* Trigger Button - Shows symbol like SOLUSDT */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center px-2 py-1 hover:bg-elevated transition-colors"
+        className="flex items-center gap-2 px-3 py-1.5 hover:bg-elevated transition-colors"
       >
         <img
           src={`/${base.toLowerCase()}.svg`}
           alt={base}
-          className="w-4 h-4 mr-1.5"
+          className="w-5 h-5"
           onError={(e) => {
             (e.target as HTMLImageElement).style.display = 'none';
           }}
         />
-        <span className="font-semibold text-[12px] text-white font-mono">{base}</span>
-        <span className="text-grey-dim text-[12px] mx-0.5">/</span>
-        <span className="text-grey text-[12px]">{quote}</span>
-        <ChevronIcon className={`w-3 h-3 text-grey ml-2 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <span className="font-semibold text-[13px] text-white font-mono tracking-wide">
+          {currentMarket}
+        </span>
+        <ChevronIcon className={`w-4 h-4 text-grey transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-48 bg-panel border-2 border-grid shadow-xl z-50 overflow-hidden">
+        <div className="absolute top-full left-0 mt-1 w-64 bg-panel border-2 border-grid shadow-xl z-50 overflow-hidden">
           {/* Search Input */}
-          <div className="p-1.5 border-b border-grid">
+          <div className="p-2 border-b border-grid">
             <div className="relative">
-              <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-grey" />
+              <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-grey" />
               <input
                 ref={inputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Search..."
-                className="w-full pl-7 pr-2 py-1.5 bg-transparent border border-grid
-                         text-white text-[11px] font-mono placeholder:text-grey-dim
-                         focus:outline-none focus:border-grey"
+                placeholder="Search markets..."
+                className="w-full pl-9 pr-3 py-2 bg-main-bg border border-grid
+                         text-white text-[12px] font-mono placeholder:text-grey-dim
+                         focus:outline-none focus:border-steel-primary"
               />
+            </div>
+            {/* Market count */}
+            <div className="mt-1.5 text-[10px] text-grey-dim font-mono">
+              {isLoading ? 'Loading...' : (
+                searchQuery
+                  ? `${showingCount} results${showingCount === 100 ? ' (first 100)' : ''}`
+                  : `${totalCount} markets`
+              )}
             </div>
           </div>
 
           {/* Markets List */}
-          <div className="max-h-48 overflow-auto thin-scroll">
-            {filteredMarkets.length === 0 ? (
-              <div className="p-3 text-center text-[10px] text-grey font-mono">
-                No markets found
+          <div className="max-h-80 overflow-auto thin-scroll">
+            {isLoading ? (
+              <div className="p-4 text-center text-[11px] text-grey font-mono">
+                Loading markets...
+              </div>
+            ) : filteredMarkets.length === 0 ? (
+              <div className="p-4 text-center text-[11px] text-grey font-mono">
+                No markets found for "{searchQuery}"
               </div>
             ) : (
               filteredMarkets.map((market) => (
@@ -153,36 +192,30 @@ function MarketOption({ market, isSelected, onClick }: MarketOptionProps) {
     <button
       onClick={onClick}
       className={`
-        w-full flex items-center justify-between px-2 py-2 transition-colors text-[11px]
+        w-full flex items-center justify-between px-3 py-2.5 transition-colors text-[12px]
         ${isSelected
-          ? 'bg-elevated text-white'
-          : 'hover:bg-elevated text-grey hover:text-white'
+          ? 'bg-steel-primary/10 text-white border-l-2 border-steel-primary'
+          : 'hover:bg-elevated text-grey hover:text-white border-l-2 border-transparent'
         }
       `}
     >
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2">
         <img
           src={`/${market.baseAsset.toLowerCase()}.svg`}
           alt={market.baseAsset}
-          className="w-4 h-4"
+          className="w-5 h-5"
           onError={(e) => {
             (e.target as HTMLImageElement).style.display = 'none';
           }}
         />
-        <span className="font-mono font-medium">
+        <span className="font-mono font-semibold text-white">
           {market.baseAsset}
-          <span className="text-grey-dim">/{market.quoteAsset}</span>
+          <span className="text-grey-dim font-normal">/USDT</span>
         </span>
       </div>
 
       {isSelected && (
-        <CheckIcon className="w-3 h-3 text-signal-green" />
-      )}
-
-      {market.status === 'HALTED' && (
-        <span className="px-1 py-0.5 text-[8px] font-mono bg-signal-red/20 text-signal-red">
-          HALT
-        </span>
+        <CheckIcon className="w-4 h-4 text-signal-green" />
       )}
     </button>
   );
