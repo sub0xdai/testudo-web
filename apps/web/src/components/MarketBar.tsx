@@ -1,5 +1,6 @@
 import { useEffect, useContext, useMemo, useRef } from "react";
 import { getTicker } from "../utils/requests";
+import { BinanceWsManager } from "../utils/binance_ws";
 import { TradesContext } from "../state/TradesProvider";
 import { formatUSD, formatCompact, formatPercentChange } from "../utils/format";
 import { Skeleton, StatSkeleton } from "./ui/Skeleton";
@@ -53,14 +54,28 @@ export const MarketBar = ({ market }: MarketBarProps) => {
     // Initial fetch
     fetchTicker();
 
-    // Poll every 5 seconds for real-time updates
-    const pollInterval = setInterval(fetchTicker, 5000);
+    // Poll every 30 seconds for 24h stats (volume, high, low) - not price
+    const pollInterval = setInterval(fetchTicker, 30000);
 
     return () => {
       mounted = false;
       clearInterval(pollInterval);
     };
   }, [market, setTicker, setPrice, setLoading, setError]);
+
+  // Real-time price updates via WebSocket bookTicker
+  useEffect(() => {
+    const ws = BinanceWsManager.getInstance();
+    const unsubBookTicker = ws.onBookTickerUpdate(`BOOKTICKER-${market}`, (data) => {
+      const bid = parseFloat(data.bidPrice);
+      const ask = parseFloat(data.askPrice);
+      const midPrice = ((bid + ask) / 2).toFixed(4);
+      setPrice(midPrice);
+    });
+    return () => {
+      unsubBookTicker();
+    };
+  }, [market, setPrice]);
 
   // Update stats when ticker changes
   useEffect(() => {
