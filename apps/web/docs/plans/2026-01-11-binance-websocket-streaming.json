@@ -1,0 +1,314 @@
+{
+  "meta": {
+    "title": "Binance WebSocket Streaming Implementation",
+    "date": "2026-01-11",
+    "status": "planned",
+    "for_claude": "REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task."
+  },
+  "overview": {
+    "goal": "Replace polling-based market data with real-time Binance Futures WebSocket streaming for orderbook, trades, and ticker updates.",
+    "architecture": "Create a new BinanceWsManager class that connects directly to Binance Futures WebSocket API (wss://fstream.binance.com). This replaces the current internal WsManager which connects to a non-functional backend WebSocket. The frontend will receive real-time depth updates (~100ms), trade events, and ticker changes directly from Binance.",
+    "tech_stack": ["TypeScript", "WebSocket API", "Binance Futures WebSocket streams"]
+  },
+  "background": {
+    "current_problem": "The existing WsManager connects to ws://localhost:4000 (internal ws-stream service), but this service only receives data from the OLD internal matching engine - NOT from Binance. Orderbook never updates in real-time, trades never stream, price only updates via slow REST polling (every 5 seconds).",
+    "solution": "Connect the frontend directly to Binance Futures WebSocket API: wss://fstream.binance.com/stream?streams=<symbol>@depth@100ms/<symbol>@aggTrade/<symbol>@bookTicker"
+  },
+  "binance_websocket_reference": {
+    "base_url": "wss://fstream.binance.com/stream",
+    "streams": {
+      "depth": {
+        "stream_name": "<symbol>@depth@100ms",
+        "description": "Diff depth updates every 100ms",
+        "message_format": {
+          "e": "depthUpdate",
+          "E": "event_time",
+          "s": "symbol",
+          "b": "[[price, qty], ...]",
+          "a": "[[price, qty], ...]",
+          "u": "final_update_id"
+        }
+      },
+      "aggTrade": {
+        "stream_name": "<symbol>@aggTrade",
+        "description": "Aggregate trade stream",
+        "message_format": {
+          "e": "aggTrade",
+          "a": "aggregate_trade_id",
+          "p": "price",
+          "q": "quantity",
+          "T": "trade_time",
+          "m": "is_buyer_maker"
+        }
+      },
+      "bookTicker": {
+        "stream_name": "<symbol>@bookTicker",
+        "description": "Best bid/ask updates",
+        "message_format": {
+          "e": "bookTicker",
+          "s": "symbol",
+          "b": "best_bid_price",
+          "B": "best_bid_qty",
+          "a": "best_ask_price",
+          "A": "best_ask_qty"
+        }
+      }
+    }
+  },
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Create Binance WebSocket Manager",
+      "status": "pending",
+      "files": {
+        "create": ["testudo-web/apps/web/src/utils/binance_ws.ts"]
+      },
+      "steps": [
+        {
+          "step": 1,
+          "action": "Create the BinanceWsManager class",
+          "description": "Create a new singleton WebSocket manager that connects to Binance Futures WebSocket API",
+          "code": {
+            "file": "testudo-web/apps/web/src/utils/binance_ws.ts",
+            "content": "const BINANCE_WS_BASE = \"wss://fstream.binance.com/stream\";\n\ntype ConnectionState = 'connecting' | 'connected' | 'disconnected' | 'error';\n\ninterface DepthUpdate {\n  bids: [string, string][];\n  asks: [string, string][];\n  finalUpdateId: number;\n}\n\ninterface TradeUpdate {\n  id: number;\n  price: string;\n  quantity: string;\n  timestamp: number;\n  isBuyerMaker: boolean;\n}\n\ninterface BookTickerUpdate {\n  bidPrice: string;\n  bidQty: string;\n  askPrice: string;\n  askQty: string;\n}\n\ntype DepthCallback = (data: DepthUpdate) => void;\ntype TradeCallback = (data: TradeUpdate) => void;\ntype BookTickerCallback = (data: BookTickerUpdate) => void;\ntype ConnectionCallback = (state: ConnectionState) => void;\n\nconst INITIAL_RECONNECT_DELAY = 1000;\nconst MAX_RECONNECT_DELAY = 30000;\nconst RECONNECT_MULTIPLIER = 2;\n\nexport class BinanceWsManager {\n  private ws: WebSocket | null = null;\n  private currentSymbol: string | null = null;\n  private connectionState: ConnectionState = 'disconnected';\n\n  private depthCallbacks: Map<string, DepthCallback> = new Map();\n  private tradeCallbacks: Map<string, TradeCallback> = new Map();\n  private bookTickerCallbacks: Map<string, BookTickerCallback> = new Map();\n  private connectionCallbacks: Set<ConnectionCallback> = new Set();\n\n  private reconnectAttempts = 0;\n  private reconnectDelay = INITIAL_RECONNECT_DELAY;\n  private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;\n  private shouldReconnect = true;\n\n  private static instance: BinanceWsManager;\n\n  private constructor() {}\n\n  public static getInstance(): BinanceWsManager {\n    if (!BinanceWsManager.instance) {\n      BinanceWsManager.instance = new BinanceWsManager();\n    }\n    return BinanceWsManager.instance;\n  }\n\n  public subscribe(symbol: string): void {\n    const normalizedSymbol = symbol.toLowerCase();\n    if (this.currentSymbol === normalizedSymbol && this.ws?.readyState === WebSocket.OPEN) {\n      return;\n    }\n    if (this.ws) {\n      this.shouldReconnect = false;\n      this.ws.close();\n    }\n    this.currentSymbol = normalizedSymbol;\n    this.shouldReconnect = true;\n    this.connect();\n  }\n\n  public unsubscribe(): void {\n    this.shouldReconnect = false;\n    this.currentSymbol = null;\n    if (this.reconnectTimeout) {\n      clearTimeout(this.reconnectTimeout);\n      this.reconnectTimeout = null;\n    }\n    if (this.ws) {\n      this.ws.close();\n      this.ws = null;\n    }\n    this.setConnectionState('disconnected');\n  }\n\n  private connect(): void {\n    if (!this.currentSymbol) return;\n    if (this.ws?.readyState === WebSocket.OPEN || this.ws?.readyState === WebSocket.CONNECTING) {\n      return;\n    }\n    this.setConnectionState('connecting');\n    const streams = [\n      `${this.currentSymbol}@depth@100ms`,\n      `${this.currentSymbol}@aggTrade`,\n      `${this.currentSymbol}@bookTicker`,\n    ].join('/');\n    const url = `${BINANCE_WS_BASE}?streams=${streams}`;\n    try {\n      this.ws = new WebSocket(url);\n      this.setupEventHandlers();\n    } catch {\n      this.handleConnectionError();\n    }\n  }\n\n  private setupEventHandlers(): void {\n    if (!this.ws) return;\n    this.ws.onopen = () => {\n      this.reconnectAttempts = 0;\n      this.reconnectDelay = INITIAL_RECONNECT_DELAY;\n      this.setConnectionState('connected');\n    };\n    this.ws.onmessage = (event) => {\n      try {\n        const message = JSON.parse(event.data);\n        this.handleMessage(message);\n      } catch {}\n    };\n    this.ws.onclose = () => {\n      this.setConnectionState('disconnected');\n      if (this.shouldReconnect) {\n        this.scheduleReconnect();\n      }\n    };\n    this.ws.onerror = () => {\n      this.handleConnectionError();\n    };\n  }\n\n  private handleMessage(message: { stream: string; data: unknown }): void {\n    const { stream, data } = message;\n    if (stream.endsWith('@depth@100ms')) {\n      this.handleDepthUpdate(data);\n    } else if (stream.endsWith('@aggTrade')) {\n      this.handleTradeUpdate(data);\n    } else if (stream.endsWith('@bookTicker')) {\n      this.handleBookTickerUpdate(data);\n    }\n  }\n\n  private handleDepthUpdate(data: unknown): void {\n    const d = data as { b: [string, string][]; a: [string, string][]; u: number };\n    const update: DepthUpdate = { bids: d.b, asks: d.a, finalUpdateId: d.u };\n    this.depthCallbacks.forEach((callback) => callback(update));\n  }\n\n  private handleTradeUpdate(data: unknown): void {\n    const d = data as { a: number; p: string; q: string; T: number; m: boolean };\n    const update: TradeUpdate = {\n      id: d.a,\n      price: d.p,\n      quantity: d.q,\n      timestamp: d.T,\n      isBuyerMaker: d.m,\n    };\n    this.tradeCallbacks.forEach((callback) => callback(update));\n  }\n\n  private handleBookTickerUpdate(data: unknown): void {\n    const d = data as { b: string; B: string; a: string; A: string };\n    const update: BookTickerUpdate = {\n      bidPrice: d.b,\n      bidQty: d.B,\n      askPrice: d.a,\n      askQty: d.A,\n    };\n    this.bookTickerCallbacks.forEach((callback) => callback(update));\n  }\n\n  private handleConnectionError(): void {\n    this.setConnectionState('error');\n    if (this.shouldReconnect) {\n      this.scheduleReconnect();\n    }\n  }\n\n  private scheduleReconnect(): void {\n    if (this.reconnectTimeout) {\n      clearTimeout(this.reconnectTimeout);\n    }\n    this.reconnectTimeout = setTimeout(() => {\n      this.reconnectAttempts++;\n      this.reconnectDelay = Math.min(this.reconnectDelay * RECONNECT_MULTIPLIER, MAX_RECONNECT_DELAY);\n      this.connect();\n    }, this.reconnectDelay);\n  }\n\n  private setConnectionState(state: ConnectionState): void {\n    if (this.connectionState !== state) {\n      this.connectionState = state;\n      this.connectionCallbacks.forEach((cb) => cb(state));\n    }\n  }\n\n  public onDepthUpdate(id: string, callback: DepthCallback): () => void {\n    this.depthCallbacks.set(id, callback);\n    return () => this.depthCallbacks.delete(id);\n  }\n\n  public onTradeUpdate(id: string, callback: TradeCallback): () => void {\n    this.tradeCallbacks.set(id, callback);\n    return () => this.tradeCallbacks.delete(id);\n  }\n\n  public onBookTickerUpdate(id: string, callback: BookTickerCallback): () => void {\n    this.bookTickerCallbacks.set(id, callback);\n    return () => this.bookTickerCallbacks.delete(id);\n  }\n\n  public onConnectionChange(callback: ConnectionCallback): () => void {\n    this.connectionCallbacks.add(callback);\n    callback(this.connectionState);\n    return () => this.connectionCallbacks.delete(callback);\n  }\n\n  public getConnectionState(): ConnectionState {\n    return this.connectionState;\n  }\n}"
+          }
+        },
+        {
+          "step": 2,
+          "action": "Verify file creation",
+          "command": "cat testudo-web/apps/web/src/utils/binance_ws.ts | head -50",
+          "expected": "See the first 50 lines of the new file"
+        },
+        {
+          "step": 3,
+          "action": "Run lint",
+          "command": "cd testudo-web/apps/web && bun run lint",
+          "expected": "No errors related to binance_ws.ts"
+        },
+        {
+          "step": 4,
+          "action": "Commit",
+          "command": "git add testudo-web/apps/web/src/utils/binance_ws.ts && git commit -m \"feat: add Binance Futures WebSocket manager\n\n- Direct connection to wss://fstream.binance.com\n- Streams: depth@100ms, aggTrade, bookTicker\n- Auto-reconnect with exponential backoff\n- Singleton pattern for shared instance\""
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Update Depth Component to Use Binance WebSocket",
+      "status": "pending",
+      "files": {
+        "modify": ["testudo-web/apps/web/src/components/Depth.tsx"]
+      },
+      "steps": [
+        {
+          "step": 1,
+          "action": "Replace WsManager with BinanceWsManager",
+          "description": "Update imports and useEffect to use BinanceWsManager instead of internal WsManager",
+          "changes": [
+            {
+              "type": "replace_import",
+              "old": "import { WsManager } from \"../utils/ws_manager\";",
+              "new": "import { BinanceWsManager } from \"../utils/binance_ws\";"
+            },
+            {
+              "type": "replace_in_useEffect",
+              "description": "Replace WsManager.getInstance() with BinanceWsManager.getInstance()",
+              "old_pattern": "const ws = WsManager.getInstance();",
+              "new_pattern": "const ws = BinanceWsManager.getInstance();"
+            },
+            {
+              "type": "replace_subscription",
+              "description": "Replace internal subscription format with BinanceWsManager methods",
+              "old_pattern": "ws.registerCallback(\"depth\", handleDepthUpdate, `DEPTH-${market}`);",
+              "new_pattern": "const unsubDepth = ws.onDepthUpdate(`DEPTH-${market}`, (data) => { if (mounted) handleDepthUpdate({ bids: data.bids, asks: data.asks }); });"
+            },
+            {
+              "type": "replace_subscription",
+              "old_pattern": "ws.registerCallback(\"trade\", handleTradeUpdate, `TRADE-${market}`);",
+              "new_pattern": "const unsubTrade = ws.onTradeUpdate(`TRADE-${market}`, (data) => { if (mounted) handleTradeUpdate(data); });"
+            },
+            {
+              "type": "add",
+              "description": "Start WebSocket subscription",
+              "code": "ws.subscribe(market);"
+            },
+            {
+              "type": "remove",
+              "description": "Remove polling interval (no longer needed)",
+              "pattern": "const pollInterval = setInterval(..."
+            },
+            {
+              "type": "replace_cleanup",
+              "description": "Update cleanup to use unsubscribe functions",
+              "old_pattern": "ws.deRegisterCallback(\"depth\", ...);\nws.sendMessage({ method: \"UNSUBSCRIBE\", ... });",
+              "new_pattern": "unsubDepth();\nunsubTrade();"
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "action": "Run lint",
+          "command": "cd testudo-web/apps/web && bun run lint",
+          "expected": "No errors"
+        },
+        {
+          "step": 3,
+          "action": "Commit",
+          "command": "git add testudo-web/apps/web/src/components/Depth.tsx && git commit -m \"feat: connect Depth component to Binance WebSocket\n\n- Replace internal WsManager with BinanceWsManager\n- Real-time depth updates every 100ms\n- Real-time trade streaming\n- Remove polling fallback (no longer needed)\""
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Update MarketBar to Use WebSocket Price Updates",
+      "status": "pending",
+      "files": {
+        "modify": ["testudo-web/apps/web/src/components/MarketBar.tsx"]
+      },
+      "steps": [
+        {
+          "step": 1,
+          "action": "Add BinanceWsManager import and WebSocket subscription",
+          "changes": [
+            {
+              "type": "add_import",
+              "code": "import { BinanceWsManager } from \"../utils/binance_ws\";"
+            },
+            {
+              "type": "add_useEffect",
+              "description": "Add new useEffect for WebSocket price updates",
+              "code": "useEffect(() => {\n  const ws = BinanceWsManager.getInstance();\n  const unsubBookTicker = ws.onBookTickerUpdate(`BOOKTICKER-${market}`, (data) => {\n    const bid = parseFloat(data.bidPrice);\n    const ask = parseFloat(data.askPrice);\n    const midPrice = ((bid + ask) / 2).toFixed(4);\n    setPrice(midPrice);\n  });\n  return () => { unsubBookTicker(); };\n}, [market, setPrice]);"
+            },
+            {
+              "type": "modify",
+              "description": "Change ticker polling from 5s to 30s (only for 24h stats, not price)",
+              "old_pattern": "const pollInterval = setInterval(fetchTicker, 5000);",
+              "new_pattern": "const tickerRefresh = setInterval(fetchTicker, 30000);"
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "action": "Run lint",
+          "command": "cd testudo-web/apps/web && bun run lint",
+          "expected": "No errors"
+        },
+        {
+          "step": 3,
+          "action": "Commit",
+          "command": "git add testudo-web/apps/web/src/components/MarketBar.tsx && git commit -m \"feat: real-time price from WebSocket book ticker\n\n- Price updates instantly via bookTicker stream\n- 24h stats refresh every 30s via REST (not real-time critical)\n- Remove 5s polling (replaced by WebSocket)\""
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Delete Old WsManager (Cleanup)",
+      "status": "pending",
+      "files": {
+        "delete": ["testudo-web/apps/web/src/utils/ws_manager.ts"]
+      },
+      "steps": [
+        {
+          "step": 1,
+          "action": "Check for remaining imports",
+          "command": "cd testudo-web/apps/web && grep -r \"ws_manager\" src/ --include=\"*.ts\" --include=\"*.tsx\"",
+          "expected": "No imports found"
+        },
+        {
+          "step": 2,
+          "action": "Delete the file",
+          "command": "rm testudo-web/apps/web/src/utils/ws_manager.ts"
+        },
+        {
+          "step": 3,
+          "action": "Run lint and build",
+          "command": "cd testudo-web/apps/web && bun run lint && bun run build",
+          "expected": "No errors"
+        },
+        {
+          "step": 4,
+          "action": "Commit",
+          "command": "git add -A && git commit -m \"chore: remove unused internal WsManager\n\n- Replaced by BinanceWsManager for direct Binance connection\n- Internal ws-stream server no longer used for market data\""
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Test the Implementation",
+      "status": "pending",
+      "files": {},
+      "steps": [
+        {
+          "step": 1,
+          "action": "Start the backend",
+          "command": "cd testudo-exchange && cargo run --release --bin router"
+        },
+        {
+          "step": 2,
+          "action": "Start the frontend",
+          "command": "cd testudo-web/apps/web && bun run dev"
+        },
+        {
+          "step": 3,
+          "action": "Open browser",
+          "url": "http://localhost:5173/trade/SOLUSDT"
+        },
+        {
+          "step": 4,
+          "action": "Verify real-time updates",
+          "checklist": [
+            "Price updates multiple times per second (not every 5 seconds)",
+            "Orderbook bids/asks update in real-time (~100ms)",
+            "New trades appear in the trades tab immediately",
+            "Connection indicator shows connected state",
+            "Switching markets (e.g., to BTCUSDT) reconnects WebSocket"
+          ]
+        },
+        {
+          "step": 5,
+          "action": "Check browser DevTools Network tab",
+          "checklist": [
+            "WebSocket connection to wss://fstream.binance.com/stream?streams=...",
+            "Messages flowing in for depth, aggTrade, bookTicker"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Update Documentation",
+      "status": "pending",
+      "files": {
+        "modify": ["HANDOFF.md"]
+      },
+      "steps": [
+        {
+          "step": 1,
+          "action": "Update HANDOFF.md",
+          "description": "Add to Recent Changes section",
+          "content": "### Recent Changes (2026-01-XX)\n\n**Implemented Binance WebSocket Streaming:**\n- Frontend connects directly to `wss://fstream.binance.com`\n- Real-time orderbook updates every 100ms\n- Real-time trade streaming\n- Real-time price from bookTicker\n- Removed internal ws-stream dependency for market data"
+        },
+        {
+          "step": 2,
+          "action": "Commit",
+          "command": "git add -A && git commit -m \"docs: update HANDOFF.md with WebSocket streaming info\""
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "files_created": ["testudo-web/apps/web/src/utils/binance_ws.ts"],
+    "files_modified": [
+      "testudo-web/apps/web/src/components/Depth.tsx",
+      "testudo-web/apps/web/src/components/MarketBar.tsx",
+      "HANDOFF.md"
+    ],
+    "files_deleted": ["testudo-web/apps/web/src/utils/ws_manager.ts"],
+    "result": {
+      "depth_updates": "Every 100ms from @depth@100ms stream",
+      "trade_updates": "Instantly from @aggTrade stream",
+      "price_updates": "Instantly from @bookTicker stream",
+      "24h_stats": "Every 30s via REST API (volume, high, low)"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { useEffect, useContext, useMemo } from "react";
+import { useEffect, useContext, useMemo, useRef } from "react";
 import { getTicker } from "../utils/requests";
 import { TradesContext } from "../state/TradesProvider";
 import { formatUSD, formatCompact, formatPercentChange } from "../utils/format";
@@ -12,20 +12,32 @@ interface MarketBarProps {
 }
 
 export const MarketBar = ({ market }: MarketBarProps) => {
-  const { ticker, setTicker, setStats, price, loading, setLoading, setError } =
+  const { ticker, setTicker, setStats, price, setPrice, loading, setLoading, setError } =
     useContext(TradesContext);
 
-  // Fetch ticker on mount and market change
+  // Track if initial fetch has completed
+  const initialFetchDone = useRef(false);
+
+  // Fetch ticker on mount, market change, and poll every 5 seconds
   useEffect(() => {
     let mounted = true;
+    initialFetchDone.current = false;
 
     const fetchTicker = async () => {
       try {
-        setLoading('ticker', true);
+        // Only show loading on initial fetch, not on polls
+        if (!initialFetchDone.current) {
+          setLoading('ticker', true);
+        }
         const data = await getTicker(market);
         if (mounted) {
           setTicker(data);
+          // Update price from ticker (real-time polling fallback)
+          if (data.lastPrice) {
+            setPrice(data.lastPrice);
+          }
           setError('ticker', null);
+          initialFetchDone.current = true;
         }
       } catch {
         if (mounted) {
@@ -38,9 +50,17 @@ export const MarketBar = ({ market }: MarketBarProps) => {
       }
     };
 
+    // Initial fetch
     fetchTicker();
-    return () => { mounted = false; };
-  }, [market, setTicker, setLoading, setError]);
+
+    // Poll every 5 seconds for real-time updates
+    const pollInterval = setInterval(fetchTicker, 5000);
+
+    return () => {
+      mounted = false;
+      clearInterval(pollInterval);
+    };
+  }, [market, setTicker, setPrice, setLoading, setError]);
 
   // Update stats when ticker changes
   useEffect(() => {
@@ -54,8 +74,8 @@ export const MarketBar = ({ market }: MarketBarProps) => {
   }, [ticker, setStats]);
 
   const priceChange = useMemo(() => {
-    return formatPercentChange(ticker?.priceChange);
-  }, [ticker?.priceChange]);
+    return formatPercentChange(ticker?.priceChangePercent);
+  }, [ticker?.priceChangePercent]);
 
   const displayPrice = useMemo(() => {
     return formatUSD(price);

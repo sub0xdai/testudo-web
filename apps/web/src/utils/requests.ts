@@ -66,8 +66,8 @@ export async function getTicker(market: string): Promise<Ticker> {
     symbol: data.symbol,
     lastPrice: data.last,
     firstPrice: data.last, // Not provided by backend, use last
-    high: data.ask, // Using ask as proxy for high
-    low: data.bid, // Using bid as proxy for low
+    high: data.high,       // Actual 24h high from Binance
+    low: data.low,         // Actual 24h low from Binance
     priceChange: "0",
     priceChangePercent: data.percentage,
     volume: data.base_volume,

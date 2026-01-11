@@ -199,9 +199,37 @@ export const Depth = ({ market }: DepthProps) => {
 
     fetchInitialData();
 
+    // Poll for updates every 2 seconds (fallback when WebSocket not streaming Binance data)
+    const pollInterval = setInterval(async () => {
+      if (!mounted) return;
+      try {
+        const depthData = await getDepth(market);
+        if (!mounted) return;
+
+        const { bids: bidsData, asks: asksData } = depthData;
+        if (bidsData || asksData) {
+          const filteredBids = (bidsData || [])
+            .filter((bid) => parseFloat(bid[1]) !== 0)
+            .sort((a, b) => parseFloat(b[0]) - parseFloat(a[0]))
+            .slice(0, 30);
+
+          const filteredAsks = (asksData || [])
+            .filter((ask) => parseFloat(ask[1]) !== 0)
+            .sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]))
+            .slice(0, 30);
+
+          setBids(filteredBids);
+          setAsks(filteredAsks);
+        }
+      } catch {
+        // Silently fail on poll errors - WebSocket may recover
+      }
+    }, 2000);
+
     // Cleanup
     return () => {
       mounted = false;
+      clearInterval(pollInterval);
 
       // Unsubscribe from connection state changes
       unsubscribeConnection();
