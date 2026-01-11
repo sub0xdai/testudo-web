@@ -4,6 +4,8 @@ import { TradesContext } from "../state/TradesProvider";
 import { formatUSD, formatCompact, formatPercentChange } from "../utils/format";
 import { Skeleton, StatSkeleton } from "./ui/Skeleton";
 import { MarketSelector } from "./MarketSelector";
+import { ModeToggle } from "./ui/ModeToggle";
+import { ModeIndicator } from "./ui/ModeIndicator";
 
 interface MarketBarProps {
   market: string;
@@ -25,7 +27,7 @@ export const MarketBar = ({ market }: MarketBarProps) => {
           setTicker(data);
           setError('ticker', null);
         }
-      } catch (err) {
+      } catch {
         if (mounted) {
           setError('ticker', 'Failed to load market data');
         }
@@ -140,6 +142,12 @@ export const MarketBar = ({ market }: MarketBarProps) => {
             <ImperialStatItem label="LOW" value={formatUSD(ticker?.low)} />
           </>
         )}
+
+        {/* Trading Mode - Right side */}
+        <div className="ml-auto flex items-center gap-3 px-4 border-l border-grid">
+          <ModeToggle />
+          <ModeIndicator />
+        </div>
       </div>
     </div>
   );

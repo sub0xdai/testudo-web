@@ -38,12 +38,15 @@ export interface Ticker {
   volume: string;
 }
 
+export type ExecutionMode = 'shadow' | 'live';
+
 export interface CreateOrder {
   market: string;
   side: string;
   quantity: number;
   price: number;
   userId: string;
+  executionMode?: ExecutionMode;
 }
 
 export interface UserId {

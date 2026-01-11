@@ -3,6 +3,7 @@ import { createOrder } from "../utils/requests";
 import { CreateOrder } from "../utils/types";
 import { toast } from "sonner";
 import { TradesContext } from "../state/TradesProvider";
+import { TradingModeContext } from "../state/TradingModeProvider";
 import { formatUSD, formatQuantity, parseMarketSymbol } from "../utils/format";
 import { Skeleton } from "./ui/Skeleton";
 import { BalanceDisplay } from "./ui/BalanceDisplay";
@@ -21,6 +22,7 @@ interface SwapInterfaceProps {
 
 export const SwapInterface = ({ market }: SwapInterfaceProps) => {
   const { price, isSubmitting, setIsSubmitting, setError, loading } = useContext(TradesContext);
+  const { mode: executionMode } = useContext(TradingModeContext);
   // Use fallback price for testing when backend is unavailable
   const currentPrice = useMemo(() => {
     const backendPrice = parseFloat(price ?? "0");
@@ -114,6 +116,7 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
       quantity,
       price: orderPrice,
       userId: localStorage.getItem("user_id") ?? "anonymous",
+      executionMode,
     };
 
     try {
@@ -136,7 +139,7 @@ export const SwapInterface = ({ market }: SwapInterfaceProps) => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [size, limitPrice, orderType, currentPrice, market, orderSide, base, setIsSubmitting, setError]);
+  }, [size, limitPrice, orderType, currentPrice, market, orderSide, base, setIsSubmitting, setError, executionMode]);
 
   // Handle order button click
   const handleCreateOrder = useCallback(async () => {

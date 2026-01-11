@@ -1,5 +1,4 @@
-import { useState, useCallback, useMemo, useContext } from 'react';
-import { TradesContext } from '../state/TradesProvider';
+import { useState, useCallback, useMemo } from 'react';
 import { PositionDraft, CreateTradeRequest } from '../utils/types';
 
 interface PositionToolProps {
@@ -27,8 +26,6 @@ export function PositionTool({
   riskPercent = 2,
   onCreateTrade,
 }: PositionToolProps) {
-  const { ticker: _ticker } = useContext(TradesContext);
-
   const [isActive, setIsActive] = useState(false);
   const [side, setSide] = useState<'LONG' | 'SHORT'>('LONG');
   const [entryPrice, setEntryPrice] = useState(currentPrice);
@@ -280,12 +277,10 @@ export function PositionTool({
 export function PositionOverlay({
   side,
   entryPrice,
-  stopLossPrice: _stopLossPrice,
-  takeProfitPrice: _takeProfitPrice,
   quantity,
   riskRewardRatio,
   currentPrice,
-}: PositionDraft & { currentPrice: number }) {
+}: Omit<PositionDraft, 'stopLossPrice' | 'takeProfitPrice' | 'riskAmount'> & { currentPrice: number }) {
   const isLong = side === 'LONG';
 
   // Calculate unrealized P&L

@@ -45,6 +45,7 @@ export async function createOrder(order: CreateOrder): Promise<string> {
     quantity: order.quantity,
     price: order.price,
     user_id: order.userId,
+    execution_mode: order.executionMode ?? 'shadow',
   });
   return response.data;
 }

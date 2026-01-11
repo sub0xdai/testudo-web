@@ -3,12 +3,14 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Trade } from "./pages/Trade";
 import { Toaster } from "sonner";
 import { TradesProvider } from "./state/TradesProvider";
+import { TradingModeProvider } from "./state/TradingModeProvider";
 import { Analytics } from "@vercel/analytics/react";
 import { ErrorBoundary } from "./components/ui/ErrorBoundary";
 
 function App() {
   return (
     <ErrorBoundary>
+      <TradingModeProvider>
       <TradesProvider>
         <Analytics />
         <Toaster
@@ -32,6 +34,7 @@ function App() {
           </Routes>
         </BrowserRouter>
       </TradesProvider>
+      </TradingModeProvider>
     </ErrorBoundary>
   );
 }
