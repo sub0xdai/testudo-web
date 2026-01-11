@@ -5,7 +5,8 @@ import { KLine } from "../../utils/types";
 import { TradesContext } from "../../state/TradesProvider";
 import { parseMarketSymbol } from "../../utils/format";
 
-type TimeInterval = '1min' | '5min' | '15min' | '1h' | '4h' | '1d' | '1w';
+// Binance-compatible interval values
+type TimeInterval = '1m' | '3m' | '5m' | '15m' | '30m' | '1h' | '2h' | '4h' | '6h' | '12h' | '1d' | '3d' | '1w' | '1M';
 
 interface TimeOption {
   label: string;
@@ -13,9 +14,9 @@ interface TimeOption {
 }
 
 const TIME_OPTIONS: TimeOption[] = [
-  { label: "1m", value: "1min" },
-  { label: "5m", value: "5min" },
-  { label: "15m", value: "15min" },
+  { label: "1m", value: "1m" },
+  { label: "5m", value: "5m" },
+  { label: "15m", value: "15m" },
   { label: "1H", value: "1h" },
   { label: "4H", value: "4h" },
   { label: "1D", value: "1d" },
@@ -128,7 +129,7 @@ export const TradeView = ({ market }: TradeViewProps) => {
             high: parseFloat(x.high),
             low: parseFloat(x.low),
             open: parseFloat(x.open),
-            timestamp: new Date(x.end),
+            timestamp: new Date(parseInt(x.end, 10)),
           }))
           .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 

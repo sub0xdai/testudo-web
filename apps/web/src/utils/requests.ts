@@ -4,38 +4,93 @@ import { CreateOrder, Depth, KLine, Ticker, Trade, UserId, Balance, OpenOrder, O
 const BASE_URL = "http://localhost:8080/api/v1";
 
 export async function getDepth(market: string): Promise<Depth> {
-  const response = await axios.get(`${BASE_URL}/depth?symbol=${market}`);
-  return response.data;
+  const response = await axios.get(`${BASE_URL}/market-data/orderbook?symbol=${market}&limit=20`);
+  const { data } = response.data;
+  return {
+    bids: data.bids,
+    asks: data.asks,
+    lastUpdateId: String(data.nonce || data.timestamp),
+  };
 }
 export async function getTrades(market: string): Promise<Trade[]> {
   const response = await axios.get(`${BASE_URL}/trades?symbol=${market}`);
   return response.data;
 }
 
+// Map interval string to milliseconds
+function intervalToMs(interval: string): number {
+  const match = interval.match(/^(\d+)([smhdwM])$/);
+  if (!match) return 3600000; // Default 1h
+  const [, num, unit] = match;
+  const n = parseInt(num, 10);
+  switch (unit) {
+    case 's': return n * 1000;
+    case 'm': return n * 60 * 1000;
+    case 'h': return n * 60 * 60 * 1000;
+    case 'd': return n * 24 * 60 * 60 * 1000;
+    case 'w': return n * 7 * 24 * 60 * 60 * 1000;
+    case 'M': return n * 30 * 24 * 60 * 60 * 1000; // Approximate
+    default: return 3600000;
+  }
+}
+
 export async function getKlines(
   market: string,
   interval: string,
-  startTime: number
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _startTime?: number // Not used - backend fetches latest klines
 ): Promise<KLine[]> {
   const response = await axios.get(
-    `${BASE_URL}/klines?symbol=${market}&interval=${interval}&startTime=${startTime}`
+    `${BASE_URL}/market-data/klines?symbol=${market}&interval=${interval}&limit=500`
   );
-  const data: KLine[] = response.data;
-  return data.sort((x, y) => (Number(x.end) < Number(y.end) ? -1 : 1));
+  const { data } = response.data;
+  const intervalMs = intervalToMs(interval);
+  // Transform from backend format to frontend KLine format
+  const klines: KLine[] = data.map((k: { timestamp: number; open: string; high: string; low: string; close: string; volume: string; quote_volume: string }) => ({
+    open: k.open,
+    high: k.high,
+    low: k.low,
+    close: k.close,
+    volume: k.volume,
+    quoteVolume: k.quote_volume,
+    start: String(k.timestamp),
+    end: String(k.timestamp + intervalMs),
+    trades: "0",
+  }));
+  return klines.sort((x, y) => (Number(x.end) < Number(y.end) ? -1 : 1));
 }
 
 export async function getTicker(market: string): Promise<Ticker> {
-  const tickers = await getTickers();
-  const ticker = tickers.find((t) => t.symbol === market);
-  if (!ticker) {
-    throw new Error(`No ticker found for ${market}`);
-  }
-  return ticker;
+  const response = await axios.get(`${BASE_URL}/market-data/ticker?symbol=${market}`);
+  const { data } = response.data;
+  // Transform from backend format to frontend Ticker format
+  return {
+    symbol: data.symbol,
+    lastPrice: data.last,
+    firstPrice: data.last, // Not provided by backend, use last
+    high: data.ask, // Using ask as proxy for high
+    low: data.bid, // Using bid as proxy for low
+    priceChange: "0",
+    priceChangePercent: data.percentage,
+    volume: data.base_volume,
+    quoteVolume: data.quote_volume,
+    trades: "0",
+  };
 }
 
 export async function getTickers(): Promise<Ticker[]> {
-  const response = await axios.get(`${BASE_URL}/tickers`);
-  return response.data;
+  // Get ticker for common markets
+  const markets = ['SOL_USDC', 'BTC_USDC', 'ETH_USDC'];
+  const tickers = await Promise.all(
+    markets.map(async (market) => {
+      try {
+        return await getTicker(market);
+      } catch {
+        return null;
+      }
+    })
+  );
+  return tickers.filter((t): t is Ticker => t !== null);
 }
 
 export async function createOrder(order: CreateOrder): Promise<string> {
@@ -86,8 +141,14 @@ export async function getOrderHistory(userId: string, market?: string): Promise<
 
 export async function getMarkets(): Promise<Market[]> {
   try {
-    const response = await axios.get(`${BASE_URL}/markets`);
-    return response.data;
+    const response = await axios.get(`${BASE_URL}/market-data/markets`);
+    const { data } = response.data;
+    return data.map((m: { symbol: string; base_asset: string; quote_asset: string }) => ({
+      symbol: m.symbol,
+      baseAsset: m.base_asset,
+      quoteAsset: m.quote_asset,
+      status: 'TRADING' as const,
+    }));
   } catch {
     // Fallback to hardcoded markets if API doesn't support this endpoint
     return [
