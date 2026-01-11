@@ -40,9 +40,7 @@ export async function getKlines(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _startTime?: number // Not used - backend fetches latest klines
 ): Promise<KLine[]> {
-  const response = await axios.get(
-    `${BASE_URL}/market-data/klines?symbol=${market}&interval=${interval}&limit=500`
-  );
+  const response = await axios.get(`${BASE_URL}/market-data/klines?symbol=${market}&interval=${interval}&limit=500`);
   const { data } = response.data;
   const intervalMs = intervalToMs(interval);
   // Transform from backend format to frontend KLine format

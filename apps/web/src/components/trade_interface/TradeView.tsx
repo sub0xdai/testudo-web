@@ -84,6 +84,7 @@ function ChartEmpty() {
 export const TradeView = ({ market }: TradeViewProps) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartManagerRef = useRef<ChartManager | null>(null);
+  const isMountedRef = useRef(true);
 
   const { setLoading, setError } = useContext(TradesContext);
 
@@ -107,7 +108,15 @@ export const TradeView = ({ market }: TradeViewProps) => {
 
         const klineData = await getKlines(market, interval, startTime);
 
-        if (!chartRef.current) return;
+        // Check if still mounted before updating state
+        if (!isMountedRef.current) {
+          return;
+        }
+
+        if (!klineData || klineData.length === 0) {
+          setHasData(false);
+          return;
+        }
 
         // Destroy existing chart
         if (chartManagerRef.current) {
@@ -115,8 +124,7 @@ export const TradeView = ({ market }: TradeViewProps) => {
           chartManagerRef.current = null;
         }
 
-        if (klineData.length === 0) {
-          setHasData(false);
+        if (!chartRef.current) {
           return;
         }
 
@@ -129,9 +137,16 @@ export const TradeView = ({ market }: TradeViewProps) => {
             high: parseFloat(x.high),
             low: parseFloat(x.low),
             open: parseFloat(x.open),
-            timestamp: new Date(parseInt(x.end, 10)),
+            // Use start time (open time) - standard for financial charts
+            timestamp: new Date(parseInt(x.start, 10)),
           }))
+          // Filter out invalid dates to prevent chart crashes
+          .filter((x) => !isNaN(x.timestamp.getTime()))
           .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+
+        if (!chartRef.current) {
+          return;
+        }
 
         // Initialize new chart
         chartManagerRef.current = new ChartManager(
@@ -158,9 +173,11 @@ export const TradeView = ({ market }: TradeViewProps) => {
   );
 
   useEffect(() => {
+    isMountedRef.current = true;
     fetchKlineData(selectedTime);
 
     return () => {
+      isMountedRef.current = false;
       if (chartManagerRef.current) {
         chartManagerRef.current.destroy();
         chartManagerRef.current = null;
@@ -202,14 +219,24 @@ export const TradeView = ({ market }: TradeViewProps) => {
 
       {/* Chart Area */}
       <div className="flex-1 relative min-h-[300px]">
-        {isLoading ? (
-          <ChartSkeleton />
-        ) : error ? (
-          <ChartError message={error} onRetry={handleRetry} />
-        ) : !hasData ? (
-          <ChartEmpty />
-        ) : (
-          <div ref={chartRef} className="w-full h-full" />
+        {/* Chart div ALWAYS rendered so ref exists */}
+        <div ref={chartRef} className="w-full h-full" />
+
+        {/* Overlay states on top of chart */}
+        {isLoading && (
+          <div className="absolute inset-0">
+            <ChartSkeleton />
+          </div>
+        )}
+        {!isLoading && error && (
+          <div className="absolute inset-0">
+            <ChartError message={error} onRetry={handleRetry} />
+          </div>
+        )}
+        {!isLoading && !error && !hasData && (
+          <div className="absolute inset-0">
+            <ChartEmpty />
+          </div>
         )}
       </div>
     </div>

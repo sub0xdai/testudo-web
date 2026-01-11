@@ -37,10 +37,6 @@ export class ChartManager {
   ) {
     const chart = createLightWeightChart(ref, {
       autoSize: true,
-      overlayPriceScales: {
-        ticksVisible: true,
-        borderVisible: true,
-      },
       crosshair: {
         mode: CrosshairMode.Normal,
         vertLine: {
@@ -102,11 +98,16 @@ export class ChartManager {
           ? data.timestamp.getTime()
           : data.timestamp;
         return {
-          ...data,
           time: (timestamp / 1000) as UTCTimestamp,
+          open: data.open,
+          high: data.high,
+          low: data.low,
+          close: data.close,
         };
       })
     );
+
+    this.chart.timeScale().fitContent();
   }
   public update(updatedPrice: PriceUpdate) {
     if (!this.lastUpdateTime) {
