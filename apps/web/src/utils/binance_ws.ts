@@ -2,6 +2,18 @@ const BINANCE_WS_BASE = "wss://fstream.binance.com/stream";
 
 type ConnectionState = 'connecting' | 'connected' | 'disconnected' | 'error';
 
+/**
+ * Convert symbol to Binance Futures format (SOLUSDT)
+ * Handles: SOL_USDC -> solusdt, SOLUSDT -> solusdt
+ */
+function toBinanceSymbol(symbol: string): string {
+  return symbol
+    .replace(/_/g, '')
+    .replace(/\//g, '')
+    .replace(/USDC/gi, 'USDT')
+    .toLowerCase();
+}
+
 interface DepthUpdate {
   bids: [string, string][];
   asks: [string, string][];
@@ -74,8 +86,11 @@ export class BinanceWsManager {
   }
 
   public subscribe(symbol: string, klineInterval: string = '1m'): void {
-    const normalizedSymbol = symbol.toLowerCase();
+    // Convert to Binance format: SOL_USDC -> solusdt, SOLUSDT -> solusdt
+    const normalizedSymbol = toBinanceSymbol(symbol);
     const needsReconnect = this.currentSymbol !== normalizedSymbol || this.currentKlineInterval !== klineInterval;
+
+    console.log('[BinanceWS] Subscribe:', { input: symbol, normalized: normalizedSymbol, interval: klineInterval });
 
     if (!needsReconnect && this.ws?.readyState === WebSocket.OPEN) {
       return;
@@ -218,6 +233,15 @@ export class BinanceWsManager {
       volume: d.k.v,
       isClosed: d.k.x,
     };
+
+    // Debug: Log kline updates received from WebSocket
+    console.log('[BinanceWS] Kline received:', {
+      symbol: this.currentSymbol,
+      interval: update.interval,
+      close: update.close,
+      callbacks: this.klineCallbacks.size,
+    });
+
     this.klineCallbacks.forEach((callback) => callback(update));
   }
 

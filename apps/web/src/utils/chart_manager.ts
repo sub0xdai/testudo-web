@@ -123,6 +123,13 @@ export class ChartManager {
     // Use provided time (in seconds) or fall back to lastUpdateTime
     const candleTime = updatedPrice.time ?? this.lastUpdateTime;
 
+    // Debug: Log chart updates
+    console.log('[ChartManager] Updating candle:', {
+      time: candleTime,
+      close: updatedPrice.close,
+      newCandle: updatedPrice.newCandleInitiated,
+    });
+
     this.candleSeries.update({
       time: candleTime as UTCTimestamp,
       close: updatedPrice.close,
