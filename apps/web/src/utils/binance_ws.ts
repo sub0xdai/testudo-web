@@ -90,8 +90,6 @@ export class BinanceWsManager {
     const normalizedSymbol = toBinanceSymbol(symbol);
     const needsReconnect = this.currentSymbol !== normalizedSymbol || this.currentKlineInterval !== klineInterval;
 
-    console.log('[BinanceWS] Subscribe:', { input: symbol, normalized: normalizedSymbol, interval: klineInterval });
-
     if (!needsReconnect && this.ws?.readyState === WebSocket.OPEN) {
       return;
     }
@@ -233,15 +231,6 @@ export class BinanceWsManager {
       volume: d.k.v,
       isClosed: d.k.x,
     };
-
-    // Debug: Log kline updates received from WebSocket
-    console.log('[BinanceWS] Kline received:', {
-      symbol: this.currentSymbol,
-      interval: update.interval,
-      close: update.close,
-      callbacks: this.klineCallbacks.size,
-    });
-
     this.klineCallbacks.forEach((callback) => callback(update));
   }
 

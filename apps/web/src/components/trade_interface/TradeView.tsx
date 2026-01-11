@@ -196,16 +196,6 @@ export const TradeView = ({ market }: TradeViewProps) => {
     const unsubKline = ws.onKlineUpdate(`KLINE-${market}-${selectedTime}`, (data) => {
       if (!chartManagerRef.current || !isMountedRef.current) return;
 
-      const timeInSeconds = Math.floor(data.startTime / 1000);
-
-      // Debug: Log kline updates
-      console.log('[TradeView] Kline update:', {
-        interval: data.interval,
-        time: timeInSeconds,
-        close: data.close,
-        isClosed: data.isClosed,
-      });
-
       // Update the chart with the new candle data
       // Convert startTime from milliseconds to seconds for lightweight-charts
       chartManagerRef.current.update({
@@ -213,7 +203,7 @@ export const TradeView = ({ market }: TradeViewProps) => {
         high: parseFloat(data.high),
         low: parseFloat(data.low),
         close: parseFloat(data.close),
-        time: timeInSeconds,
+        time: Math.floor(data.startTime / 1000),
         newCandleInitiated: data.isClosed,
       });
     });
