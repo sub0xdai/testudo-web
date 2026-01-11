@@ -23,9 +23,22 @@ interface BookTickerUpdate {
   askQty: string;
 }
 
+interface KlineUpdate {
+  startTime: number;
+  closeTime: number;
+  interval: string;
+  open: string;
+  close: string;
+  high: string;
+  low: string;
+  volume: string;
+  isClosed: boolean;
+}
+
 type DepthCallback = (data: DepthUpdate) => void;
 type TradeCallback = (data: TradeUpdate) => void;
 type BookTickerCallback = (data: BookTickerUpdate) => void;
+type KlineCallback = (data: KlineUpdate) => void;
 type ConnectionCallback = (state: ConnectionState) => void;
 
 const INITIAL_RECONNECT_DELAY = 1000;
@@ -35,11 +48,13 @@ const RECONNECT_MULTIPLIER = 2;
 export class BinanceWsManager {
   private ws: WebSocket | null = null;
   private currentSymbol: string | null = null;
+  private currentKlineInterval: string = '1m';
   private connectionState: ConnectionState = 'disconnected';
 
   private depthCallbacks: Map<string, DepthCallback> = new Map();
   private tradeCallbacks: Map<string, TradeCallback> = new Map();
   private bookTickerCallbacks: Map<string, BookTickerCallback> = new Map();
+  private klineCallbacks: Map<string, KlineCallback> = new Map();
   private connectionCallbacks: Set<ConnectionCallback> = new Set();
 
   private reconnectAttempts = 0;
@@ -58,9 +73,11 @@ export class BinanceWsManager {
     return BinanceWsManager.instance;
   }
 
-  public subscribe(symbol: string): void {
+  public subscribe(symbol: string, klineInterval: string = '1m'): void {
     const normalizedSymbol = symbol.toLowerCase();
-    if (this.currentSymbol === normalizedSymbol && this.ws?.readyState === WebSocket.OPEN) {
+    const needsReconnect = this.currentSymbol !== normalizedSymbol || this.currentKlineInterval !== klineInterval;
+
+    if (!needsReconnect && this.ws?.readyState === WebSocket.OPEN) {
       return;
     }
     if (this.ws) {
@@ -68,6 +85,7 @@ export class BinanceWsManager {
       this.ws.close();
     }
     this.currentSymbol = normalizedSymbol;
+    this.currentKlineInterval = klineInterval;
     this.shouldReconnect = true;
     this.connect();
   }
@@ -96,6 +114,7 @@ export class BinanceWsManager {
       `${this.currentSymbol}@depth@100ms`,
       `${this.currentSymbol}@aggTrade`,
       `${this.currentSymbol}@bookTicker`,
+      `${this.currentSymbol}@kline_${this.currentKlineInterval}`,
     ].join('/');
     const url = `${BINANCE_WS_BASE}?streams=${streams}`;
     try {
@@ -140,6 +159,8 @@ export class BinanceWsManager {
       this.handleTradeUpdate(data);
     } else if (stream.endsWith('@bookTicker')) {
       this.handleBookTickerUpdate(data);
+    } else if (stream.includes('@kline_')) {
+      this.handleKlineUpdate(data);
     }
   }
 
@@ -170,6 +191,34 @@ export class BinanceWsManager {
       askQty: d.A,
     };
     this.bookTickerCallbacks.forEach((callback) => callback(update));
+  }
+
+  private handleKlineUpdate(data: unknown): void {
+    const d = data as {
+      k: {
+        t: number;
+        T: number;
+        i: string;
+        o: string;
+        c: string;
+        h: string;
+        l: string;
+        v: string;
+        x: boolean;
+      };
+    };
+    const update: KlineUpdate = {
+      startTime: d.k.t,
+      closeTime: d.k.T,
+      interval: d.k.i,
+      open: d.k.o,
+      close: d.k.c,
+      high: d.k.h,
+      low: d.k.l,
+      volume: d.k.v,
+      isClosed: d.k.x,
+    };
+    this.klineCallbacks.forEach((callback) => callback(update));
   }
 
   private handleConnectionError(): void {
@@ -210,6 +259,11 @@ export class BinanceWsManager {
   public onBookTickerUpdate(id: string, callback: BookTickerCallback): () => void {
     this.bookTickerCallbacks.set(id, callback);
     return () => this.bookTickerCallbacks.delete(id);
+  }
+
+  public onKlineUpdate(id: string, callback: KlineCallback): () => void {
+    this.klineCallbacks.set(id, callback);
+    return () => this.klineCallbacks.delete(id);
   }
 
   public onConnectionChange(callback: ConnectionCallback): () => void {

@@ -4,6 +4,7 @@ import { getKlines } from "../../utils/requests";
 import { KLine } from "../../utils/types";
 import { TradesContext } from "../../state/TradesProvider";
 import { parseMarketSymbol } from "../../utils/format";
+import { BinanceWsManager } from "../../utils/binance_ws";
 
 // Binance-compatible interval values
 type TimeInterval = '1m' | '3m' | '5m' | '15m' | '30m' | '1h' | '2h' | '4h' | '6h' | '12h' | '1d' | '3d' | '1w' | '1M';
@@ -184,6 +185,32 @@ export const TradeView = ({ market }: TradeViewProps) => {
       }
     };
   }, [fetchKlineData, selectedTime]);
+
+  // Real-time kline updates via WebSocket
+  useEffect(() => {
+    const ws = BinanceWsManager.getInstance();
+
+    // Subscribe to the market with the selected kline interval
+    ws.subscribe(market, selectedTime);
+
+    const unsubKline = ws.onKlineUpdate(`KLINE-${market}-${selectedTime}`, (data) => {
+      if (!chartManagerRef.current || !isMountedRef.current) return;
+
+      // Update the chart with the new candle data
+      chartManagerRef.current.update({
+        open: parseFloat(data.open),
+        high: parseFloat(data.high),
+        low: parseFloat(data.low),
+        close: parseFloat(data.close),
+        time: data.startTime,
+        newCandleInitiated: data.isClosed,
+      });
+    });
+
+    return () => {
+      unsubKline();
+    };
+  }, [market, selectedTime]);
 
   const handleRetry = useCallback(() => {
     fetchKlineData(selectedTime);
