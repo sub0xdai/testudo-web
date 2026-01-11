@@ -21,6 +21,7 @@ interface PriceUpdate {
   high: number;
   low: number;
   close: number;
+  /** Unix timestamp in SECONDS (not milliseconds) for lightweight-charts compatibility */
   time?: number;
   newCandleInitiated?: boolean;
 }
@@ -109,19 +110,28 @@ export class ChartManager {
 
     this.chart.timeScale().fitContent();
   }
+  /**
+   * Update the chart with new candle data
+   * @param updatedPrice - Price update with OHLC values and timestamp in SECONDS
+   */
   public update(updatedPrice: PriceUpdate) {
+    // Initialize lastUpdateTime in seconds if not set
     if (!this.lastUpdateTime) {
-      this.lastUpdateTime = new Date().getTime();
+      this.lastUpdateTime = Math.floor(Date.now() / 1000);
     }
 
+    // Use provided time (in seconds) or fall back to lastUpdateTime
+    const candleTime = updatedPrice.time ?? this.lastUpdateTime;
+
     this.candleSeries.update({
-      time: (this.lastUpdateTime / 1000) as UTCTimestamp,
+      time: candleTime as UTCTimestamp,
       close: updatedPrice.close,
       low: updatedPrice.low,
       high: updatedPrice.high,
       open: updatedPrice.open,
     });
 
+    // When a candle closes, update lastUpdateTime to the new candle's time
     if (updatedPrice.newCandleInitiated && updatedPrice.time !== undefined) {
       this.lastUpdateTime = updatedPrice.time;
     }

@@ -197,12 +197,13 @@ export const TradeView = ({ market }: TradeViewProps) => {
       if (!chartManagerRef.current || !isMountedRef.current) return;
 
       // Update the chart with the new candle data
+      // Convert startTime from milliseconds to seconds for lightweight-charts
       chartManagerRef.current.update({
         open: parseFloat(data.open),
         high: parseFloat(data.high),
         low: parseFloat(data.low),
         close: parseFloat(data.close),
-        time: data.startTime,
+        time: Math.floor(data.startTime / 1000),
         newCandleInitiated: data.isClosed,
       });
     });
