@@ -5,6 +5,7 @@ import { KLine } from "../../utils/types";
 import { TradesContext } from "../../state/TradesProvider";
 import { parseMarketSymbol } from "../../utils/format";
 import { BinanceWsManager } from "../../utils/binance_ws";
+import { PositionDrawingTool } from "../chart/PositionDrawingTool";
 
 // Binance-compatible interval values
 type TimeInterval = '1m' | '3m' | '5m' | '15m' | '30m' | '1h' | '2h' | '4h' | '6h' | '12h' | '1d' | '3d' | '1w' | '1M';
@@ -93,6 +94,7 @@ export const TradeView = ({ market }: TradeViewProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setLocalError] = useState<string | null>(null);
   const [hasData, setHasData] = useState(false);
+  const [isPositionToolActive, setIsPositionToolActive] = useState(false);
 
   const { base, quote } = useMemo(() => parseMarketSymbol(market), [market]);
 
@@ -239,9 +241,15 @@ export const TradeView = ({ market }: TradeViewProps) => {
           ))}
         </div>
 
-        {/* Chart Type Indicator */}
-        <div className="text-text-secondary text-[9px] font-imperial tracking-wider uppercase">
-          TradingView
+        {/* Tools */}
+        <div className="flex items-center gap-2">
+          <PositionToolButton
+            isActive={isPositionToolActive}
+            onClick={() => setIsPositionToolActive(!isPositionToolActive)}
+          />
+          <div className="text-text-secondary text-[9px] font-imperial tracking-wider uppercase">
+            TradingView
+          </div>
         </div>
       </div>
 
@@ -249,6 +257,15 @@ export const TradeView = ({ market }: TradeViewProps) => {
       <div className="flex-1 relative min-h-[300px]">
         {/* Chart div ALWAYS rendered so ref exists */}
         <div ref={chartRef} className="w-full h-full" />
+
+        {/* Position Drawing Tool Overlay */}
+        <PositionDrawingTool
+          chartManager={chartManagerRef.current}
+          market={market}
+          accountBalance={10000}
+          isActive={isPositionToolActive}
+          onDeactivate={() => setIsPositionToolActive(false)}
+        />
 
         {/* Overlay states on top of chart */}
         {isLoading && (
@@ -296,6 +313,51 @@ function TimeButton({
       `}
     >
       {label}
+    </button>
+  );
+}
+
+/**
+ * Position Tool toggle button
+ * DRAW-05: Toolbar button to activate drawing mode
+ */
+function PositionToolButton({
+  isActive,
+  onClick,
+}: {
+  isActive: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title="Position Tool (P)"
+      className={`
+        p-1.5 rounded transition-all duration-150
+        focus:outline-none focus:ring-1 focus:ring-steel-primary/50
+        ${isActive
+          ? "bg-steel-primary text-main-bg"
+          : "text-text-secondary hover:text-text-default hover:bg-container-bg-hover"
+        }
+      `}
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {/* Crosshair with entry/SL/TP lines */}
+        <line x1="4" y1="12" x2="20" y2="12" />
+        <line x1="4" y1="6" x2="12" y2="6" strokeDasharray="2 2" />
+        <line x1="4" y1="18" x2="12" y2="18" strokeDasharray="2 2" />
+        <circle cx="18" cy="6" r="2" />
+        <circle cx="18" cy="18" r="2" />
+      </svg>
     </button>
   );
 }

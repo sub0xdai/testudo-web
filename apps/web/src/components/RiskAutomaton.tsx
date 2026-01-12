@@ -1,55 +1,47 @@
-import { useState, useEffect, useContext, useMemo } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { toast } from 'sonner';
-import { TradesContext } from '../state/TradesProvider';
 import { TradingModeContext } from '../state/TradingModeProvider';
-import { useRiskCalculation } from '../hooks/useRiskCalculation';
-import { RiskDisplay } from './RiskDisplay';
-import { createOrder, getRiskConfig, RiskConfig } from '../utils/requests';
-
-interface RiskAutomatonProps {
-  market: string;
-}
-
-type OrderSide = 'LONG' | 'SHORT';
-
-const DEFAULT_ACCOUNT_BALANCE = 10000; // Will be fetched from API in future
+import { getRiskConfig, updateRiskConfig, RiskConfig } from '../utils/requests';
 
 /**
- * RiskAutomaton - Position sizing calculator and order submission
+ * RiskAutomaton - Risk configuration panel
  *
- * Calculates position size based on:
- * - Entry price
- * - Stop loss price
- * - Take profit price (optional)
+ * DRAW-08: Converted to config-only panel.
+ * Entry/SL/TP and order submission are now handled by PositionDrawingTool.
+ *
+ * Shows:
  * - Account risk percentage
+ * - Max position size cap
+ * - Require stop loss toggle
+ * - Min risk/reward ratio
  */
-export function RiskAutomaton({ market }: RiskAutomatonProps) {
-  const { price: currentPrice } = useContext(TradesContext);
+export function RiskAutomaton() {
   const { mode } = useContext(TradingModeContext);
 
-  const [side, setSide] = useState<OrderSide>('LONG');
-  const [entryPrice, setEntryPrice] = useState('');
-  const [stopLossPrice, setStopLossPrice] = useState('');
-  const [takeProfitPrice, setTakeProfitPrice] = useState('');
   const [riskConfig, setRiskConfig] = useState<RiskConfig | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Editable fields
+  const [riskPercent, setRiskPercent] = useState('2');
+  const [maxPositionSize, setMaxPositionSize] = useState('');
+  const [requireStopLoss, setRequireStopLoss] = useState(true);
+  const [minRiskReward, setMinRiskReward] = useState('1.5');
 
   // Load risk config on mount
   useEffect(() => {
     loadRiskConfig();
   }, []);
 
-  // Update entry price from market price
-  useEffect(() => {
-    if (currentPrice && !entryPrice) {
-      setEntryPrice(currentPrice);
-    }
-  }, [currentPrice, entryPrice]);
-
   const loadRiskConfig = async () => {
+    setIsLoading(true);
     try {
       const config = await getRiskConfig();
       setRiskConfig(config);
+      setRiskPercent(config.account_risk_percent);
+      setMaxPositionSize(config.max_position_size ?? '');
+      setRequireStopLoss(config.require_stop_loss);
+      setMinRiskReward(config.min_risk_reward_ratio ?? '1.5');
     } catch {
       // Use defaults if not authenticated
       setRiskConfig({
@@ -63,155 +55,165 @@ export function RiskAutomaton({ market }: RiskAutomatonProps) {
         default_stop_atr_multiplier: '2',
         min_risk_reward_ratio: '1.5',
       });
-    }
-  };
-
-  const riskPercent = useMemo(() => {
-    return parseFloat(riskConfig?.account_risk_percent ?? '2') || 2;
-  }, [riskConfig]);
-
-  const maxRiskAmount = useMemo(() => {
-    return riskConfig?.max_risk_amount ? parseFloat(riskConfig.max_risk_amount) : undefined;
-  }, [riskConfig]);
-
-  const maxPositionSize = useMemo(() => {
-    return riskConfig?.max_position_size ? parseFloat(riskConfig.max_position_size) : undefined;
-  }, [riskConfig]);
-
-  const calculation = useRiskCalculation({
-    entryPrice: parseFloat(entryPrice) || 0,
-    stopLossPrice: parseFloat(stopLossPrice) || 0,
-    takeProfitPrice: takeProfitPrice ? parseFloat(takeProfitPrice) : undefined,
-    accountBalance: DEFAULT_ACCOUNT_BALANCE,
-    riskPercent,
-    maxRiskAmount,
-    maxPositionSize,
-  });
-
-  const handleSubmit = async () => {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
-      toast.error('Please log in to place orders');
-      return;
-    }
-
-    if (!calculation.isValid) {
-      toast.error(calculation.validationError || 'Invalid order parameters');
-      return;
-    }
-
-    if (!stopLossPrice && riskConfig?.require_stop_loss) {
-      toast.error('Stop loss is required');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await createOrder({
-        market,
-        side: side === 'LONG' ? 'BUY' : 'SELL',
-        quantity: calculation.positionSize,
-        price: parseFloat(entryPrice) || 0,
-        userId,
-        executionMode: mode,
-      });
-
-      toast.success(`${side} order placed`, {
-        description: `${calculation.positionSize} @ ${entryPrice}`,
-      });
-
-      // Reset form
-      setEntryPrice(currentPrice || '');
-      setStopLossPrice('');
-      setTakeProfitPrice('');
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to place order';
-      toast.error('Order failed', { description: message });
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  const isLong = side === 'LONG';
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const updated = await updateRiskConfig({
+        account_risk_percent: riskPercent,
+        max_position_size: maxPositionSize || null,
+        require_stop_loss: requireStopLoss,
+        min_risk_reward_ratio: minRiskReward || null,
+      });
+      setRiskConfig(updated);
+      toast.success('Risk settings saved');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to save settings';
+      toast.error('Save failed', { description: message });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const hasChanges = riskConfig && (
+    riskPercent !== riskConfig.account_risk_percent ||
+    (maxPositionSize || null) !== riskConfig.max_position_size ||
+    requireStopLoss !== riskConfig.require_stop_loss ||
+    (minRiskReward || null) !== riskConfig.min_risk_reward_ratio
+  );
+
+  if (isLoading) {
+    return (
+      <div className="h-full bg-container-bg rounded-xl border border-container-border flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-steel-primary border-t-transparent animate-spin rounded-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="h-full bg-container-bg rounded-xl border border-container-border overflow-hidden flex flex-col">
       {/* Header */}
       <div className="p-3 border-b border-container-border">
         <h2 className="text-xs font-imperial font-semibold text-text-default uppercase tracking-wider">
-          Position Calculator
+          Risk Settings
         </h2>
+        <p className="text-[10px] text-text-tertiary mt-1">
+          Use Position Tool on chart to place orders
+        </p>
       </div>
 
-      {/* Side Toggle */}
-      <div className="p-3 border-b border-container-border">
-        <div className="flex rounded-lg bg-main-bg p-1">
+      {/* Config Fields */}
+      <div className="flex-1 overflow-y-auto p-3 space-y-4">
+        {/* Risk Percent */}
+        <div>
+          <label className="text-[10px] font-imperial text-text-tertiary uppercase tracking-wider mb-1.5 block">
+            Account Risk %
+          </label>
+          <input
+            type="number"
+            value={riskPercent}
+            onChange={(e) => setRiskPercent(e.target.value)}
+            min="0.1"
+            max="100"
+            step="0.1"
+            className="w-full px-3 py-2 bg-main-bg border border-container-border rounded-lg
+                       text-text-default font-numeral text-sm text-right
+                       focus:outline-none focus:ring-1 focus:ring-steel-primary/50 focus:border-steel-primary/50
+                       transition-colors"
+          />
+          <p className="text-[9px] text-text-tertiary mt-1">
+            Max % of account to risk per trade
+          </p>
+        </div>
+
+        {/* Max Position Size */}
+        <div>
+          <label className="text-[10px] font-imperial text-text-tertiary uppercase tracking-wider mb-1.5 block">
+            Max Position Size
+          </label>
+          <input
+            type="number"
+            value={maxPositionSize}
+            onChange={(e) => setMaxPositionSize(e.target.value)}
+            placeholder="No limit"
+            min="0"
+            step="any"
+            className="w-full px-3 py-2 bg-main-bg border border-container-border rounded-lg
+                       text-text-default font-numeral text-sm text-right
+                       placeholder:text-text-tertiary
+                       focus:outline-none focus:ring-1 focus:ring-steel-primary/50 focus:border-steel-primary/50
+                       transition-colors"
+          />
+          <p className="text-[9px] text-text-tertiary mt-1">
+            Cap on position size (optional)
+          </p>
+        </div>
+
+        {/* Min Risk/Reward */}
+        <div>
+          <label className="text-[10px] font-imperial text-text-tertiary uppercase tracking-wider mb-1.5 block">
+            Min Risk/Reward Ratio
+          </label>
+          <input
+            type="number"
+            value={minRiskReward}
+            onChange={(e) => setMinRiskReward(e.target.value)}
+            placeholder="1.5"
+            min="0"
+            step="0.1"
+            className="w-full px-3 py-2 bg-main-bg border border-container-border rounded-lg
+                       text-text-default font-numeral text-sm text-right
+                       placeholder:text-text-tertiary
+                       focus:outline-none focus:ring-1 focus:ring-steel-primary/50 focus:border-steel-primary/50
+                       transition-colors"
+          />
+          <p className="text-[9px] text-text-tertiary mt-1">
+            Minimum R:R for position approval
+          </p>
+        </div>
+
+        {/* Require Stop Loss */}
+        <div className="flex items-center justify-between py-2">
+          <div>
+            <span className="text-[10px] font-imperial text-text-tertiary uppercase tracking-wider">
+              Require Stop Loss
+            </span>
+            <p className="text-[9px] text-text-tertiary mt-0.5">
+              All positions must have SL
+            </p>
+          </div>
           <button
-            onClick={() => setSide('LONG')}
-            className={`flex-1 py-2 text-xs font-imperial font-semibold uppercase tracking-wider rounded-md transition-colors ${
-              isLong
-                ? 'bg-status-success text-main-bg'
-                : 'text-text-secondary hover:text-text-default'
-            }`}
+            onClick={() => setRequireStopLoss(!requireStopLoss)}
+            className={`
+              w-10 h-5 rounded-full transition-colors relative
+              ${requireStopLoss ? 'bg-status-success' : 'bg-container-bg-hover'}
+            `}
           >
-            Long
-          </button>
-          <button
-            onClick={() => setSide('SHORT')}
-            className={`flex-1 py-2 text-xs font-imperial font-semibold uppercase tracking-wider rounded-md transition-colors ${
-              !isLong
-                ? 'bg-status-error text-main-bg'
-                : 'text-text-secondary hover:text-text-default'
-            }`}
-          >
-            Short
+            <div
+              className={`
+                absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform
+                ${requireStopLoss ? 'translate-x-5' : 'translate-x-0.5'}
+              `}
+            />
           </button>
         </div>
       </div>
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-3">
-        {/* Entry Price */}
-        <InputField
-          label="Entry Price"
-          value={entryPrice}
-          onChange={setEntryPrice}
-          placeholder={currentPrice || '0'}
-        />
-
-        {/* Stop Loss */}
-        <InputField
-          label="Stop Loss"
-          value={stopLossPrice}
-          onChange={setStopLossPrice}
-          placeholder={isLong ? 'Below entry' : 'Above entry'}
-          required={riskConfig?.require_stop_loss}
-        />
-
-        {/* Take Profit */}
-        <InputField
-          label="Take Profit"
-          value={takeProfitPrice}
-          onChange={setTakeProfitPrice}
-          placeholder={isLong ? 'Above entry' : 'Below entry'}
-        />
-
-        {/* Risk Display */}
-        <RiskDisplay calculation={calculation} side={side} />
-      </div>
-
-      {/* Submit Button */}
+      {/* Save Button */}
       <div className="p-3 border-t border-container-border">
         <button
-          onClick={handleSubmit}
-          disabled={isSubmitting || !calculation.isValid}
-          className={`w-full py-3 text-sm font-imperial font-semibold uppercase tracking-wider rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-            isLong
-              ? 'bg-status-success hover:bg-status-success/90 text-main-bg'
-              : 'bg-status-error hover:bg-status-error/90 text-main-bg'
-          }`}
+          onClick={handleSave}
+          disabled={isSaving || !hasChanges}
+          className="w-full py-2.5 text-xs font-imperial font-semibold uppercase tracking-wider rounded-lg
+                     bg-steel-primary hover:bg-steel-primary/90 text-main-bg
+                     disabled:opacity-50 disabled:cursor-not-allowed
+                     transition-colors"
         >
-          {isSubmitting ? 'Placing Order...' : `${side} ${market}`}
+          {isSaving ? 'Saving...' : 'Save Settings'}
         </button>
 
         {/* Mode Indicator */}
@@ -223,41 +225,6 @@ export function RiskAutomaton({ market }: RiskAutomatonProps) {
           </span>
         </div>
       </div>
-    </div>
-  );
-}
-
-function InputField({
-  label,
-  value,
-  onChange,
-  placeholder,
-  required,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  required?: boolean;
-}) {
-  return (
-    <div>
-      <label className="flex items-center gap-1 text-[10px] font-imperial text-text-tertiary uppercase tracking-wider mb-1.5">
-        {label}
-        {required && <span className="text-status-error">*</span>}
-      </label>
-      <input
-        type="number"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        step="any"
-        className="w-full px-3 py-2 bg-main-bg border border-container-border rounded-lg
-                   text-text-default font-numeral text-sm text-right
-                   placeholder:text-text-tertiary
-                   focus:outline-none focus:ring-1 focus:ring-steel-primary/50 focus:border-steel-primary/50
-                   transition-colors"
-      />
     </div>
   );
 }

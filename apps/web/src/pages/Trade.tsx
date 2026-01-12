@@ -96,9 +96,9 @@ export const Trade = () => {
             <TradeInterface market={market} />
           </div>
 
-          {/* Risk Automaton (Position Calculator) */}
+          {/* Risk Settings Panel */}
           <div className="order-1 lg:order-2">
-            <RiskAutomaton market={market} />
+            <RiskAutomaton />
           </div>
         </div>
 

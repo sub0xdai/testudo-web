@@ -4,9 +4,26 @@ import {
   CrosshairMode,
   IChartApi,
   ISeriesApi,
+  IPriceLine,
   LineStyle,
+  LineWidth,
   UTCTimestamp,
+  MouseEventParams,
+  Time,
 } from "lightweight-charts";
+
+export interface PriceLineConfig {
+  price: number;
+  color: string;
+  lineWidth?: LineWidth;
+  lineStyle?: LineStyle;
+  axisLabelVisible?: boolean;
+  title?: string;
+}
+
+export type PriceLineId = 'entry' | 'stopLoss' | 'takeProfit';
+
+export type ChartMouseEventHandler = (param: MouseEventParams<Time>) => void;
 
 interface CandleData {
   timestamp: number | Date;
@@ -30,6 +47,7 @@ export class ChartManager {
   private candleSeries: ISeriesApi<"Candlestick">;
   private lastUpdateTime: number = 0;
   private chart: IChartApi;
+  private priceLines: Map<PriceLineId, IPriceLine> = new Map();
 
   constructor(
     ref: HTMLElement,
@@ -137,6 +155,97 @@ export class ChartManager {
     }
   }
   public destroy() {
+    this.removeAllPriceLines();
     this.chart.remove();
+  }
+
+  /**
+   * Get the chart's container element for attaching mouse event handlers
+   */
+  public getChartElement(): HTMLElement {
+    return this.chart.chartElement();
+  }
+
+  /**
+   * Convert a Y coordinate (pixels) to a price value
+   * DRAW-01: Foundation for drawable position tool
+   */
+  public coordinateToPrice(y: number): number | null {
+    return this.candleSeries.coordinateToPrice(y);
+  }
+
+  /**
+   * Convert a price value to a Y coordinate (pixels)
+   * DRAW-01: Foundation for drawable position tool
+   */
+  public priceToCoordinate(price: number): number | null {
+    return this.candleSeries.priceToCoordinate(price);
+  }
+
+  /**
+   * Create a horizontal price line on the chart
+   * DRAW-04: Visual feedback for entry/SL/TP levels
+   */
+  public createPriceLine(id: PriceLineId, config: PriceLineConfig): void {
+    // Remove existing line with same id if present
+    this.removePriceLine(id);
+
+    const priceLine = this.candleSeries.createPriceLine({
+      price: config.price,
+      color: config.color,
+      lineWidth: config.lineWidth ?? (2 as LineWidth),
+      lineStyle: config.lineStyle ?? (id === 'entry' ? LineStyle.Dashed : LineStyle.Solid),
+      axisLabelVisible: config.axisLabelVisible ?? true,
+      title: config.title ?? '',
+    });
+    this.priceLines.set(id, priceLine);
+  }
+
+  /**
+   * Update an existing price line's price
+   */
+  public updatePriceLine(id: PriceLineId, price: number): void {
+    const priceLine = this.priceLines.get(id);
+    if (priceLine) {
+      priceLine.applyOptions({ price });
+    }
+  }
+
+  /**
+   * Remove a specific price line
+   */
+  public removePriceLine(id: PriceLineId): void {
+    const priceLine = this.priceLines.get(id);
+    if (priceLine) {
+      this.candleSeries.removePriceLine(priceLine);
+      this.priceLines.delete(id);
+    }
+  }
+
+  /**
+   * Remove all price lines
+   */
+  public removeAllPriceLines(): void {
+    for (const [id] of this.priceLines) {
+      this.removePriceLine(id);
+    }
+  }
+
+  /**
+   * Subscribe to crosshair move events
+   * Returns unsubscribe function
+   */
+  public subscribeCrosshairMove(handler: ChartMouseEventHandler): () => void {
+    this.chart.subscribeCrosshairMove(handler);
+    return () => this.chart.unsubscribeCrosshairMove(handler);
+  }
+
+  /**
+   * Subscribe to chart click events
+   * Returns unsubscribe function
+   */
+  public subscribeClick(handler: ChartMouseEventHandler): () => void {
+    this.chart.subscribeClick(handler);
+    return () => this.chart.unsubscribeClick(handler);
   }
 }
