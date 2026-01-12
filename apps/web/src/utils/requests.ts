@@ -254,3 +254,37 @@ export async function cancelTrade(tradeId: string, userId: string): Promise<void
     throw new Error(response.data.error || 'Failed to cancel trade');
   }
 }
+
+// Risk Configuration API
+
+export interface RiskConfig {
+  account_risk_percent: string;
+  max_risk_amount: string | null;
+  max_position_size: string | null;
+  max_leverage: number;
+  daily_max_drawdown_percent: string | null;
+  max_open_positions: number | null;
+  require_stop_loss: boolean;
+  default_stop_atr_multiplier: string | null;
+  min_risk_reward_ratio: string | null;
+}
+
+export async function getRiskConfig(): Promise<RiskConfig> {
+  const userId = localStorage.getItem("user_id");
+  if (!userId) {
+    throw new Error("Not authenticated");
+  }
+  const token = localStorage.getItem("access_token");
+  const response = await axios.get<RiskConfig>(`${BASE_URL}/risk-config`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+}
+
+export async function updateRiskConfig(config: Partial<RiskConfig>): Promise<RiskConfig> {
+  const token = localStorage.getItem("access_token");
+  const response = await axios.put<RiskConfig>(`${BASE_URL}/risk-config`, config, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+}

@@ -1,7 +1,7 @@
 import { Navigate, useParams } from "react-router-dom";
 import { MarketBar } from "../components/MarketBar";
 import { NetBar } from "../components/NetBar";
-import { SwapInterface } from "../components/SwapInterface";
+import { RiskAutomaton } from "../components/RiskAutomaton";
 import { TradeInterface } from "../components/TradeInterface";
 import { OpenOrders } from "../components/OpenOrders";
 import { OrderHistory } from "../components/OrderHistory";
@@ -96,9 +96,9 @@ export const Trade = () => {
             <TradeInterface market={market} />
           </div>
 
-          {/* Swap Interface (Buy/Sell Form) */}
+          {/* Risk Automaton (Position Calculator) */}
           <div className="order-1 lg:order-2">
-            <SwapInterface market={market} />
+            <RiskAutomaton market={market} />
           </div>
         </div>
 

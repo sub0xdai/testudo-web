@@ -1,6 +1,7 @@
 import "./App.css";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Trade } from "./pages/Trade";
+import { RiskSettings } from "./pages/RiskSettings";
 import { Toaster } from "sonner";
 import { TradesProvider } from "./state/TradesProvider";
 import { TradingModeProvider } from "./state/TradingModeProvider";
@@ -30,6 +31,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/trade/:market" element={<Trade />} />
+            <Route path="/settings/risk" element={<RiskSettings />} />
             <Route path="*" element={<Navigate to="/trade/SOLUSDT" />} />
           </Routes>
         </BrowserRouter>
