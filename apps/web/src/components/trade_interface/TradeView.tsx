@@ -331,19 +331,20 @@ function PositionToolButton({
   return (
     <button
       onClick={onClick}
-      title="Position Tool (P)"
+      title="Position Tool - Click to draw entry/SL/TP on chart"
       className={`
-        p-1.5 rounded transition-all duration-150
+        px-2 py-1 rounded transition-all duration-150 flex items-center gap-1.5
         focus:outline-none focus:ring-1 focus:ring-steel-primary/50
+        text-[10px] font-imperial font-semibold uppercase tracking-wider
         ${isActive
           ? "bg-steel-primary text-main-bg"
-          : "text-text-secondary hover:text-text-default hover:bg-container-bg-hover"
+          : "text-text-secondary hover:text-text-default hover:bg-container-bg-hover border border-container-border"
         }
       `}
     >
       <svg
-        width="16"
-        height="16"
+        width="14"
+        height="14"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -351,13 +352,13 @@ function PositionToolButton({
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        {/* Crosshair with entry/SL/TP lines */}
         <line x1="4" y1="12" x2="20" y2="12" />
         <line x1="4" y1="6" x2="12" y2="6" strokeDasharray="2 2" />
         <line x1="4" y1="18" x2="12" y2="18" strokeDasharray="2 2" />
         <circle cx="18" cy="6" r="2" />
         <circle cx="18" cy="18" r="2" />
       </svg>
+      Position
     </button>
   );
 }
