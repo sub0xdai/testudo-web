@@ -1,55 +1,54 @@
 # Issue: Chart Not Updating in Real-Time
 
 **Date:** 2026-01-12
-**Status:** Open
+**Status:** Fixed
 **Priority:** High
+**Resolved:** 2026-01-12
 
 ## Problem
 
-After implementing Binance WebSocket streaming for market data, the chart is not updating in real-time. The orderbook, trades, and price display may be working, but the candlestick chart remains static.
+After implementing Binance WebSocket streaming for market data, the chart was not updating in real-time. The orderbook, trades, and price display worked, but the candlestick chart remained static.
 
-## What Was Implemented
+## Root Causes Found
 
-1. `BinanceWsManager` (`src/utils/binance_ws.ts`) - WebSocket manager connecting to `wss://fstream.binance.com`
-2. Streams subscribed:
-   - `@depth@100ms` - Orderbook updates
-   - `@aggTrade` - Trade events
-   - `@bookTicker` - Best bid/ask (price)
-   - `@kline_<interval>` - Candlestick data
+1. **Timestamp unit mismatch** - Binance WebSocket sends timestamps in milliseconds, but lightweight-charts expects seconds
+2. **Symbol format mismatch** - WebSocket used raw symbol (e.g., `sol_usdc`) but Binance expects `solusdt`
 
-3. `TradeView.tsx` updated to:
-   - Subscribe to kline updates via `ws.onKlineUpdate()`
-   - Call `chartManagerRef.current.update()` with new candle data
+## Solution
 
-## Symptoms
+### Fix 1: Timestamp Conversion (TradeView.tsx)
+```typescript
+// Convert startTime from milliseconds to seconds
+time: Math.floor(data.startTime / 1000),
+```
 
-- Chart loads initial data correctly
-- Chart does not update when new trades/candles come in
-- Changing timeframe doesn't show live updates
+### Fix 2: Symbol Normalization (binance_ws.ts)
+```typescript
+function toBinanceSymbol(symbol: string): string {
+  return symbol
+    .replace(/_/g, '')
+    .replace(/\//g, '')
+    .replace(/USDC/gi, 'USDT')
+    .toLowerCase();
+}
+```
 
-## Possible Causes to Investigate
+### Fix 3: ChartManager Update Method (chart_manager.ts)
+- Initialize `lastUpdateTime` in seconds
+- Use provided time directly instead of re-dividing
 
-1. **ChartManager.update() method** - May not be correctly updating the lightweight-charts series
-2. **Time format mismatch** - Binance sends timestamps in milliseconds, chart may expect seconds
-3. **WebSocket not receiving kline data** - Check browser DevTools Network tab for incoming messages
-4. **Callback not being triggered** - The kline callback may not be registered correctly
-5. **Race condition** - Chart may not be initialized when first kline update arrives
+## Commits
 
-## Debugging Steps
+- `1408040` - fix: resolve chart not updating in real-time
+- `bd4d159` - fix: normalize symbol format for WebSocket streams
+- `931687f` - chore: remove debug console.log statements
 
-1. Add console.log in `handleKlineUpdate()` to verify data is received
-2. Add console.log in `TradeView.tsx` kline callback to verify it's called
-3. Check browser DevTools → Network → WS tab for `@kline_` messages
-4. Verify `chartManagerRef.current` exists when update is called
-5. Check if `update()` method in ChartManager is correct for lightweight-charts API
+## Files Modified
 
-## Related Files
+- `src/components/trade_interface/TradeView.tsx`
+- `src/utils/binance_ws.ts`
+- `src/utils/chart_manager.ts`
 
-- `src/utils/binance_ws.ts` - WebSocket manager
-- `src/utils/chart_manager.ts` - Chart wrapper
-- `src/components/trade_interface/TradeView.tsx` - Chart component
+## Verification
 
-## Commits Related
-
-- `aafde4e` - feat: add real-time kline streaming to chart
-- `e32aec5` - feat: add Binance Futures WebSocket manager
+Chart now updates in real-time when navigating to `/trade/SOLUSDT` or `/trade/SOL_USDC`.
