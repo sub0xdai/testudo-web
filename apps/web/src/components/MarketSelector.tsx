@@ -152,11 +152,14 @@ export function MarketSelector({ currentMarket }: MarketSelectorProps) {
           ref={dropdownRef}
           style={{
             position: 'fixed',
-            top: dropdownPosition.top,
-            left: dropdownPosition.left,
-            zIndex: 9999,
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`,
+            zIndex: 99999,
+            width: '256px',
+            backgroundColor: '#0A0A0A',
+            border: '2px solid #333333',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9)',
           }}
-          className="w-64 bg-panel border-2 border-grid shadow-xl"
         >
           {/* Search Input */}
           <div className="p-2 border-b border-grid">
@@ -206,7 +209,7 @@ export function MarketSelector({ currentMarket }: MarketSelectorProps) {
             )}
           </div>
         </div>,
-        document.body
+        document.getElementById('portal-root') || document.body
       )}
     </div>
   );
