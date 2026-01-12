@@ -80,8 +80,8 @@ export const Trade = () => {
         aria-label="Trading interface"
       >
         {/* Header Row - Market Bar + Social Links */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-3 sm:gap-4">
-          <div className="h-[60px]">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-3 sm:gap-4 overflow-visible relative z-50">
+          <div className="min-h-[60px] overflow-visible">
             <MarketBar market={market} />
           </div>
           <div className="hidden lg:block h-[60px]">
@@ -90,7 +90,7 @@ export const Trade = () => {
         </div>
 
         {/* Main Content - Chart/OrderBook + Swap Interface */}
-        <div className="grid grid-cols-1 lg:grid-cols-[3fr_1fr] xl:grid-cols-[4fr_1fr] gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr_1fr] xl:grid-cols-[4fr_1fr] gap-3 sm:gap-4 relative z-10">
           {/* Trade Interface (Chart + Order Book) */}
           <div className="order-2 lg:order-1 min-h-[400px] lg:min-h-0">
             <TradeInterface market={market} />

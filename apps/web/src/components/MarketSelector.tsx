@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Market } from '../utils/types';
 import { getMarkets } from '../utils/requests';
@@ -20,10 +21,23 @@ export function MarketSelector({ currentMarket }: MarketSelectorProps) {
   const [markets, setMarkets] = useState<Market[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
   const { base } = parseMarketSymbol(currentMarket);
+
+  // Update dropdown position when opened
+  useLayoutEffect(() => {
+    if (isOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 4,
+        left: rect.left,
+      });
+    }
+  }, [isOpen]);
 
   // Fetch markets on mount
   useEffect(() => {
@@ -41,17 +55,23 @@ export function MarketSelector({ currentMarket }: MarketSelectorProps) {
       .finally(() => setIsLoading(false));
   }, []);
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside (check both trigger and dropdown)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const clickedTrigger = triggerRef.current?.contains(target);
+      const clickedDropdown = dropdownRef.current?.contains(target);
+
+      if (!clickedTrigger && !clickedDropdown) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isOpen]);
 
   // Focus search input when opening
   useEffect(() => {
@@ -105,9 +125,10 @@ export function MarketSelector({ currentMarket }: MarketSelectorProps) {
   }, [filteredMarkets, handleSelectMarket]);
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative">
       {/* Trigger Button - Shows symbol like SOLUSDT */}
       <button
+        ref={triggerRef}
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-1.5 hover:bg-elevated transition-colors"
       >
@@ -125,9 +146,18 @@ export function MarketSelector({ currentMarket }: MarketSelectorProps) {
         <ChevronIcon className={`w-4 h-4 text-grey transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
-      {/* Dropdown */}
-      {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-64 bg-panel border-2 border-grid shadow-xl z-50 overflow-hidden">
+      {/* Dropdown - Rendered via portal to escape container clipping */}
+      {isOpen && createPortal(
+        <div
+          ref={dropdownRef}
+          style={{
+            position: 'fixed',
+            top: dropdownPosition.top,
+            left: dropdownPosition.left,
+            zIndex: 9999,
+          }}
+          className="w-64 bg-panel border-2 border-grid shadow-xl"
+        >
           {/* Search Input */}
           <div className="p-2 border-b border-grid">
             <div className="relative">
@@ -175,7 +205,8 @@ export function MarketSelector({ currentMarket }: MarketSelectorProps) {
               ))
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -99,14 +99,14 @@ export const MarketBar = ({ market }: MarketBarProps) => {
   const isTickerLoading = loading.ticker;
 
   return (
-    <div className="inline-flex items-center justify-center w-full h-full thin-scroll">
+    <div className="inline-flex items-center justify-center w-full h-full thin-scroll overflow-visible relative">
       {/* Logo */}
       <div className="h-full panel-imperial overflow-hidden flex items-center justify-center px-4 border-r border-grid">
         <img src="/logo.png" alt="Testudo" className="h-6 w-auto" />
       </div>
 
       {/* Market Selector */}
-      <div className="h-full panel-imperial overflow-hidden flex items-center justify-center min-w-[140px] px-3 border-r border-grid">
+      <div className="h-full panel-imperial flex items-center justify-center min-w-[140px] px-3 border-r border-grid overflow-visible">
         <MarketSelector currentMarket={market} />
       </div>
 
