@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useContext } from 'react';
+import { useState, useCallback, useEffect, useContext, useRef } from 'react';
 import { toast } from 'sonner';
 import { ChartManager } from '../../utils/chart_manager';
 import { useRiskCalculation, RiskCalculationResult } from '../../hooks/useRiskCalculation';
@@ -9,8 +9,11 @@ import { PositionZoneOverlay } from './PositionZoneOverlay';
 /**
  * Drawing state machine states
  * DRAW-02: State machine for drawable position tool
+ *
+ * Drag-based UX (TradingView style):
+ * idle → ready → dragging → complete
  */
-export type DrawingState = 'idle' | 'drawing_entry' | 'drawing_sl' | 'drawing_tp' | 'complete';
+export type DrawingState = 'idle' | 'ready' | 'dragging' | 'complete';
 
 export interface PositionLevels {
   entryPrice: number | null;
@@ -29,16 +32,17 @@ interface PositionDrawingToolProps {
 const DEFAULT_RISK_PERCENT = 2;
 
 /**
- * PositionDrawingTool - Drawable position entry on chart
+ * PositionDrawingTool - Drawable position entry on chart (TradingView style)
  *
  * State Machine:
- * idle → drawing_entry → drawing_sl → drawing_tp → complete
+ * idle → ready → dragging → complete
  *
- * User Flow:
- * 1. Click chart → Sets entry price
- * 2. Drag mouse → Sets stop loss
- * 3. Click again → Sets take profit
- * 4. Execute or cancel
+ * User Flow (drag-based):
+ * 1. Activate tool → ready state
+ * 2. Click & hold (mousedown) → Sets entry, starts dragging
+ * 3. Drag mouse → Updates SL in real-time, shows rectangle
+ * 4. Release (mouseup) → Complete, auto-sets TP based on R:R
+ * 5. Adjust handles or execute (Enter) / cancel (Esc)
  */
 export function PositionDrawingTool({
   chartManager,
@@ -58,6 +62,14 @@ export function PositionDrawingTool({
   const [previewPrice, setPreviewPrice] = useState<number | null>(null);
   const [riskConfig, setRiskConfig] = useState<RiskConfig | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Refs for stable access in event handlers (avoid stale closures)
+  const drawingStateRef = useRef<DrawingState>('idle');
+  const levelsRef = useRef<PositionLevels>({ entryPrice: null, stopLossPrice: null, takeProfitPrice: null });
+
+  // Keep refs in sync with state
+  useEffect(() => { drawingStateRef.current = drawingState; }, [drawingState]);
+  useEffect(() => { levelsRef.current = levels; }, [levels]);
 
   // Load risk config
   useEffect(() => {
@@ -100,103 +112,97 @@ export function PositionDrawingTool({
   // Activate drawing mode
   useEffect(() => {
     if (isActive && drawingState === 'idle') {
-      setDrawingState('drawing_entry');
+      setDrawingState('ready');
     } else if (!isActive && drawingState !== 'idle') {
       handleCancel();
     }
   }, [isActive]);
 
-  // Update price lines on chart
-  useEffect(() => {
-    if (!chartManager) return;
+  // Note: Price lines are rendered by PositionZoneOverlay's DraggableHandle components
+  // No native chart price lines needed (they caused double lines)
 
-    // Entry line
-    if (levels.entryPrice !== null) {
-      chartManager.createPriceLine('entry', {
-        price: levels.entryPrice,
-        color: '#ffffff',
-        lineWidth: 2,
-        title: 'Entry',
-      });
-    } else {
-      chartManager.removePriceLine('entry');
-    }
+  // Default R:R ratio for auto TP calculation
+  const defaultRR = parseFloat(riskConfig?.min_risk_reward_ratio ?? '2') || 2;
+  const defaultRRRef = useRef(defaultRR);
+  useEffect(() => { defaultRRRef.current = defaultRR; }, [defaultRR]);
 
-    // Stop loss line
-    if (levels.stopLossPrice !== null) {
-      chartManager.createPriceLine('stopLoss', {
-        price: levels.stopLossPrice,
-        color: '#ef4444',
-        lineWidth: 2,
-        title: 'SL',
-      });
-    } else {
-      chartManager.removePriceLine('stopLoss');
-    }
-
-    // Take profit line
-    if (levels.takeProfitPrice !== null) {
-      chartManager.createPriceLine('takeProfit', {
-        price: levels.takeProfitPrice,
-        color: '#22c55e',
-        lineWidth: 2,
-        title: 'TP',
-      });
-    } else {
-      chartManager.removePriceLine('takeProfit');
-    }
-  }, [chartManager, levels]);
-
-  // Handle chart click
-  const handleChartClick = useCallback((price: number) => {
-    switch (drawingState) {
-      case 'drawing_entry':
-        setLevels(prev => ({ ...prev, entryPrice: price }));
-        setDrawingState('drawing_sl');
-        break;
-      case 'drawing_sl':
-        setLevels(prev => ({ ...prev, stopLossPrice: price }));
-        setDrawingState('drawing_tp');
-        break;
-      case 'drawing_tp':
-        setLevels(prev => ({ ...prev, takeProfitPrice: price }));
-        setDrawingState('complete');
-        break;
-    }
-  }, [drawingState]);
-
-  // Handle mouse move for preview
-  const handleMouseMove = useCallback((price: number | null) => {
-    setPreviewPrice(price);
-  }, []);
-
-  // Subscribe to chart events
+  // Subscribe to chart events (drag-based) - uses refs to avoid stale closures
   useEffect(() => {
     if (!chartManager || !isActive) return;
 
-    const unsubClick = chartManager.subscribeClick((param) => {
-      if (param.point) {
+    const chartContainer = chartManager.getChartElement();
+    if (!chartContainer) return;
+
+    const handleMouseDown = (e: MouseEvent) => {
+      if (drawingStateRef.current !== 'ready') return;
+      const rect = chartContainer.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      const price = chartManager.coordinateToPrice(y);
+      if (price !== null) {
+        // Set entry price and start dragging
+        setLevels({ entryPrice: price, stopLossPrice: price, takeProfitPrice: null });
+        setDrawingState('dragging');
+      }
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (drawingStateRef.current !== 'dragging') return;
+      const rect = chartContainer.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      const price = chartManager.coordinateToPrice(y);
+      if (price !== null && levelsRef.current.entryPrice !== null) {
+        // Update SL in real-time during drag
+        setLevels(prev => ({ ...prev, stopLossPrice: price }));
+        setPreviewPrice(price);
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (drawingStateRef.current !== 'dragging') return;
+      const currentLevels = levelsRef.current;
+      if (currentLevels.entryPrice === null || currentLevels.stopLossPrice === null) return;
+
+      // Auto-calculate TP based on R:R ratio
+      const riskDistance = Math.abs(currentLevels.entryPrice - currentLevels.stopLossPrice);
+
+      // Require minimum drag distance (at least 0.1% of entry price)
+      const minDistance = currentLevels.entryPrice * 0.001;
+      if (riskDistance < minDistance) {
+        // Too small - cancel the draw
+        setDrawingState('ready');
+        setLevels({ entryPrice: null, stopLossPrice: null, takeProfitPrice: null });
+        return;
+      }
+
+      const rewardDistance = riskDistance * defaultRRRef.current;
+      const isLong = currentLevels.entryPrice > currentLevels.stopLossPrice;
+      const tpPrice = isLong
+        ? currentLevels.entryPrice + rewardDistance
+        : currentLevels.entryPrice - rewardDistance;
+
+      setLevels(prev => ({ ...prev, takeProfitPrice: tpPrice }));
+      setDrawingState('complete');
+    };
+
+    // Subscribe to crosshair move for preview (when not dragging)
+    const unsubMove = chartManager.subscribeCrosshairMove((param) => {
+      if (drawingStateRef.current === 'ready' && param.point) {
         const price = chartManager.coordinateToPrice(param.point.y);
-        if (price !== null) {
-          handleChartClick(price);
-        }
+        setPreviewPrice(price);
       }
     });
 
-    const unsubMove = chartManager.subscribeCrosshairMove((param) => {
-      if (param.point) {
-        const price = chartManager.coordinateToPrice(param.point.y);
-        handleMouseMove(price);
-      } else {
-        handleMouseMove(null);
-      }
-    });
+    chartContainer.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
 
     return () => {
-      unsubClick();
       unsubMove();
+      chartContainer.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [chartManager, isActive, handleChartClick, handleMouseMove]);
+  }, [chartManager, isActive]); // Minimal deps - use refs for state
 
   // Keyboard shortcuts - DRAW-09
   useEffect(() => {
@@ -220,9 +226,8 @@ export function PositionDrawingTool({
     setDrawingState('idle');
     setLevels({ entryPrice: null, stopLossPrice: null, takeProfitPrice: null });
     setPreviewPrice(null);
-    chartManager?.removeAllPriceLines();
     onDeactivate();
-  }, [chartManager, onDeactivate]);
+  }, [onDeactivate]);
 
   const handleExecute = useCallback(async () => {
     const userId = localStorage.getItem('user_id');
