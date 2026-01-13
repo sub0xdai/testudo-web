@@ -1,5 +1,4 @@
 import {
-  CandlestickSeries,
   ColorType,
   createChart as createLightWeightChart,
   CrosshairMode,
@@ -12,6 +11,8 @@ import {
   MouseEventParams,
   Time,
 } from "lightweight-charts";
+// V5 uses default export for series definitions - import via namespace
+import * as LightweightCharts from "lightweight-charts";
 import {
   PositionZonePrimitive,
   type PositionLevels,
@@ -112,7 +113,7 @@ export class ChartManager {
     });
 
     // Create the Candlestick Series with custom colors (V5 API)
-    const candleSeries = chart.addSeries(CandlestickSeries, {
+    const candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries, {
       upColor: "#34cb88", // Green color for bullish candles
       downColor: "#ff615c", // Red color for bearish candles
       borderVisible: false,

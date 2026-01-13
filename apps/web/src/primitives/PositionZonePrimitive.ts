@@ -2,6 +2,7 @@ import type {
   ISeriesPrimitiveBase,
   IPrimitivePaneView,
   IPrimitivePaneRenderer,
+  ISeriesPrimitiveAxisView,
   SeriesAttachedParameter,
   PrimitivePaneViewZOrder,
   ISeriesApi,
@@ -162,6 +163,56 @@ class PositionZonePaneView implements IPrimitivePaneView {
 }
 
 /**
+ * V5-19: Price axis label view for entry/SL/TP prices
+ * Shows colored labels on the right price axis
+ */
+class PositionPriceAxisView implements ISeriesPrimitiveAxisView {
+  private _price: number;
+  private _text: string;
+  private _textColor: string;
+  private _backColor: string;
+  private _series: ISeriesApi<SeriesType, Time> | null = null;
+
+  constructor(
+    price: number,
+    label: string,
+    textColor: string,
+    backColor: string
+  ) {
+    this._price = price;
+    this._text = `${label} ${price.toFixed(2)}`;
+    this._textColor = textColor;
+    this._backColor = backColor;
+  }
+
+  setSeries(series: ISeriesApi<SeriesType, Time> | null): void {
+    this._series = series;
+  }
+
+  setPrice(price: number, label: string): void {
+    this._price = price;
+    this._text = `${label} ${price.toFixed(2)}`;
+  }
+
+  coordinate(): number {
+    if (!this._series) return -1;
+    return this._series.priceToCoordinate(this._price) ?? -1;
+  }
+
+  text(): string {
+    return this._text;
+  }
+
+  textColor(): string {
+    return this._textColor;
+  }
+
+  backColor(): string {
+    return this._backColor;
+  }
+}
+
+/**
  * V5 Series Primitive for rendering position zones on the chart canvas
  * V5-05: Implements ISeriesPrimitiveBase interface
  *
@@ -184,13 +235,22 @@ export class PositionZonePrimitive
   private _requestUpdate: (() => void) | null = null;
   private _levels: PositionLevels | null = null;
   private _series: ISeriesApi<SeriesType, Time> | null = null;
+  // V5-19: Price axis labels
+  private _entryAxisView: PositionPriceAxisView;
+  private _slAxisView: PositionPriceAxisView;
+  private _tpAxisView: PositionPriceAxisView;
+  private _priceAxisViews: ISeriesPrimitiveAxisView[] = [];
 
   constructor(style?: Partial<PositionZoneStyle>) {
-    this._renderer = new PositionZoneRenderer(
-      style ? { ...DEFAULT_STYLE, ...style } : DEFAULT_STYLE
-    );
+    const mergedStyle = style ? { ...DEFAULT_STYLE, ...style } : DEFAULT_STYLE;
+    this._renderer = new PositionZoneRenderer(mergedStyle);
     this._paneView = new PositionZonePaneView(this._renderer);
     this._paneViews = [this._paneView];
+
+    // V5-19: Initialize price axis views with placeholder values
+    this._entryAxisView = new PositionPriceAxisView(0, "Entry", "#000000", mergedStyle.entryLineColor);
+    this._slAxisView = new PositionPriceAxisView(0, "SL", "#000000", mergedStyle.slLineColor);
+    this._tpAxisView = new PositionPriceAxisView(0, "TP", "#000000", mergedStyle.tpLineColor);
   }
 
   /**
@@ -200,6 +260,10 @@ export class PositionZonePrimitive
     this._requestUpdate = param.requestUpdate;
     this._series = param.series;
     this._renderer.setSeries(param.series);
+    // V5-19: Set series on axis views
+    this._entryAxisView.setSeries(param.series);
+    this._slAxisView.setSeries(param.series);
+    this._tpAxisView.setSeries(param.series);
   }
 
   /**
@@ -208,6 +272,11 @@ export class PositionZonePrimitive
   detached(): void {
     this._requestUpdate = null;
     this._series = null;
+    // V5-19: Clear series from axis views
+    this._entryAxisView.setSeries(null);
+    this._slAxisView.setSeries(null);
+    this._tpAxisView.setSeries(null);
+    this._priceAxisViews = [];
   }
 
   /**
@@ -215,6 +284,13 @@ export class PositionZonePrimitive
    */
   paneViews(): readonly IPrimitivePaneView[] {
     return this._paneViews;
+  }
+
+  /**
+   * V5-19: Returns price axis views for rendering labels on the price axis
+   */
+  priceAxisViews(): readonly ISeriesPrimitiveAxisView[] {
+    return this._priceAxisViews;
   }
 
   /**
@@ -232,6 +308,17 @@ export class PositionZonePrimitive
   updateLevels(levels: PositionLevels | null): void {
     this._levels = levels;
     this._renderer.setLevels(levels);
+
+    // V5-19: Update price axis views
+    if (levels) {
+      this._entryAxisView.setPrice(levels.entry, "Entry");
+      this._slAxisView.setPrice(levels.stopLoss, "SL");
+      this._tpAxisView.setPrice(levels.takeProfit, "TP");
+      this._priceAxisViews = [this._entryAxisView, this._slAxisView, this._tpAxisView];
+    } else {
+      this._priceAxisViews = [];
+    }
+
     this._requestUpdate?.();
   }
 
