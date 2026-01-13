@@ -1,10 +1,10 @@
 import { useState, useCallback, useEffect, useContext, useRef } from 'react';
 import { toast } from 'sonner';
-import { ChartManager } from '../../utils/chart_manager';
+import { ChartManager, type PositionLevels as PrimitiveLevels } from '../../utils/chart_manager';
 import { useRiskCalculation, RiskCalculationResult } from '../../hooks/useRiskCalculation';
 import { createOrder, getRiskConfig, RiskConfig } from '../../utils/requests';
 import { TradingModeContext } from '../../state/TradingModeProvider';
-import { PositionZoneOverlay } from './PositionZoneOverlay';
+import { PositionHandleOverlay } from './PositionHandleOverlay';
 
 /**
  * Drawing state machine states
@@ -33,6 +33,10 @@ const DEFAULT_RISK_PERCENT = 2;
 
 /**
  * PositionDrawingTool - Drawable position entry on chart (TradingView style)
+ *
+ * V5-15: Refactored to use hybrid primitive + DOM architecture
+ * - Canvas: PositionZonePrimitive renders zones/lines (pan/zoom with chart)
+ * - DOM: PositionHandleOverlay renders drag handles + stats panel
  *
  * State Machine:
  * idle → ready → dragging → complete
@@ -105,9 +109,9 @@ export function PositionDrawingTool({
   });
 
   // Determine side based on entry vs stop loss
-  const side: 'LONG' | 'SHORT' = levels.entryPrice && levels.stopLossPrice
-    ? levels.entryPrice > levels.stopLossPrice ? 'LONG' : 'SHORT'
-    : 'LONG';
+  const side: 'long' | 'short' = levels.entryPrice && levels.stopLossPrice
+    ? levels.entryPrice > levels.stopLossPrice ? 'long' : 'short'
+    : 'long';
 
   // Activate drawing mode
   useEffect(() => {
@@ -118,13 +122,48 @@ export function PositionDrawingTool({
     }
   }, [isActive]);
 
-  // Note: Price lines are rendered by PositionZoneOverlay's DraggableHandle components
-  // No native chart price lines needed (they caused double lines)
-
   // Default R:R ratio for auto TP calculation
   const defaultRR = parseFloat(riskConfig?.min_risk_reward_ratio ?? '2') || 2;
   const defaultRRRef = useRef(defaultRR);
   useEffect(() => { defaultRRRef.current = defaultRR; }, [defaultRR]);
+
+  // V5-15: Attach/detach canvas primitive based on drawing state
+  useEffect(() => {
+    if (!chartManager) return;
+
+    if (drawingState === 'complete' && levels.entryPrice && levels.stopLossPrice && levels.takeProfitPrice) {
+      // Attach primitive and update levels
+      const primitive = chartManager.attachPositionPrimitive();
+      const primitiveLevels: PrimitiveLevels = {
+        entry: levels.entryPrice,
+        stopLoss: levels.stopLossPrice,
+        takeProfit: levels.takeProfitPrice,
+        side,
+      };
+      primitive.updateLevels(primitiveLevels);
+    } else if (drawingState === 'dragging' && levels.entryPrice && levels.stopLossPrice) {
+      // During drag, show entry and SL zones (TP will be calculated on release)
+      const primitive = chartManager.getPositionPrimitive() ?? chartManager.attachPositionPrimitive();
+      // For dragging, use SL as a temporary TP to show the risk zone
+      const primitiveLevels: PrimitiveLevels = {
+        entry: levels.entryPrice,
+        stopLoss: levels.stopLossPrice,
+        takeProfit: levels.entryPrice, // Just show risk zone during drag
+        side,
+      };
+      primitive.updateLevels(primitiveLevels);
+    } else if (drawingState === 'idle' || drawingState === 'ready') {
+      // Detach primitive when not drawing
+      chartManager.detachPositionPrimitive();
+    }
+
+    return () => {
+      // Cleanup on unmount
+      if (drawingState === 'idle') {
+        chartManager.detachPositionPrimitive();
+      }
+    };
+  }, [chartManager, drawingState, levels, side]);
 
   // Subscribe to chart events (drag-based) - uses refs to avoid stale closures
   useEffect(() => {
@@ -223,11 +262,14 @@ export function PositionDrawingTool({
   }, [isActive, drawingState]);
 
   const handleCancel = useCallback(() => {
+    if (chartManager) {
+      chartManager.detachPositionPrimitive();
+    }
     setDrawingState('idle');
     setLevels({ entryPrice: null, stopLossPrice: null, takeProfitPrice: null });
     setPreviewPrice(null);
     onDeactivate();
-  }, [onDeactivate]);
+  }, [chartManager, onDeactivate]);
 
   const handleExecute = useCallback(async () => {
     const userId = localStorage.getItem('user_id');
@@ -250,14 +292,14 @@ export function PositionDrawingTool({
     try {
       await createOrder({
         market,
-        side: side === 'LONG' ? 'BUY' : 'SELL',
+        side: side === 'long' ? 'BUY' : 'SELL',
         quantity: calculation.positionSize,
         price: levels.entryPrice,
         userId,
         executionMode: mode,
       });
 
-      toast.success(`${side} order placed`, {
+      toast.success(`${side.toUpperCase()} order placed`, {
         description: `${calculation.positionSize} @ ${levels.entryPrice.toFixed(2)}`,
       });
 
@@ -270,32 +312,113 @@ export function PositionDrawingTool({
     }
   }, [calculation, levels, market, mode, side, handleCancel]);
 
-  // Update level from drag - DRAW-06
+  // V5-12: Update level from handle drag - updates both state and primitive
   const handleLevelChange = useCallback((type: 'entry' | 'stopLoss' | 'takeProfit', price: number) => {
-    setLevels(prev => ({
-      ...prev,
-      [type === 'entry' ? 'entryPrice' : type === 'stopLoss' ? 'stopLossPrice' : 'takeProfitPrice']: price,
-    }));
-  }, []);
+    setLevels(prev => {
+      const newLevels = {
+        ...prev,
+        [type === 'entry' ? 'entryPrice' : type === 'stopLoss' ? 'stopLossPrice' : 'takeProfitPrice']: price,
+      };
 
+      // Update primitive immediately for smooth visuals
+      if (chartManager && newLevels.entryPrice && newLevels.stopLossPrice && newLevels.takeProfitPrice) {
+        const isLong = newLevels.entryPrice > newLevels.stopLossPrice;
+        chartManager.updatePositionLevels({
+          entry: newLevels.entryPrice,
+          stopLoss: newLevels.stopLossPrice,
+          takeProfit: newLevels.takeProfitPrice,
+          side: isLong ? 'long' : 'short',
+        });
+      }
+
+      return newLevels;
+    });
+  }, [chartManager]);
+
+  // Don't render anything in idle or ready state (just preview line via crosshair)
   if (!isActive || drawingState === 'idle') {
     return null;
   }
 
-  return (
-    <PositionZoneOverlay
-      chartManager={chartManager}
-      levels={levels}
-      previewPrice={previewPrice}
-      drawingState={drawingState}
-      calculation={calculation}
-      side={side}
-      isSubmitting={isSubmitting}
-      onExecute={handleExecute}
-      onCancel={handleCancel}
-      onLevelChange={handleLevelChange}
-    />
-  );
+  // Ready state - show preview line
+  if (drawingState === 'ready') {
+    return (
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 10 }}>
+        {/* Preview line at cursor position */}
+        {previewPrice !== null && chartManager && (
+          <div
+            className="absolute left-0 right-0 border-t border-dashed border-white/50"
+            style={{ top: chartManager.priceToCoordinate(previewPrice) ?? 0 }}
+          />
+        )}
+        {/* Instruction */}
+        <div className="absolute top-2 right-2 pointer-events-auto">
+          <div
+            className="flex items-center gap-2 px-2 py-1 rounded text-[11px]"
+            style={{ background: 'rgba(30, 34, 45, 0.9)' }}
+          >
+            <span style={{ color: '#787b86' }}>Click and drag to draw position</span>
+            <button
+              onClick={handleCancel}
+              className="px-2 py-0.5 rounded cursor-pointer hover:bg-[#ef5350]/20"
+              style={{ color: '#ef5350' }}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Dragging state - show instruction, primitive renders zones
+  if (drawingState === 'dragging') {
+    return (
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 10 }}>
+        <div className="absolute top-2 right-2 pointer-events-auto">
+          <div
+            className="flex items-center gap-2 px-2 py-1 rounded text-[11px]"
+            style={{ background: 'rgba(30, 34, 45, 0.9)' }}
+          >
+            <span style={{ color: '#787b86' }}>Release to set stop loss</span>
+            <button
+              onClick={handleCancel}
+              className="px-2 py-0.5 rounded cursor-pointer hover:bg-[#ef5350]/20"
+              style={{ color: '#ef5350' }}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Complete state - render handle overlay (zones rendered by primitive)
+  if (drawingState === 'complete' && levels.entryPrice && levels.stopLossPrice && levels.takeProfitPrice) {
+    return (
+      <PositionHandleOverlay
+        chartManager={chartManager}
+        levels={{
+          entry: levels.entryPrice,
+          stopLoss: levels.stopLossPrice,
+          takeProfit: levels.takeProfitPrice,
+          side,
+        }}
+        onLevelChange={handleLevelChange}
+        onExecute={handleExecute}
+        onCancel={handleCancel}
+        isSubmitting={isSubmitting}
+        stats={calculation.isValid ? {
+          quantity: calculation.positionSize,
+          riskAmount: calculation.riskAmount,
+          riskRewardRatio: calculation.riskRewardRatio,
+        } : undefined}
+      />
+    );
+  }
+
+  return null;
 }
 
 export type { RiskCalculationResult };
