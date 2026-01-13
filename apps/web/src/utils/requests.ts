@@ -1,7 +1,9 @@
 import axios from "axios";
 import { CreateOrder, Depth, KLine, Ticker, Trade, UserId, Balance, OpenOrder, OrderHistory, Market, CreateTradeRequest, TradeGroup } from "./types";
+import { ColumnarOrderBookResponse } from "./ColumnDataView";
 
 const BASE_URL = "http://localhost:8080/api/v1";
+const BASE_URL_V2 = "http://localhost:8080/api/v2";
 
 export async function getDepth(market: string): Promise<Depth> {
   const response = await axios.get(`${BASE_URL}/market-data/orderbook?symbol=${market}&limit=20`);
@@ -12,6 +14,17 @@ export async function getDepth(market: string): Promise<Depth> {
     lastUpdateId: String(data.nonce || data.timestamp),
   };
 }
+
+/**
+ * Get orderbook depth in columnar format (v2 API)
+ * Returns ~25% smaller payload than row-based format
+ */
+export async function getDepthColumnar(market: string, limit = 20): Promise<ColumnarOrderBookResponse> {
+  const response = await axios.get(`${BASE_URL_V2}/market-data/orderbook?symbol=${market}&limit=${limit}`);
+  const { data } = response.data;
+  return data;
+}
+
 export async function getTrades(market: string): Promise<Trade[]> {
   const response = await axios.get(`${BASE_URL}/trades?symbol=${market}`);
   return response.data;
