@@ -12,6 +12,15 @@ import {
   MouseEventParams,
   Time,
 } from "lightweight-charts";
+import {
+  PositionZonePrimitive,
+  type PositionLevels,
+  type PositionZoneStyle,
+} from "../primitives/PositionZonePrimitive";
+
+// Re-export primitive types for external use
+export type { PositionLevels, PositionZoneStyle };
+export { PositionZonePrimitive };
 
 export interface PriceLineConfig {
   price: number;
@@ -49,6 +58,7 @@ export class ChartManager {
   private lastUpdateTime: number = 0;
   private chart: IChartApi;
   private priceLines: Map<PriceLineId, IPriceLine> = new Map();
+  private positionPrimitive: PositionZonePrimitive | null = null;
 
   constructor(
     ref: HTMLElement,
@@ -156,6 +166,7 @@ export class ChartManager {
     }
   }
   public destroy() {
+    this.detachPositionPrimitive();
     this.removeAllPriceLines();
     this.chart.remove();
   }
@@ -248,5 +259,49 @@ export class ChartManager {
   public subscribeClick(handler: ChartMouseEventHandler): () => void {
     this.chart.subscribeClick(handler);
     return () => this.chart.unsubscribeClick(handler);
+  }
+
+  /**
+   * V5-09: Attach position zone primitive to the chart
+   * Creates and attaches a new PositionZonePrimitive to the candlestick series.
+   * The primitive renders profit/loss zones that pan and zoom with the chart.
+   * @param style - Optional style configuration
+   * @returns The attached primitive instance
+   */
+  public attachPositionPrimitive(
+    style?: Partial<PositionZoneStyle>
+  ): PositionZonePrimitive {
+    // Detach existing primitive if any
+    this.detachPositionPrimitive();
+
+    // Create and attach new primitive
+    this.positionPrimitive = new PositionZonePrimitive(style);
+    this.candleSeries.attachPrimitive(this.positionPrimitive);
+
+    return this.positionPrimitive;
+  }
+
+  /**
+   * V5-09: Detach position zone primitive from the chart
+   */
+  public detachPositionPrimitive(): void {
+    if (this.positionPrimitive) {
+      this.candleSeries.detachPrimitive(this.positionPrimitive);
+      this.positionPrimitive = null;
+    }
+  }
+
+  /**
+   * Get the currently attached position primitive
+   */
+  public getPositionPrimitive(): PositionZonePrimitive | null {
+    return this.positionPrimitive;
+  }
+
+  /**
+   * Convenience method to update position levels on the attached primitive
+   */
+  public updatePositionLevels(levels: PositionLevels | null): void {
+    this.positionPrimitive?.updateLevels(levels);
   }
 }
