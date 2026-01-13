@@ -1,4 +1,5 @@
 import {
+  CandlestickSeries,
   ColorType,
   createChart as createLightWeightChart,
   CrosshairMode,
@@ -99,8 +100,8 @@ export class ChartManager {
       },
     });
 
-    // Create the Candlestick Series with custom colors
-    const candleSeries = chart.addCandlestickSeries({
+    // Create the Candlestick Series with custom colors (V5 API)
+    const candleSeries = chart.addSeries(CandlestickSeries, {
       upColor: "#34cb88", // Green color for bullish candles
       downColor: "#ff615c", // Red color for bearish candles
       borderVisible: false,
