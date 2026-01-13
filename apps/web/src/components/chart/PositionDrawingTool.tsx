@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useContext, useRef } from 'react';
 import { toast } from 'sonner';
+import type { Time } from 'lightweight-charts';
 import { ChartManager, type PositionLevels as PrimitiveLevels } from '../../utils/chart_manager';
 import { useRiskCalculation, RiskCalculationResult } from '../../hooks/useRiskCalculation';
 import { createOrder, getRiskConfig, RiskConfig } from '../../utils/requests';
@@ -19,6 +20,7 @@ export interface PositionLevels {
   entryPrice: number | null;
   stopLossPrice: number | null;
   takeProfitPrice: number | null;
+  startTime: Time | null; // GEOM-05: Time anchor for bounded zones
 }
 
 interface PositionDrawingToolProps {
@@ -62,6 +64,7 @@ export function PositionDrawingTool({
     entryPrice: null,
     stopLossPrice: null,
     takeProfitPrice: null,
+    startTime: null, // GEOM-05: Visual anchor for zone left edge
   });
   const [previewPrice, setPreviewPrice] = useState<number | null>(null);
   const [riskConfig, setRiskConfig] = useState<RiskConfig | null>(null);
@@ -69,7 +72,7 @@ export function PositionDrawingTool({
 
   // Refs for stable access in event handlers (avoid stale closures)
   const drawingStateRef = useRef<DrawingState>('idle');
-  const levelsRef = useRef<PositionLevels>({ entryPrice: null, stopLossPrice: null, takeProfitPrice: null });
+  const levelsRef = useRef<PositionLevels>({ entryPrice: null, stopLossPrice: null, takeProfitPrice: null, startTime: null });
 
   // Keep refs in sync with state
   useEffect(() => { drawingStateRef.current = drawingState; }, [drawingState]);
@@ -128,10 +131,11 @@ export function PositionDrawingTool({
   useEffect(() => { defaultRRRef.current = defaultRR; }, [defaultRR]);
 
   // V5-15: Attach/detach canvas primitive based on drawing state
+  // GEOM-05: Now includes startTime for time-anchored zones
   useEffect(() => {
     if (!chartManager) return;
 
-    if (drawingState === 'complete' && levels.entryPrice && levels.stopLossPrice && levels.takeProfitPrice) {
+    if (drawingState === 'complete' && levels.entryPrice && levels.stopLossPrice && levels.takeProfitPrice && levels.startTime) {
       // Attach primitive and update levels
       const primitive = chartManager.attachPositionPrimitive();
       const primitiveLevels: PrimitiveLevels = {
@@ -139,9 +143,10 @@ export function PositionDrawingTool({
         stopLoss: levels.stopLossPrice,
         takeProfit: levels.takeProfitPrice,
         side,
+        startTime: levels.startTime, // GEOM-05: Zone left edge anchor
       };
       primitive.updateLevels(primitiveLevels);
-    } else if (drawingState === 'dragging' && levels.entryPrice && levels.stopLossPrice) {
+    } else if (drawingState === 'dragging' && levels.entryPrice && levels.stopLossPrice && levels.startTime) {
       // During drag, show entry and SL zones (TP will be calculated on release)
       const primitive = chartManager.getPositionPrimitive() ?? chartManager.attachPositionPrimitive();
       // For dragging, use SL as a temporary TP to show the risk zone
@@ -150,6 +155,7 @@ export function PositionDrawingTool({
         stopLoss: levels.stopLossPrice,
         takeProfit: levels.entryPrice, // Just show risk zone during drag
         side,
+        startTime: levels.startTime, // GEOM-05: Zone left edge anchor
       };
       primitive.updateLevels(primitiveLevels);
     } else if (drawingState === 'idle' || drawingState === 'ready') {
@@ -175,11 +181,14 @@ export function PositionDrawingTool({
     const handleMouseDown = (e: MouseEvent) => {
       if (drawingStateRef.current !== 'ready') return;
       const rect = chartContainer.getBoundingClientRect();
+      const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       const price = chartManager.coordinateToPrice(y);
-      if (price !== null) {
-        // Set entry price and start dragging
-        setLevels({ entryPrice: price, stopLossPrice: price, takeProfitPrice: null });
+      // GEOM-05: Capture time coordinate for zone left edge
+      const time = chartManager.coordinateToTime(x);
+      if (price !== null && time !== null) {
+        // Set entry price, startTime, and start dragging
+        setLevels({ entryPrice: price, stopLossPrice: price, takeProfitPrice: null, startTime: time });
         setDrawingState('dragging');
       }
     };
@@ -209,7 +218,7 @@ export function PositionDrawingTool({
       if (riskDistance < minDistance) {
         // Too small - cancel the draw
         setDrawingState('ready');
-        setLevels({ entryPrice: null, stopLossPrice: null, takeProfitPrice: null });
+        setLevels({ entryPrice: null, stopLossPrice: null, takeProfitPrice: null, startTime: null });
         return;
       }
 
@@ -266,7 +275,7 @@ export function PositionDrawingTool({
       chartManager.detachPositionPrimitive();
     }
     setDrawingState('idle');
-    setLevels({ entryPrice: null, stopLossPrice: null, takeProfitPrice: null });
+    setLevels({ entryPrice: null, stopLossPrice: null, takeProfitPrice: null, startTime: null });
     setPreviewPrice(null);
     onDeactivate();
   }, [chartManager, onDeactivate]);
@@ -313,6 +322,7 @@ export function PositionDrawingTool({
   }, [calculation, levels, market, mode, side, handleCancel]);
 
   // V5-12: Update level from handle drag - updates both state and primitive
+  // GEOM-05: Now preserves startTime for time-anchored zones
   const handleLevelChange = useCallback((type: 'entry' | 'stopLoss' | 'takeProfit', price: number) => {
     setLevels(prev => {
       const newLevels = {
@@ -321,13 +331,14 @@ export function PositionDrawingTool({
       };
 
       // Update primitive immediately for smooth visuals
-      if (chartManager && newLevels.entryPrice && newLevels.stopLossPrice && newLevels.takeProfitPrice) {
+      if (chartManager && newLevels.entryPrice && newLevels.stopLossPrice && newLevels.takeProfitPrice && newLevels.startTime) {
         const isLong = newLevels.entryPrice > newLevels.stopLossPrice;
         chartManager.updatePositionLevels({
           entry: newLevels.entryPrice,
           stopLoss: newLevels.stopLossPrice,
           takeProfit: newLevels.takeProfitPrice,
           side: isLong ? 'long' : 'short',
+          startTime: newLevels.startTime, // GEOM-05: Preserve time anchor
         });
       }
 
@@ -395,7 +406,7 @@ export function PositionDrawingTool({
   }
 
   // Complete state - render handle overlay (zones rendered by primitive)
-  if (drawingState === 'complete' && levels.entryPrice && levels.stopLossPrice && levels.takeProfitPrice) {
+  if (drawingState === 'complete' && levels.entryPrice && levels.stopLossPrice && levels.takeProfitPrice && levels.startTime) {
     return (
       <PositionHandleOverlay
         chartManager={chartManager}
@@ -404,6 +415,7 @@ export function PositionDrawingTool({
           stopLoss: levels.stopLossPrice,
           takeProfit: levels.takeProfitPrice,
           side,
+          startTime: levels.startTime, // GEOM-05: Time anchor for zone
         }}
         onLevelChange={handleLevelChange}
         onExecute={handleExecute}

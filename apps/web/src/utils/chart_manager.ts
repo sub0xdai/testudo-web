@@ -197,6 +197,14 @@ export class ChartManager {
   }
 
   /**
+   * Convert an X coordinate (pixels) to a time value
+   * GEOM-05: For capturing startTime in time-anchored zones
+   */
+  public coordinateToTime(x: number): Time | null {
+    return this.chart.timeScale().coordinateToTime(x);
+  }
+
+  /**
    * Create a horizontal price line on the chart
    * DRAW-04: Visual feedback for entry/SL/TP levels
    */

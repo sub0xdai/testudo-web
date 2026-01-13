@@ -6,6 +6,7 @@ import type {
   SeriesAttachedParameter,
   PrimitivePaneViewZOrder,
   ISeriesApi,
+  ITimeScaleApi,
   SeriesType,
   Time,
 } from "lightweight-charts";
@@ -24,12 +25,15 @@ export type HitTestResult =
 
 /**
  * Position levels for drawing entry, stop loss, and take profit zones
+ * GEOM-01: Added startTime for time-anchored zones, optional endTime for trade timeouts
  */
 export interface PositionLevels {
   entry: number;
   stopLoss: number;
   takeProfit: number;
   side: "long" | "short";
+  startTime: Time;        // X anchor for zone left edge
+  endTime?: Time;         // Optional: zone right edge (defaults to chart edge)
 }
 
 /**
@@ -47,7 +51,7 @@ export interface PositionZoneStyle {
 const DEFAULT_STYLE: PositionZoneStyle = {
   profitColor: "rgba(52, 203, 136, 0.2)", // Green with transparency
   lossColor: "rgba(255, 97, 92, 0.2)", // Red with transparency
-  entryLineColor: "#ffffff",
+  entryLineColor: "#f0b90b", // GEOM-04: Orange (TradingView style)
   slLineColor: "#ff615c",
   tpLineColor: "#34cb88",
   lineWidth: 1,
@@ -56,11 +60,13 @@ const DEFAULT_STYLE: PositionZoneStyle = {
 /**
  * Renderer that draws position zones on the canvas
  * V5-06: Canvas drawing logic for profit/loss zones
+ * GEOM-02: Added timeScale for time-anchored zone rendering
  */
 class PositionZoneRenderer implements IPrimitivePaneRenderer {
   private _levels: PositionLevels | null = null;
   private _style: PositionZoneStyle;
   private _series: ISeriesApi<SeriesType, Time> | null = null;
+  private _timeScale: ITimeScaleApi<Time> | null = null;
 
   constructor(style: PositionZoneStyle = DEFAULT_STYLE) {
     this._style = style;
@@ -74,14 +80,18 @@ class PositionZoneRenderer implements IPrimitivePaneRenderer {
     this._series = series;
   }
 
+  setTimeScale(timeScale: ITimeScaleApi<Time>): void {
+    this._timeScale = timeScale;
+  }
+
   setStyle(style: Partial<PositionZoneStyle>): void {
     this._style = { ...this._style, ...style };
   }
 
   draw(target: CanvasRenderingTarget2D): void {
-    if (!this._levels || !this._series) return;
+    if (!this._levels || !this._series || !this._timeScale) return;
 
-    const { entry, stopLoss, takeProfit } = this._levels;
+    const { entry, stopLoss, takeProfit, startTime, endTime } = this._levels;
 
     // Convert prices to Y coordinates using series API
     const entryY = this._series.priceToCoordinate(entry);
@@ -89,6 +99,13 @@ class PositionZoneRenderer implements IPrimitivePaneRenderer {
     const tpY = this._series.priceToCoordinate(takeProfit);
 
     if (entryY === null || slY === null || tpY === null) return;
+
+    // GEOM-03: Convert time to X coordinate for zone left edge
+    const startX = this._timeScale.timeToCoordinate(startTime);
+    if (startX === null) return; // Zone not visible (scrolled off)
+
+    // GEOM-03: Optional endTime for zone right edge (trade timeout feature)
+    const endX = endTime ? this._timeScale.timeToCoordinate(endTime) : null;
 
     target.useBitmapCoordinateSpace((scope) => {
       const ctx = scope.context;
@@ -98,42 +115,53 @@ class PositionZoneRenderer implements IPrimitivePaneRenderer {
       // Get canvas width from scope
       const width = scope.bitmapSize.width;
 
-      // Scale Y coordinates for high-DPI displays
+      // Scale coordinates for high-DPI displays
       const scaledEntryY = entryY * vRatio;
       const scaledSlY = slY * vRatio;
       const scaledTpY = tpY * vRatio;
+      const scaledStartX = startX * hRatio;
+      // GEOM-03: Zone extends to endX or chart right edge
+      const scaledEndX = endX !== null ? endX * hRatio : width;
+      const zoneWidth = scaledEndX - scaledStartX;
 
-      // Draw profit zone (entry to TP)
+      // Skip rendering if zone would have negative or zero width
+      if (zoneWidth <= 0) return;
+
+      // GEOM-03: Draw profit zone (bounded: startX to endX/right edge)
       ctx.fillStyle = this._style.profitColor;
       const profitTop = Math.min(scaledEntryY, scaledTpY);
       const profitHeight = Math.abs(scaledTpY - scaledEntryY);
-      ctx.fillRect(0, profitTop, width, profitHeight);
+      ctx.fillRect(scaledStartX, profitTop, zoneWidth, profitHeight);
 
-      // Draw loss zone (entry to SL)
+      // GEOM-03: Draw loss zone (bounded: startX to endX/right edge)
       ctx.fillStyle = this._style.lossColor;
       const lossTop = Math.min(scaledEntryY, scaledSlY);
       const lossHeight = Math.abs(scaledSlY - scaledEntryY);
-      ctx.fillRect(0, lossTop, width, lossHeight);
+      ctx.fillRect(scaledStartX, lossTop, zoneWidth, lossHeight);
 
-      // Draw entry line (dashed)
+      // GEOM-04: All lines dashed, 1px width
+      const dashPattern = [5 * hRatio, 5 * hRatio];
+      ctx.lineWidth = 1 * hRatio;
+
+      // Draw entry line (dashed orange, full width)
       ctx.strokeStyle = this._style.entryLineColor;
-      ctx.lineWidth = this._style.lineWidth * hRatio;
-      ctx.setLineDash([5 * hRatio, 5 * hRatio]);
+      ctx.setLineDash(dashPattern);
       ctx.beginPath();
       ctx.moveTo(0, scaledEntryY);
       ctx.lineTo(width, scaledEntryY);
       ctx.stroke();
 
-      // Draw SL line (solid)
+      // Draw SL line (dashed red, full width)
       ctx.strokeStyle = this._style.slLineColor;
-      ctx.setLineDash([]);
+      ctx.setLineDash(dashPattern);
       ctx.beginPath();
       ctx.moveTo(0, scaledSlY);
       ctx.lineTo(width, scaledSlY);
       ctx.stroke();
 
-      // Draw TP line (solid)
+      // Draw TP line (dashed green, full width)
       ctx.strokeStyle = this._style.tpLineColor;
+      ctx.setLineDash(dashPattern);
       ctx.beginPath();
       ctx.moveTo(0, scaledTpY);
       ctx.lineTo(width, scaledTpY);
@@ -235,6 +263,7 @@ export class PositionZonePrimitive
   private _requestUpdate: (() => void) | null = null;
   private _levels: PositionLevels | null = null;
   private _series: ISeriesApi<SeriesType, Time> | null = null;
+  private _timeScale: ITimeScaleApi<Time> | null = null; // GEOM-02: For time-anchored zones
   // V5-19: Price axis labels
   private _entryAxisView: PositionPriceAxisView;
   private _slAxisView: PositionPriceAxisView;
@@ -255,11 +284,14 @@ export class PositionZonePrimitive
 
   /**
    * Called when the primitive is attached to a series
+   * GEOM-02: Now also gets timeScale for time-anchored zone rendering
    */
   attached(param: SeriesAttachedParameter<Time>): void {
     this._requestUpdate = param.requestUpdate;
     this._series = param.series;
+    this._timeScale = param.chart.timeScale();
     this._renderer.setSeries(param.series);
+    this._renderer.setTimeScale(this._timeScale);
     // V5-19: Set series on axis views
     this._entryAxisView.setSeries(param.series);
     this._slAxisView.setSeries(param.series);
@@ -272,6 +304,7 @@ export class PositionZonePrimitive
   detached(): void {
     this._requestUpdate = null;
     this._series = null;
+    this._timeScale = null; // GEOM-02: Clear timeScale reference
     // V5-19: Clear series from axis views
     this._entryAxisView.setSeries(null);
     this._slAxisView.setSeries(null);

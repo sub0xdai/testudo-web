@@ -7,6 +7,7 @@ import {
 
 // =============================================================================
 // Test Data Fixtures
+// GEOM-07: Updated to include startTime for time-anchored zones
 // =============================================================================
 
 const longPosition: PositionLevels = {
@@ -14,6 +15,7 @@ const longPosition: PositionLevels = {
   stopLoss: 95.0,
   takeProfit: 110.0,
   side: "long",
+  startTime: 1704067200 as number, // 2024-01-01 00:00:00 UTC (as Time)
 };
 
 const shortPosition: PositionLevels = {
@@ -21,6 +23,7 @@ const shortPosition: PositionLevels = {
   stopLoss: 105.0,
   takeProfit: 90.0,
   side: "short",
+  startTime: 1704067200 as number, // 2024-01-01 00:00:00 UTC (as Time)
 };
 
 const customStyle: Partial<PositionZoneStyle> = {
@@ -95,6 +98,25 @@ describe("PositionZonePrimitive", () => {
       const levels = primitive.getLevels();
       expect(levels?.side).toBe("short");
       expect(levels?.stopLoss).toBe(105.0);
+    });
+
+    // GEOM-07: startTime tests
+    test("stores startTime for time-anchored zones", () => {
+      primitive.updateLevels(longPosition);
+      const levels = primitive.getLevels();
+
+      expect(levels?.startTime).toBe(1704067200);
+    });
+
+    test("handles different startTime values", () => {
+      const positionWithDifferentTime: PositionLevels = {
+        ...longPosition,
+        startTime: 1704153600 as number, // 2024-01-02 00:00:00 UTC
+      };
+      primitive.updateLevels(positionWithDifferentTime);
+      const levels = primitive.getLevels();
+
+      expect(levels?.startTime).toBe(1704153600);
     });
   });
 
