@@ -16,10 +16,11 @@ import {
   PositionZonePrimitive,
   type PositionLevels,
   type PositionZoneStyle,
+  type HitTestResult,
 } from "../primitives/PositionZonePrimitive";
 
 // Re-export primitive types for external use
-export type { PositionLevels, PositionZoneStyle };
+export type { PositionLevels, PositionZoneStyle, HitTestResult };
 export { PositionZonePrimitive };
 
 export interface PriceLineConfig {
@@ -303,5 +304,23 @@ export class ChartManager {
    */
   public updatePositionLevels(levels: PositionLevels | null): void {
     this.positionPrimitive?.updateLevels(levels);
+  }
+
+  /**
+   * V5-17: Hit test the position zone at a given Y coordinate
+   * @param y - Y coordinate in pixels (from chart container top)
+   * @returns What was hit, or null if nothing
+   */
+  public hitTestPosition(y: number): HitTestResult {
+    return this.positionPrimitive?.hitTestZone(y) ?? null;
+  }
+
+  /**
+   * V5-17: Check if a point is within the position zone
+   * @param y - Y coordinate in pixels (from chart container top)
+   * @returns true if point is within the zone
+   */
+  public isPointInPositionZone(y: number): boolean {
+    return this.positionPrimitive?.isPointInZone(y) ?? false;
   }
 }

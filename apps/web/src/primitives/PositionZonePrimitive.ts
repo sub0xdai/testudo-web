@@ -11,6 +11,17 @@ import type {
 import type { CanvasRenderingTarget2D } from "fancy-canvas";
 
 /**
+ * V5-17: Hit test result indicating what part of the position zone was clicked
+ */
+export type HitTestResult =
+  | "profitZone"
+  | "lossZone"
+  | "entryLine"
+  | "slLine"
+  | "tpLine"
+  | null;
+
+/**
  * Position levels for drawing entry, stop loss, and take profit zones
  */
 export interface PositionLevels {
@@ -172,6 +183,7 @@ export class PositionZonePrimitive
   private _paneViews: readonly IPrimitivePaneView[];
   private _requestUpdate: (() => void) | null = null;
   private _levels: PositionLevels | null = null;
+  private _series: ISeriesApi<SeriesType, Time> | null = null;
 
   constructor(style?: Partial<PositionZoneStyle>) {
     this._renderer = new PositionZoneRenderer(
@@ -186,6 +198,7 @@ export class PositionZonePrimitive
    */
   attached(param: SeriesAttachedParameter<Time>): void {
     this._requestUpdate = param.requestUpdate;
+    this._series = param.series;
     this._renderer.setSeries(param.series);
   }
 
@@ -194,6 +207,7 @@ export class PositionZonePrimitive
    */
   detached(): void {
     this._requestUpdate = null;
+    this._series = null;
   }
 
   /**
@@ -234,5 +248,53 @@ export class PositionZonePrimitive
   setStyle(style: Partial<PositionZoneStyle>): void {
     this._renderer.setStyle(style);
     this._requestUpdate?.();
+  }
+
+  /**
+   * V5-17: Hit test to determine what part of the position zone was clicked
+   *
+   * @param y - Y coordinate in pixels (from chart container top)
+   * @returns What was hit: 'profitZone', 'lossZone', 'entryLine', 'slLine', 'tpLine', or null
+   */
+  hitTestZone(y: number): HitTestResult {
+    if (!this._levels || !this._series) return null;
+
+    const { entry, stopLoss, takeProfit } = this._levels;
+
+    // Convert prices to Y coordinates
+    const entryY = this._series.priceToCoordinate(entry);
+    const slY = this._series.priceToCoordinate(stopLoss);
+    const tpY = this._series.priceToCoordinate(takeProfit);
+
+    if (entryY === null || slY === null || tpY === null) return null;
+
+    // Line hit tolerance in pixels
+    const lineTolerance = 4;
+
+    // Check line hits first (higher priority)
+    if (Math.abs(y - entryY) <= lineTolerance) return "entryLine";
+    if (Math.abs(y - slY) <= lineTolerance) return "slLine";
+    if (Math.abs(y - tpY) <= lineTolerance) return "tpLine";
+
+    // Check zone hits
+    const profitTop = Math.min(entryY, tpY);
+    const profitBottom = Math.max(entryY, tpY);
+    const lossTop = Math.min(entryY, slY);
+    const lossBottom = Math.max(entryY, slY);
+
+    if (y >= profitTop && y <= profitBottom) return "profitZone";
+    if (y >= lossTop && y <= lossBottom) return "lossZone";
+
+    return null;
+  }
+
+  /**
+   * V5-17: Check if a point is within the position zone area (either profit or loss zone)
+   *
+   * @param y - Y coordinate in pixels (from chart container top)
+   * @returns true if the point is within either zone
+   */
+  isPointInZone(y: number): boolean {
+    return this.hitTestZone(y) !== null;
   }
 }
