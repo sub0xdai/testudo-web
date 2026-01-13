@@ -156,7 +156,7 @@ export function PositionHandleOverlay({
         onHover={(h) => setHoveredHandle(h ? 'takeProfit' : null)}
       />
 
-      {/* Stats Panel - positioned near entry */}
+      {/* Stats Panel - compact, positioned near entry */}
       {stats && (
         <div
           className="absolute pointer-events-auto"
@@ -168,36 +168,39 @@ export function PositionHandleOverlay({
           }}
         >
           <div
-            className="flex items-center gap-3 px-3 py-1.5 rounded text-xs"
-            style={{
-              background: 'rgba(30, 34, 45, 0.95)',
-              border: `1px solid ${isLong ? '#26a69a' : '#ef5350'}`,
-            }}
+            className="flex items-center gap-2 px-2 py-1 rounded text-[10px]"
+            style={{ background: 'rgba(22, 26, 35, 0.9)' }}
           >
-            <span style={{ color: '#787b86' }}>
-              <span className="text-white" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                {stats.quantity.toFixed(2)}
-              </span>
-              {' '}qty
+            {/* Side indicator - small dot */}
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ background: isLong ? '#26a69a' : '#ef5350' }}
+            />
+            {/* Quantity */}
+            <span style={{ color: '#9598a1', fontVariantNumeric: 'tabular-nums' }}>
+              {stats.quantity.toFixed(2)}
             </span>
+            {/* Risk */}
             <span style={{ color: '#ef5350', fontVariantNumeric: 'tabular-nums' }}>
-              -${stats.riskAmount.toFixed(0)}
+              ${stats.riskAmount.toFixed(0)}
             </span>
+            {/* R:R */}
             {stats.riskRewardRatio !== null && (
               <span style={{ color: '#26a69a', fontVariantNumeric: 'tabular-nums' }}>
                 {stats.riskRewardRatio.toFixed(1)}R
               </span>
             )}
+            {/* Execute button - compact */}
             <button
               onClick={onExecute}
               disabled={isSubmitting}
-              className="px-2 py-0.5 text-xs font-bold rounded cursor-pointer transition-opacity disabled:opacity-50"
+              className="px-1.5 py-0.5 text-[9px] font-medium rounded cursor-pointer transition-all hover:opacity-80 disabled:opacity-50"
               style={{
                 background: isLong ? '#26a69a' : '#ef5350',
                 color: '#000',
               }}
             >
-              {isSubmitting ? '...' : isLong ? 'LONG' : 'SHORT'}
+              {isSubmitting ? '···' : '▶'}
             </button>
           </div>
         </div>
@@ -231,7 +234,7 @@ function Handle({
   onHover: (hovered: boolean) => void;
 }) {
   const colors = {
-    entry: { bg: '#ffffff', text: '#000000' },
+    entry: { bg: '#f0b90b', text: '#000000' }, // Orange to match entry line
     stopLoss: { bg: '#ef5350', text: '#000000' },
     takeProfit: { bg: '#26a69a', text: '#000000' },
   };
