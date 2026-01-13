@@ -21,6 +21,7 @@ export interface PositionLevels {
   stopLossPrice: number | null;
   takeProfitPrice: number | null;
   startTime: Time | null; // GEOM-05: Time anchor for bounded zones
+  endTime?: Time;         // Optional: Zone right edge (defaults to chart edge)
 }
 
 interface PositionDrawingToolProps {
@@ -143,7 +144,8 @@ export function PositionDrawingTool({
         stopLoss: levels.stopLossPrice,
         takeProfit: levels.takeProfitPrice,
         side,
-        startTime: levels.startTime, // GEOM-05: Zone left edge anchor
+        startTime: levels.startTime,
+        endTime: levels.endTime, // Optional: zone right edge
       };
       primitive.updateLevels(primitiveLevels);
     } else if (drawingState === 'dragging' && levels.entryPrice && levels.stopLossPrice && levels.startTime) {
@@ -155,7 +157,8 @@ export function PositionDrawingTool({
         stopLoss: levels.stopLossPrice,
         takeProfit: levels.entryPrice, // Just show risk zone during drag
         side,
-        startTime: levels.startTime, // GEOM-05: Zone left edge anchor
+        startTime: levels.startTime,
+        endTime: levels.endTime,
       };
       primitive.updateLevels(primitiveLevels);
     } else if (drawingState === 'idle' || drawingState === 'ready') {
@@ -338,7 +341,30 @@ export function PositionDrawingTool({
           stopLoss: newLevels.stopLossPrice,
           takeProfit: newLevels.takeProfitPrice,
           side: isLong ? 'long' : 'short',
-          startTime: newLevels.startTime, // GEOM-05: Preserve time anchor
+          startTime: newLevels.startTime,
+          endTime: newLevels.endTime, // Include endTime if set
+        });
+      }
+
+      return newLevels;
+    });
+  }, [chartManager]);
+
+  // Handle endTime change from right-edge drag
+  const handleEndTimeChange = useCallback((time: Time | undefined) => {
+    setLevels(prev => {
+      const newLevels = { ...prev, endTime: time };
+
+      // Update primitive immediately for smooth visuals
+      if (chartManager && newLevels.entryPrice && newLevels.stopLossPrice && newLevels.takeProfitPrice && newLevels.startTime) {
+        const isLong = newLevels.entryPrice > newLevels.stopLossPrice;
+        chartManager.updatePositionLevels({
+          entry: newLevels.entryPrice,
+          stopLoss: newLevels.stopLossPrice,
+          takeProfit: newLevels.takeProfitPrice,
+          side: isLong ? 'long' : 'short',
+          startTime: newLevels.startTime,
+          endTime: time,
         });
       }
 
@@ -415,9 +441,11 @@ export function PositionDrawingTool({
           stopLoss: levels.stopLossPrice,
           takeProfit: levels.takeProfitPrice,
           side,
-          startTime: levels.startTime, // GEOM-05: Time anchor for zone
+          startTime: levels.startTime,
+          endTime: levels.endTime, // Optional: zone right edge
         }}
         onLevelChange={handleLevelChange}
+        onEndTimeChange={handleEndTimeChange}
         onExecute={handleExecute}
         onCancel={handleCancel}
         isSubmitting={isSubmitting}

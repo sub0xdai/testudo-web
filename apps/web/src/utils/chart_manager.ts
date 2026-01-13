@@ -205,6 +205,14 @@ export class ChartManager {
   }
 
   /**
+   * Convert a time value to an X coordinate (pixels)
+   * For positioning time-based handles (endTime drag handle)
+   */
+  public timeToCoordinate(time: Time): number | null {
+    return this.chart.timeScale().timeToCoordinate(time);
+  }
+
+  /**
    * Create a horizontal price line on the chart
    * DRAW-04: Visual feedback for entry/SL/TP levels
    */

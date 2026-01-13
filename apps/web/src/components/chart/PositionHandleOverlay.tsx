@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import type { Time } from 'lightweight-charts';
 import { ChartManager, type PositionLevels } from '../../utils/chart_manager';
 
 type HandleType = 'entry' | 'stopLoss' | 'takeProfit';
@@ -7,6 +8,7 @@ interface PositionHandleOverlayProps {
   chartManager: ChartManager | null;
   levels: PositionLevels;
   onLevelChange: (type: HandleType, price: number) => void;
+  onEndTimeChange?: (time: Time | undefined) => void; // For right-edge drag
   onExecute: () => void;
   onCancel: () => void;
   isSubmitting?: boolean;
@@ -30,6 +32,7 @@ export function PositionHandleOverlay({
   chartManager,
   levels,
   onLevelChange,
+  onEndTimeChange,
   onExecute,
   onCancel,
   isSubmitting = false,
@@ -37,13 +40,21 @@ export function PositionHandleOverlay({
 }: PositionHandleOverlayProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState<HandleType | null>(null);
+  const [draggingEndTime, setDraggingEndTime] = useState(false);
   const [hoveredHandle, setHoveredHandle] = useState<HandleType | null>(null);
+  const [hoveredEndTime, setHoveredEndTime] = useState(false);
   const [, forceUpdate] = useState(0);
 
   // Convert price to Y coordinate
   const getY = useCallback((price: number): number | null => {
     if (!chartManager) return null;
     return chartManager.priceToCoordinate(price);
+  }, [chartManager]);
+
+  // Convert time to X coordinate
+  const getX = useCallback((time: Time): number | null => {
+    if (!chartManager) return null;
+    return chartManager.timeToCoordinate(time);
   }, [chartManager]);
 
   // V5-13: Subscribe to chart movement to re-position handles
@@ -86,14 +97,61 @@ export function PositionHandleOverlay({
     };
   }, [dragging, chartManager, onLevelChange]);
 
+  // Handle endTime drag events (X-axis)
+  useEffect(() => {
+    if (!draggingEndTime || !chartManager || !onEndTimeChange) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const container = containerRef.current;
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+
+      const x = e.clientX - rect.left;
+      const time = chartManager.coordinateToTime(x);
+      if (time !== null) {
+        // Don't allow endTime before startTime
+        if (time > levels.startTime) {
+          onEndTimeChange(time);
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      setDraggingEndTime(false);
+    };
+
+    // Double-click to clear endTime (extend to edge)
+    const handleDoubleClick = () => {
+      onEndTimeChange(undefined);
+      setDraggingEndTime(false);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('dblclick', handleDoubleClick);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('dblclick', handleDoubleClick);
+    };
+  }, [draggingEndTime, chartManager, onEndTimeChange, levels.startTime]);
+
   const entryY = getY(levels.entry);
   const slY = getY(levels.stopLoss);
   const tpY = getY(levels.takeProfit);
+
+  // Calculate endTime X position (or use container right edge)
+  const endTimeX = levels.endTime ? getX(levels.endTime) : null;
+  const startTimeX = getX(levels.startTime);
 
   // Don't render if we can't get coordinates
   if (entryY === null || slY === null || tpY === null) return null;
 
   const isLong = levels.side === 'long';
+
+  // Zone boundaries for the right-edge handle
+  const zoneTop = Math.min(tpY, slY);
+  const zoneBottom = Math.max(tpY, slY);
 
   return (
     <div
@@ -202,6 +260,55 @@ export function PositionHandleOverlay({
             >
               {isSubmitting ? '···' : '▶'}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Right-edge handle for endTime - vertical bar at zone boundary */}
+      {onEndTimeChange && startTimeX !== null && (
+        <div
+          className="absolute pointer-events-auto cursor-ew-resize"
+          style={{
+            left: endTimeX !== null ? endTimeX - 4 : 'auto',
+            right: endTimeX !== null ? 'auto' : 0,
+            top: zoneTop,
+            width: 8,
+            height: zoneBottom - zoneTop,
+          }}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            setDraggingEndTime(true);
+          }}
+          onMouseEnter={() => setHoveredEndTime(true)}
+          onMouseLeave={() => setHoveredEndTime(false)}
+          title="Drag to set end time, double-click to extend to edge"
+        >
+          {/* Visual indicator - vertical line */}
+          <div
+            className="absolute top-0 bottom-0 w-0.5 rounded-full transition-all"
+            style={{
+              left: 3,
+              background: draggingEndTime || hoveredEndTime
+                ? 'rgba(255, 255, 255, 0.8)'
+                : 'rgba(255, 255, 255, 0.3)',
+              boxShadow: draggingEndTime || hoveredEndTime
+                ? '0 0 4px rgba(255, 255, 255, 0.5)'
+                : 'none',
+            }}
+          />
+          {/* Grip dots */}
+          <div
+            className="absolute flex flex-col gap-1 items-center justify-center"
+            style={{
+              left: 1,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              opacity: draggingEndTime || hoveredEndTime ? 1 : 0.5,
+            }}
+          >
+            <span className="w-1 h-1 rounded-full bg-white/60" />
+            <span className="w-1 h-1 rounded-full bg-white/60" />
+            <span className="w-1 h-1 rounded-full bg-white/60" />
           </div>
         </div>
       )}
