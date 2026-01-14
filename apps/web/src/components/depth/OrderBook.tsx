@@ -18,7 +18,8 @@ function OrderBookRow({ price, size, cumulativeWidth, sizeWidth, side }: OrderBo
   const isBid = side === 'bid';
   const priceColor = isBid ? 'text-positive-green' : 'text-negative-red';
   const bgColor = isBid ? 'bg-positive-green' : 'bg-negative-red';
-  const bgColorPressed = isBid ? 'bg-positive-green/30' : 'bg-negative-red/30';
+  // Stoic aesthetic: subtle depth, numbers primary
+  const bgColorCumulative = isBid ? 'bg-positive-green/[0.08]' : 'bg-negative-red/[0.08]';
   const sideLabel = isBid ? 'Buy' : 'Sell';
 
   return (
@@ -36,17 +37,17 @@ function OrderBookRow({ price, size, cumulativeWidth, sizeWidth, side }: OrderBo
             {formatQuantity(size)}
           </div>
         </div>
-        {/* Cumulative background */}
+        {/* Cumulative background - subtle 8% */}
         <div className="absolute w-full h-full flex justify-end pointer-events-none">
           <div
-            className={`${bgColorPressed} h-full transition-all duration-200 ease-out`}
+            className={`${bgColorCumulative} h-full transition-all duration-200 ease-out`}
             style={{ width: cumulativeWidth }}
           />
         </div>
-        {/* Size-based background */}
+        {/* Size-based background - subtle 12% */}
         <div className="absolute w-full h-full flex justify-end pointer-events-none">
           <div
-            className={`${bgColor} opacity-40 h-full transition-all duration-200 ease-out`}
+            className={`${bgColor} opacity-[0.12] h-full transition-all duration-200 ease-out`}
             style={{ width: sizeWidth }}
           />
         </div>

@@ -75,12 +75,12 @@ export const Trade = () => {
       {/* Main Layout */}
       <main
         id="main-trading"
-        className="grid grid-rows-[auto_1fr] p-3 sm:p-4 lg:p-5 min-h-screen gap-3 sm:gap-4"
+        className="grid grid-rows-[auto_1fr] p-4 sm:p-5 lg:p-6 min-h-screen gap-4 sm:gap-5"
         role="main"
         aria-label="Trading interface"
       >
         {/* Header Row - Market Bar + Social Links */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-3 sm:gap-4 overflow-visible relative z-50">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4 sm:gap-5 overflow-visible relative z-50">
           <div className="min-h-[60px] overflow-visible">
             <MarketBar market={market} />
           </div>
@@ -90,7 +90,7 @@ export const Trade = () => {
         </div>
 
         {/* Main Content - Chart/OrderBook + Swap Interface */}
-        <div className="grid grid-cols-1 lg:grid-cols-[3fr_1fr] xl:grid-cols-[4fr_1fr] gap-3 sm:gap-4 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr_1fr] xl:grid-cols-[4fr_1fr] gap-4 sm:gap-5 relative z-10">
           {/* Trade Interface (Chart + Order Book) */}
           <div className="order-2 lg:order-1 min-h-[400px] lg:min-h-0">
             <TradeInterface market={market} />
@@ -211,9 +211,9 @@ function OrdersTabButton({
       className={`
         flex-1 py-2.5 px-4 text-xs font-imperial font-semibold tracking-wider uppercase
         transition-colors relative
-        focus:outline-none focus:ring-1 focus:ring-steel-primary/50
+        focus:outline-none focus:ring-1 focus:ring-signal-green/50
         ${isActive
-          ? 'text-text-default border-b-2 border-steel-primary'
+          ? 'text-text-default border-b-2 border-signal-green'
           : 'text-text-secondary hover:text-text-default border-b-2 border-transparent'
         }
       `}

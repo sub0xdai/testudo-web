@@ -4,7 +4,7 @@ import { LiveModeConfirmDialog } from './LiveModeConfirmDialog';
 
 /**
  * Segmented control for switching between Shadow and Live trading modes.
- * Follows the Imperial Roman design pattern from SwapInterface.
+ * Roman Stoic design: machined segments with pressed/inset active state.
  * Shows confirmation dialog when switching to Live mode.
  */
 export function ModeToggle() {
@@ -33,7 +33,7 @@ export function ModeToggle() {
   return (
     <>
       <div
-        className="flex border border-steel-dim overflow-hidden"
+        className="flex border-2 border-container-border overflow-hidden bg-main-bg"
         role="radiogroup"
         aria-label="Trading mode selection"
       >
@@ -43,6 +43,8 @@ export function ModeToggle() {
           isActive={mode === 'shadow'}
           onClick={() => handleModeSelect('shadow')}
         />
+        {/* Divider between segments */}
+        <div className="w-[2px] bg-container-border" />
         <ModeButton
           mode="live"
           label="LIVE"
@@ -70,6 +72,13 @@ interface ModeButtonProps {
 function ModeButton({ mode, label, isActive, onClick }: ModeButtonProps) {
   const isShadow = mode === 'shadow';
 
+  // Roman Stoic: machined segments, inset active state
+  const activeStyles = isShadow
+    ? 'bg-container-bg-selected text-positive-green shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]'
+    : 'bg-container-bg-selected text-negative-red shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]';
+
+  const inactiveStyles = 'bg-transparent text-text-secondary hover:text-text-default hover:bg-container-bg-hover';
+
   return (
     <button
       onClick={onClick}
@@ -77,14 +86,9 @@ function ModeButton({ mode, label, isActive, onClick }: ModeButtonProps) {
       aria-checked={isActive}
       aria-label={`${label} trading mode`}
       className={`
-        px-3 py-1.5 font-imperial font-semibold text-[10px] tracking-widest
-        transition-all duration-150
-        ${isActive
-          ? isShadow
-            ? 'bg-positive-green/20 text-positive-green'
-            : 'bg-negative-red/20 text-negative-red'
-          : 'bg-transparent text-text-secondary hover:text-steel-primary hover:bg-charcoal'
-        }
+        px-4 py-2 font-imperial font-semibold text-[10px] tracking-widest
+        transition-all duration-0
+        ${isActive ? activeStyles : inactiveStyles}
       `}
     >
       {label}

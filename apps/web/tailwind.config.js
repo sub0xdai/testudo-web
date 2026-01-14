@@ -7,35 +7,39 @@ export default {
   theme: {
     extend: {
       colors: {
-        // === INDUSTRIAL BRUTALIST PALETTE ===
-        // "The Machine" - Raw, functional, aggressive
+        // === ROMAN STOIC PALETTE ===
+        // "The Empire" - Disciplined, permanent, unemotional
 
-        // Core Backgrounds - The Void
-        'main-bg': '#050505',
-        'container-bg': '#0A0A0A',
-        'container-bg-hover': '#111111',
-        'container-bg-selected': '#1A1A1A',
-        'panel-bg': '#0A0A0A',
+        // Core Backgrounds - Warm Stone
+        'main-bg': '#0A0A0A',
+        'container-bg': '#121212',
+        'container-bg-hover': '#1A1A1A',
+        'container-bg-selected': '#242424',
+        'panel-bg': '#121212',
 
-        // The Grid - Thick visible structure
+        // The Grid - Architectural structure
         'container-border': '#333333',
         'border-thick': '#333333',
         'border-active': '#FFFFFF',
 
-        // Signal Green - Terminal / Buy
-        'signal-green': '#00FF41',
-        'positive-green': '#00FF41',
-        'positive-green-hover': '#00CC33',
-        'positive-green-pressed': '#009926',
-        'positive-green-bg': '#001A0A',
+        // Jade Green - Stoic / Buy
+        'signal-green': '#4E9F76',
+        'positive-green': '#4E9F76',
+        'positive-green-hover': '#3D7F5E',
+        'positive-green-pressed': '#2D5F46',
+        'positive-green-bg': '#0D1A14',
 
-        // Signal Red - Reactor / Sell
-        'signal-red': '#FF003C',
-        'signal-orange': '#FF5F00',
-        'negative-red': '#FF003C',
-        'negative-red-hover': '#CC0030',
-        'negative-red-pressed': '#990024',
-        'negative-red-bg': '#1A0008',
+        // Terracotta Red - Pompeiian / Sell
+        'signal-red': '#A64B4B',
+        'signal-orange': '#B87333',
+        'negative-red': '#A64B4B',
+        'negative-red-hover': '#8A3D3D',
+        'negative-red-pressed': '#6E2F2F',
+        'negative-red-bg': '#1A0D0D',
+
+        // Tyrian Purple - Imperial Accent (CTAs only)
+        'tyrian-purple': '#5C2D5C',
+        'tyrian-purple-hover': '#4A244A',
 
         // Text - Maximum Contrast
         'text-default': '#FFFFFF',
@@ -44,16 +48,16 @@ export default {
         'text-tertiary': '#555555',
         'text-disabled': '#333333',
         'text-emphasis': '#FFFFFF',
-        'text-inverted': '#050505',
+        'text-inverted': '#0A0A0A',
 
         // Interactive
-        'interactive-link': '#00FF41',
+        'interactive-link': '#4E9F76',
         'interactive-link-hover': '#FFFFFF',
 
         // Input
-        'input-bg': '#0A0A0A',
+        'input-bg': '#121212',
         'input-border': '#333333',
-        'input-border-focus': '#00FF41',
+        'input-border-focus': '#4E9F76',
 
         // Legacy aliases for migration
         'steel-primary': '#888888',
@@ -62,13 +66,13 @@ export default {
         'imperial-gold': '#888888',
       },
       fontFamily: {
-        // Industrial Display - Heavy, aggressive
-        display: ['Unbounded', 'Archivo Black', 'system-ui', 'sans-serif'],
-        // Technical Monospace - Terminal precision
-        mono: ['Space Mono', 'JetBrains Mono', 'SF Mono', 'monospace'],
-        numeral: ['Space Mono', 'JetBrains Mono', 'monospace'],
-        // Legacy
-        imperial: ['Unbounded', 'system-ui', 'sans-serif'],
+        // Roman Inscription Serif - Chiseled authority
+        display: ['Cinzel', 'Times New Roman', 'serif'],
+        // Technical Monospace - Data precision
+        mono: ['Space Mono', 'SF Mono', 'monospace'],
+        numeral: ['Space Mono', 'monospace'],
+        // Imperial serif for headers
+        imperial: ['Cinzel', 'Times New Roman', 'serif'],
       },
       fontWeight: {
         normal: '400',
@@ -108,8 +112,8 @@ export default {
         'none': 'none',
         'grid': '0 0 0 2px #333333',
         'grid-active': '0 0 0 2px #FFFFFF',
-        'signal-green': '0 0 20px rgba(0, 255, 65, 0.3)',
-        'signal-red': '0 0 20px rgba(255, 0, 60, 0.3)',
+        'signal-green': '0 0 20px rgba(78, 159, 118, 0.3)',
+        'signal-red': '0 0 20px rgba(166, 75, 75, 0.3)',
         // Legacy
         'steel': '0 0 0 2px #333333',
         'imperial': '0 0 0 2px #333333',
