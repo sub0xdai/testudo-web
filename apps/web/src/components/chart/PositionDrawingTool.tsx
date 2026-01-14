@@ -215,7 +215,9 @@ export function PositionDrawingTool({
   // FIX: Only attach when drawingState is 'ready' or 'dragging' to avoid race with state transition
   useEffect(() => {
     // Don't attach listeners until state has stabilized to 'ready' (or 'dragging' for mid-drag)
-    if (!chartManager || !isActive || (drawingState !== 'ready' && drawingState !== 'dragging')) return;
+    if (!chartManager || !isActive || (drawingState !== 'ready' && drawingState !== 'dragging')) {
+      return;
+    }
 
     const handleMouseDown = (e: MouseEvent) => {
       if (drawingStateRef.current !== 'ready') return;
@@ -238,11 +240,13 @@ export function PositionDrawingTool({
       const price = chartManager.coordinateToPrice(y);
       // GEOM-05: Capture time coordinate for zone left edge
       const time = chartManager.coordinateToTime(x);
+
       if (price !== null && time !== null) {
         // Set entry price, startTime, and start dragging
         setLevels({ entryPrice: price, stopLossPrice: price, takeProfitPrice: null, startTime: time });
         setDrawingState('dragging');
       }
+      // Note: time can be null when clicking in empty area beyond last candle - this is expected
     };
 
     const handleMouseMove = (e: MouseEvent) => {
