@@ -1,6 +1,34 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import type { Time } from 'lightweight-charts';
 import { ChartManager, type PositionLevels } from '../../utils/chart_manager';
+
+/**
+ * Throttle function for reducing update frequency
+ */
+function throttle<T extends (...args: unknown[]) => void>(fn: T, delay: number): T {
+  let lastCall = 0;
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  return ((...args: unknown[]) => {
+    const now = Date.now();
+    const remaining = delay - (now - lastCall);
+
+    if (remaining <= 0) {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      lastCall = now;
+      fn(...args);
+    } else if (!timeoutId) {
+      timeoutId = setTimeout(() => {
+        lastCall = Date.now();
+        timeoutId = null;
+        fn(...args);
+      }, remaining);
+    }
+  }) as T;
+}
 
 type HandleType = 'entry' | 'stopLoss' | 'takeProfit';
 
@@ -58,20 +86,29 @@ export function PositionHandleOverlay({
   }, [chartManager]);
 
   // V5-13: Subscribe to chart movement to re-position handles
+  // Throttled to 60fps max to reduce jank during rapid pan/zoom
+  const throttledUpdate = useMemo(
+    () => throttle(() => forceUpdate((n) => n + 1), 16), // ~60fps
+    []
+  );
+
   useEffect(() => {
     if (!chartManager) return;
 
-    // Force re-render on crosshair move to update handle positions
-    const unsubscribe = chartManager.subscribeCrosshairMove(() => {
-      forceUpdate((n) => n + 1);
-    });
+    // Throttled re-render on crosshair move to update handle positions
+    const unsubscribe = chartManager.subscribeCrosshairMove(throttledUpdate);
 
     return unsubscribe;
-  }, [chartManager]);
+  }, [chartManager, throttledUpdate]);
 
   // V5-12: Handle drag events that update primitive via updateLevels()
+  // Sets body cursor for smooth dragging even when mouse moves fast
   useEffect(() => {
     if (!dragging || !chartManager) return;
+
+    // Set cursor on body for consistent feel during drag
+    document.body.style.cursor = 'ns-resize';
+    document.body.style.userSelect = 'none';
 
     const handleMouseMove = (e: MouseEvent) => {
       const container = containerRef.current;
@@ -94,12 +131,19 @@ export function PositionHandleOverlay({
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
     };
   }, [dragging, chartManager, onLevelChange]);
 
   // Handle endTime drag events (X-axis)
+  // Sets body cursor for smooth horizontal dragging
   useEffect(() => {
     if (!draggingEndTime || !chartManager || !onEndTimeChange) return;
+
+    // Set cursor on body for consistent feel during drag
+    document.body.style.cursor = 'ew-resize';
+    document.body.style.userSelect = 'none';
 
     const handleMouseMove = (e: MouseEvent) => {
       const container = containerRef.current;
@@ -133,6 +177,8 @@ export function PositionHandleOverlay({
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('dblclick', handleDoubleClick);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
     };
   }, [draggingEndTime, chartManager, onEndTimeChange, levels.startTime]);
 

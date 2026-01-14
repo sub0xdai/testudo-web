@@ -45,6 +45,16 @@ interface PositionDrawingToolProps {
 const DEFAULT_RISK_PERCENT = 2;
 
 /**
+ * Cursor states for TradingView-native feel
+ */
+const CURSOR_STATES: Record<DrawingState, string> = {
+  idle: 'default',
+  ready: 'crosshair',
+  dragging: 'ns-resize',
+  complete: 'default',
+};
+
+/**
  * PositionDrawingTool - Drawable position entry on chart (TradingView style)
  *
  * V5-15: Refactored to use hybrid primitive + DOM architecture
@@ -161,6 +171,27 @@ export function PositionDrawingTool({
       onDeactivate();
     }
   }, [isActive, chartManager, onDeactivate]);
+
+  // Apply cursor state to chart element for native feel
+  useEffect(() => {
+    if (!chartManager) return;
+
+    const chartElement = chartManager.getChartElement();
+    if (!chartElement) return;
+
+    const cursor = isActive ? CURSOR_STATES[drawingState] : 'default';
+    chartElement.style.cursor = cursor;
+
+    // Also set on body during drag for consistent feel when mouse moves fast
+    if (drawingState === 'dragging') {
+      document.body.style.cursor = 'ns-resize';
+    }
+
+    return () => {
+      chartElement.style.cursor = 'default';
+      document.body.style.cursor = '';
+    };
+  }, [chartManager, isActive, drawingState]);
 
   // Default R:R ratio for auto TP calculation
   const defaultRR = parseFloat(riskConfig?.min_risk_reward_ratio ?? '2') || 2;
