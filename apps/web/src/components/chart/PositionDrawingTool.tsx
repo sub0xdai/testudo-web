@@ -24,11 +24,21 @@ export interface PositionLevels {
   endTime?: Time;         // Optional: Zone right edge (defaults to chart edge)
 }
 
+/** State that persists across market switches */
+export interface PersistedPositionState {
+  drawingState: DrawingState;
+  levels: PositionLevels | null;
+}
+
 interface PositionDrawingToolProps {
   chartManager: ChartManager | null;
   market: string;
   accountBalance: number;
   isActive: boolean;
+  /** Initial state restored from parent (for market switch persistence) */
+  initialState?: PersistedPositionState;
+  /** Called when state changes so parent can persist it */
+  onStateChange?: (state: PersistedPositionState | null) => void;
   onDeactivate: () => void;
 }
 
@@ -56,17 +66,24 @@ export function PositionDrawingTool({
   market,
   accountBalance,
   isActive,
+  initialState,
+  onStateChange,
   onDeactivate,
 }: PositionDrawingToolProps) {
   const { mode } = useContext(TradingModeContext);
 
-  const [drawingState, setDrawingState] = useState<DrawingState>('idle');
-  const [levels, setLevels] = useState<PositionLevels>({
-    entryPrice: null,
-    stopLossPrice: null,
-    takeProfitPrice: null,
-    startTime: null, // GEOM-05: Visual anchor for zone left edge
-  });
+  // Initialize from persisted state if available
+  const [drawingState, setDrawingState] = useState<DrawingState>(
+    initialState?.drawingState ?? 'idle'
+  );
+  const [levels, setLevels] = useState<PositionLevels>(
+    initialState?.levels ?? {
+      entryPrice: null,
+      stopLossPrice: null,
+      takeProfitPrice: null,
+      startTime: null,
+    }
+  );
   const [previewPrice, setPreviewPrice] = useState<number | null>(null);
   const [riskConfig, setRiskConfig] = useState<RiskConfig | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,6 +95,17 @@ export function PositionDrawingTool({
   // Keep refs in sync with state
   useEffect(() => { drawingStateRef.current = drawingState; }, [drawingState]);
   useEffect(() => { levelsRef.current = levels; }, [levels]);
+
+  // Notify parent of state changes for persistence across market switches
+  useEffect(() => {
+    if (onStateChange) {
+      if (drawingState === 'idle') {
+        // Don't persist idle state - let parent clear it
+      } else {
+        onStateChange({ drawingState, levels });
+      }
+    }
+  }, [drawingState, levels, onStateChange]);
 
   // Load risk config
   useEffect(() => {
@@ -117,14 +145,22 @@ export function PositionDrawingTool({
     ? levels.entryPrice > levels.stopLossPrice ? 'long' : 'short'
     : 'long';
 
-  // Activate drawing mode
+  // Activate drawing mode - use ref to avoid stale closure
+  // Note: handleCancel is defined later, so we use onDeactivate directly here
   useEffect(() => {
-    if (isActive && drawingState === 'idle') {
+    if (isActive && drawingStateRef.current === 'idle') {
       setDrawingState('ready');
-    } else if (!isActive && drawingState !== 'idle') {
-      handleCancel();
+    } else if (!isActive && drawingStateRef.current !== 'idle') {
+      // Deactivate: reset state and notify parent
+      if (chartManager) {
+        chartManager.detachPositionPrimitive();
+      }
+      setDrawingState('idle');
+      setLevels({ entryPrice: null, stopLossPrice: null, takeProfitPrice: null, startTime: null });
+      setPreviewPrice(null);
+      onDeactivate();
     }
-  }, [isActive]);
+  }, [isActive, chartManager, onDeactivate]);
 
   // Default R:R ratio for auto TP calculation
   const defaultRR = parseFloat(riskConfig?.min_risk_reward_ratio ?? '2') || 2;
@@ -175,15 +211,28 @@ export function PositionDrawingTool({
   }, [chartManager, drawingState, levels, side]);
 
   // Subscribe to chart events (drag-based) - uses refs to avoid stale closures
+  // FIX: Attach to window and check bounds - avoids timing issues with chart element
+  // FIX: Only attach when drawingState is 'ready' or 'dragging' to avoid race with state transition
   useEffect(() => {
-    if (!chartManager || !isActive) return;
-
-    const chartContainer = chartManager.getChartElement();
-    if (!chartContainer) return;
+    // Don't attach listeners until state has stabilized to 'ready' (or 'dragging' for mid-drag)
+    if (!chartManager || !isActive || (drawingState !== 'ready' && drawingState !== 'dragging')) return;
 
     const handleMouseDown = (e: MouseEvent) => {
       if (drawingStateRef.current !== 'ready') return;
-      const rect = chartContainer.getBoundingClientRect();
+
+      // Get fresh chart element each time - handles chart recreation
+      const chartElement = chartManager.getChartElement();
+      if (!chartElement) return;
+
+      // Check if click is within chart bounds
+      const rect = chartElement.getBoundingClientRect();
+      if (
+        e.clientX < rect.left || e.clientX > rect.right ||
+        e.clientY < rect.top || e.clientY > rect.bottom
+      ) {
+        return; // Click outside chart area
+      }
+
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       const price = chartManager.coordinateToPrice(y);
@@ -198,7 +247,12 @@ export function PositionDrawingTool({
 
     const handleMouseMove = (e: MouseEvent) => {
       if (drawingStateRef.current !== 'dragging') return;
-      const rect = chartContainer.getBoundingClientRect();
+
+      // Get fresh chart element for coordinate conversion
+      const chartElement = chartManager.getChartElement();
+      if (!chartElement) return;
+
+      const rect = chartElement.getBoundingClientRect();
       const y = e.clientY - rect.top;
       const price = chartManager.coordinateToPrice(y);
       if (price !== null && levelsRef.current.entryPrice !== null) {
@@ -243,17 +297,20 @@ export function PositionDrawingTool({
       }
     });
 
-    chartContainer.addEventListener('mousedown', handleMouseDown);
+    // Attach all mouse events to window for reliability
+    // This avoids issues where chart element changes (e.g., on interval switch)
+    // and ensures events fire even during state transitions
+    window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
 
     return () => {
       unsubMove();
-      chartContainer.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [chartManager, isActive]); // Minimal deps - use refs for state
+  }, [chartManager, isActive, drawingState]); // Include drawingState to attach listeners only when ready
 
   // Keyboard shortcuts - DRAW-09
   useEffect(() => {

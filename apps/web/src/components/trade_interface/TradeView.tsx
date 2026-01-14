@@ -5,7 +5,7 @@ import { KLine } from "../../utils/types";
 import { TradesContext } from "../../state/TradesProvider";
 import { parseMarketSymbol } from "../../utils/format";
 import { BinanceWsManager } from "../../utils/binance_ws";
-import { PositionDrawingTool } from "../chart/PositionDrawingTool";
+import { PositionDrawingTool, type PersistedPositionState } from "../chart/PositionDrawingTool";
 
 // Binance-compatible interval values
 type TimeInterval = '1m' | '3m' | '5m' | '15m' | '30m' | '1h' | '2h' | '4h' | '6h' | '12h' | '1d' | '3d' | '1w' | '1M';
@@ -94,7 +94,31 @@ export const TradeView = ({ market }: TradeViewProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setLocalError] = useState<string | null>(null);
   const [hasData, setHasData] = useState(false);
-  const [isPositionToolActive, setIsPositionToolActive] = useState(false);
+
+  // Position tool state - persisted per market
+  const positionsByMarket = useRef<Map<string, PersistedPositionState>>(new Map());
+  const [, setPositionToolTrigger] = useState(0); // Force re-render on state change
+
+  // Get current market's position state
+  const currentPositionState = positionsByMarket.current.get(market);
+  const isPositionToolActive = currentPositionState?.drawingState !== undefined &&
+                               currentPositionState.drawingState !== 'idle';
+
+  // Handle position state changes from the tool
+  const handlePositionStateChange = useCallback((state: PersistedPositionState | null) => {
+    if (state === null) {
+      positionsByMarket.current.delete(market);
+    } else {
+      positionsByMarket.current.set(market, state);
+    }
+    setPositionToolTrigger(n => n + 1); // Trigger re-render
+  }, [market]);
+
+  // Activate position tool for current market
+  const activatePositionTool = useCallback(() => {
+    positionsByMarket.current.set(market, { drawingState: 'ready', levels: null });
+    setPositionToolTrigger(n => n + 1);
+  }, [market]);
 
   const { base, quote } = useMemo(() => parseMarketSymbol(market), [market]);
 
@@ -245,7 +269,13 @@ export const TradeView = ({ market }: TradeViewProps) => {
         <div className="flex items-center gap-2">
           <PositionToolButton
             isActive={isPositionToolActive}
-            onClick={() => setIsPositionToolActive(!isPositionToolActive)}
+            onClick={() => {
+              if (isPositionToolActive) {
+                handlePositionStateChange(null); // Deactivate
+              } else {
+                activatePositionTool(); // Activate
+              }
+            }}
           />
           <div className="text-text-secondary text-[9px] font-imperial tracking-wider uppercase">
             TradingView
@@ -258,13 +288,16 @@ export const TradeView = ({ market }: TradeViewProps) => {
         {/* Chart div ALWAYS rendered so ref exists */}
         <div ref={chartRef} className="w-full h-full" />
 
-        {/* Position Drawing Tool Overlay */}
+        {/* Position Drawing Tool Overlay - keyed by market for clean lifecycle */}
         <PositionDrawingTool
+          key={market}
           chartManager={chartManagerRef.current}
           market={market}
           accountBalance={10000}
           isActive={isPositionToolActive}
-          onDeactivate={() => setIsPositionToolActive(false)}
+          initialState={currentPositionState}
+          onStateChange={handlePositionStateChange}
+          onDeactivate={() => handlePositionStateChange(null)}
         />
 
         {/* Overlay states on top of chart */}
