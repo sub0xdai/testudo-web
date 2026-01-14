@@ -239,14 +239,18 @@ export function PositionDrawingTool({
       const y = e.clientY - rect.top;
       const price = chartManager.coordinateToPrice(y);
       // GEOM-05: Capture time coordinate for zone left edge
-      const time = chartManager.coordinateToTime(x);
+      let time = chartManager.coordinateToTime(x);
 
-      if (price !== null && time !== null) {
+      // Fallback: use current timestamp for clicks in empty chart area (right of last candle)
+      if (time === null) {
+        time = Math.floor(Date.now() / 1000) as Time;
+      }
+
+      if (price !== null) {
         // Set entry price, startTime, and start dragging
         setLevels({ entryPrice: price, stopLossPrice: price, takeProfitPrice: null, startTime: time });
         setDrawingState('dragging');
       }
-      // Note: time can be null when clicking in empty area beyond last candle - this is expected
     };
 
     const handleMouseMove = (e: MouseEvent) => {
