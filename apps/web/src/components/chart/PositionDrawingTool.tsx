@@ -3,7 +3,8 @@ import { toast } from 'sonner';
 import type { Time } from 'lightweight-charts';
 import { ChartManager, type PositionLevels as PrimitiveLevels } from '../../utils/chart_manager';
 import { useRiskCalculation, RiskCalculationResult } from '../../hooks/useRiskCalculation';
-import { createOrder, getRiskConfig, RiskConfig } from '../../utils/requests';
+import { createTrade, getRiskConfig, RiskConfig } from '../../utils/requests';
+import type { CreateTradeRequest } from '../../utils/types';
 import { TradingModeContext } from '../../state/TradingModeProvider';
 import { PositionHandleOverlay } from './PositionHandleOverlay';
 
@@ -80,7 +81,8 @@ export function PositionDrawingTool({
   onStateChange,
   onDeactivate,
 }: PositionDrawingToolProps) {
-  const { mode } = useContext(TradingModeContext);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { mode: _mode } = useContext(TradingModeContext); // Reserved for future live trading support
 
   // Initialize from persisted state if available
   const [drawingState, setDrawingState] = useState<DrawingState>(
@@ -398,27 +400,29 @@ export function PositionDrawingTool({
 
     setIsSubmitting(true);
     try {
-      await createOrder({
-        market,
-        side: side === 'long' ? 'BUY' : 'SELL',
+      const trade: CreateTradeRequest = {
+        symbol: market,
+        side: side === 'long' ? 'buy' : 'sell',
         quantity: calculation.positionSize,
-        price: levels.entryPrice,
-        userId,
-        executionMode: mode,
-      });
+        entry_price: levels.entryPrice,
+        stop_loss_price: levels.stopLossPrice,
+        take_profit_price: levels.takeProfitPrice ?? undefined,
+      };
 
-      toast.success(`${side.toUpperCase()} order placed`, {
-        description: `${calculation.positionSize} @ ${levels.entryPrice.toFixed(2)}`,
+      await createTrade(trade, userId);
+
+      toast.success(`${side.toUpperCase()} trade created`, {
+        description: `Entry: ${levels.entryPrice.toFixed(2)}, SL: ${levels.stopLossPrice.toFixed(2)}`,
       });
 
       handleCancel();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to place order';
-      toast.error('Order failed', { description: message });
+      const message = err instanceof Error ? err.message : 'Failed to create trade';
+      toast.error('Trade failed', { description: message });
     } finally {
       setIsSubmitting(false);
     }
-  }, [calculation, levels, market, mode, side, handleCancel]);
+  }, [calculation, levels, market, side, handleCancel]);
 
   // V5-12: Update level from handle drag - updates both state and primitive
   // GEOM-05: Now preserves startTime for time-anchored zones

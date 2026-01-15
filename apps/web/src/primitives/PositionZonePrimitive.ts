@@ -203,12 +203,12 @@ class PositionPriceAxisView implements ISeriesPrimitiveAxisView {
 
   constructor(
     price: number,
-    label: string,
+    _label: string, // Kept for API compatibility, DOM handle shows the label
     textColor: string,
     backColor: string
   ) {
     this._price = price;
-    this._text = `${label} ${price.toFixed(2)}`;
+    this._text = price.toFixed(2); // Just price - DOM handle shows the label
     this._textColor = textColor;
     this._backColor = backColor;
   }
@@ -217,9 +217,10 @@ class PositionPriceAxisView implements ISeriesPrimitiveAxisView {
     this._series = series;
   }
 
-  setPrice(price: number, label: string): void {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setPrice(price: number, _label: string): void {
     this._price = price;
-    this._text = `${label} ${price.toFixed(2)}`;
+    this._text = price.toFixed(2); // Just price - DOM handle shows the label
   }
 
   coordinate(): number {

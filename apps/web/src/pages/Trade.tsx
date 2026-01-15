@@ -6,6 +6,7 @@ import { TradeInterface } from "../components/TradeInterface";
 import { OpenOrders } from "../components/OpenOrders";
 import { OrderHistory } from "../components/OrderHistory";
 import { PriceAlerts } from "../components/PriceAlerts";
+import { BalanceDisplay } from "../components/ui/BalanceDisplay";
 import { useEffect, useCallback, useState, useContext } from "react";
 import { createUser } from "../utils/requests";
 import { usePriceAlerts } from "../hooks/usePriceAlerts";
@@ -96,8 +97,11 @@ export const Trade = () => {
             <TradeInterface market={market} />
           </div>
 
-          {/* Risk Settings Panel */}
-          <div className="order-1 lg:order-2">
+          {/* Right Panel - Balance + Risk Settings */}
+          <div className="order-1 lg:order-2 flex flex-col gap-4">
+            {/* Paper Trading Balance */}
+            <BalanceDisplay market={market} currentPrice={currentPrice} />
+            {/* Risk Settings */}
             <RiskAutomaton />
           </div>
         </div>

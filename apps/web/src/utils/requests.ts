@@ -122,7 +122,9 @@ export async function createUser(): Promise<UserId> {
 }
 
 export async function getBalances(userId: string): Promise<Balance[]> {
-  const response = await axios.get(`${BASE_URL}/balances?user_id=${userId}`);
+  const response = await axios.get(`${BASE_URL}/paper/balances`, {
+    headers: { 'X-User-Id': userId }
+  });
   return response.data;
 }
 
