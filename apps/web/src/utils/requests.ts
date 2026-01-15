@@ -128,6 +128,20 @@ export async function getBalances(userId: string): Promise<Balance[]> {
   return response.data;
 }
 
+interface ResetBalanceResponse {
+  message: string;
+  balances: Balance[];
+}
+
+export async function resetPaperBalance(userId: string): Promise<Balance[]> {
+  const response = await axios.post<ResetBalanceResponse>(
+    `${BASE_URL}/paper/reset`,
+    {},
+    { headers: { 'X-User-Id': userId } }
+  );
+  return response.data.balances;
+}
+
 export async function getOpenOrders(userId: string, market?: string): Promise<OpenOrder[]> {
   const params = new URLSearchParams({ user_id: userId });
   if (market) {

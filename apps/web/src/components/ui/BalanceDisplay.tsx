@@ -19,8 +19,10 @@ export function BalanceDisplay({ market, currentPrice }: BalanceDisplayProps) {
     baseBalance,
     quoteBalance,
     isLoading,
+    isResetting,
     error,
     refresh,
+    reset,
   } = useBalances({
     market,
     pollInterval: 10000,
@@ -58,13 +60,24 @@ export function BalanceDisplay({ market, currentPrice }: BalanceDisplayProps) {
     <div className="flex flex-col gap-2" role="region" aria-label="Account balances" aria-live="polite">
       <div className="flex items-center justify-between text-xs text-text-secondary">
         <span className="font-imperial text-[10px] tracking-wider uppercase">Balances</span>
-        <button
-          onClick={refresh}
-          className="text-steel-primary hover:text-steel-bright transition-colors"
-          aria-label="Refresh balances"
-        >
-          <RefreshIcon className="w-3.5 h-3.5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={reset}
+            disabled={isResetting}
+            className="text-[10px] text-steel-dim hover:text-positive-green transition-colors disabled:opacity-50"
+            aria-label="Reset paper balance to 10,000 USDT"
+            title="Reset to 10,000 USDT"
+          >
+            {isResetting ? 'Resetting...' : 'Reset'}
+          </button>
+          <button
+            onClick={refresh}
+            className="text-steel-primary hover:text-steel-bright transition-colors"
+            aria-label="Refresh balances"
+          >
+            <RefreshIcon className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-2">

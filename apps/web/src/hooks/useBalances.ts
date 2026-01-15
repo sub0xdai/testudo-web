@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Balance } from '../utils/types';
-import { getBalances } from '../utils/requests';
+import { getBalances, resetPaperBalance } from '../utils/requests';
 import { parseMarketSymbol } from '../utils/format';
 
 interface UseBalancesOptions {
@@ -13,8 +13,10 @@ interface UseBalancesReturn {
   baseBalance: Balance | undefined;
   quoteBalance: Balance | undefined;
   isLoading: boolean;
+  isResetting: boolean;
   error: string | null;
   refresh: () => Promise<void>;
+  reset: () => Promise<void>;
 }
 
 /**
@@ -27,6 +29,7 @@ export function useBalances({
 }: UseBalancesOptions): UseBalancesReturn {
   const [balances, setBalances] = useState<Balance[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isResetting, setIsResetting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const { base, quote } = useMemo(() => parseMarketSymbol(market), [market]);
@@ -47,6 +50,23 @@ export function useBalances({
       setError(message);
     } finally {
       setIsLoading(false);
+    }
+  }, []);
+
+  const resetBalance = useCallback(async () => {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) return;
+
+    setIsResetting(true);
+    try {
+      const data = await resetPaperBalance(userId);
+      setBalances(data);
+      setError(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to reset balance';
+      setError(message);
+    } finally {
+      setIsResetting(false);
     }
   }, []);
 
@@ -78,8 +98,10 @@ export function useBalances({
     baseBalance,
     quoteBalance,
     isLoading,
+    isResetting,
     error,
     refresh: fetchBalances,
+    reset: resetBalance,
   };
 }
 
