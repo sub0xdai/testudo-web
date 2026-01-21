@@ -26,7 +26,7 @@ export async function getDepthColumnar(market: string, limit = 20): Promise<Colu
 }
 
 export async function getTrades(market: string): Promise<Trade[]> {
-  const response = await axios.get(`${BASE_URL}/trades?symbol=${market}`);
+  const response = await axios.get(`${BASE_URL}/trade-history?symbol=${market}`);
   return response.data;
 }
 
