@@ -41,6 +41,8 @@ interface PositionDrawingToolProps {
   /** Called when state changes so parent can persist it */
   onStateChange?: (state: PersistedPositionState | null) => void;
   onDeactivate: () => void;
+  /** Called after a trade is successfully created - use to refresh open positions layer */
+  onTradeCreated?: () => void;
 }
 
 const DEFAULT_RISK_PERCENT = 2;
@@ -80,6 +82,7 @@ export function PositionDrawingTool({
   initialState,
   onStateChange,
   onDeactivate,
+  onTradeCreated,
 }: PositionDrawingToolProps) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { mode: _mode } = useContext(TradingModeContext); // Reserved for future live trading support
@@ -415,6 +418,11 @@ export function PositionDrawingTool({
         description: `Entry: ${levels.entryPrice.toFixed(2)}, SL: ${levels.stopLossPrice.toFixed(2)}`,
       });
 
+      // Notify parent to refresh open positions layer
+      // This will render the new position as a persistent overlay
+      onTradeCreated?.();
+
+      // Clear the drawing tool (position will now be rendered by OpenPositionsLayer)
       handleCancel();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create trade';
@@ -422,7 +430,7 @@ export function PositionDrawingTool({
     } finally {
       setIsSubmitting(false);
     }
-  }, [calculation, levels, market, side, handleCancel]);
+  }, [calculation, levels, market, side, handleCancel, onTradeCreated]);
 
   // V5-12: Update level from handle drag - updates both state and primitive
   // GEOM-05: Now preserves startTime for time-anchored zones

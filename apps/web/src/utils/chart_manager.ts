@@ -61,6 +61,8 @@ export class ChartManager {
   private chart: IChartApi;
   private priceLines: Map<PriceLineId, IPriceLine> = new Map();
   private positionPrimitive: PositionZonePrimitive | null = null;
+  // Open positions primitives - keyed by trade ID for persistent position rendering
+  private openPositionPrimitives: Map<string, PositionZonePrimitive> = new Map();
 
   constructor(
     ref: HTMLElement,
@@ -169,6 +171,7 @@ export class ChartManager {
   }
   public destroy() {
     this.detachPositionPrimitive();
+    this.detachAllOpenPositionPrimitives();
     this.removeAllPriceLines();
     this.chart.remove();
   }
@@ -339,5 +342,103 @@ export class ChartManager {
    */
   public isPointInPositionZone(y: number): boolean {
     return this.positionPrimitive?.isPointInZone(y) ?? false;
+  }
+
+  // ============================================================
+  // Open Positions Management (for persistent position rendering)
+  // ============================================================
+
+  /**
+   * Attach a new open position primitive to the chart
+   * Used for rendering existing/open trades that should persist on the chart
+   * @param id - Unique identifier (typically trade group ID)
+   * @param style - Optional style configuration for this position
+   * @returns The attached primitive instance
+   */
+  public attachOpenPositionPrimitive(
+    id: string,
+    style?: Partial<PositionZoneStyle>
+  ): PositionZonePrimitive {
+    // Remove existing primitive with same ID if present
+    this.detachOpenPositionPrimitive(id);
+
+    // Create and attach new primitive
+    const primitive = new PositionZonePrimitive(style);
+    this.candleSeries.attachPrimitive(primitive);
+    this.openPositionPrimitives.set(id, primitive);
+
+    return primitive;
+  }
+
+  /**
+   * Detach a specific open position primitive by ID
+   * @param id - The trade ID to remove
+   */
+  public detachOpenPositionPrimitive(id: string): void {
+    const primitive = this.openPositionPrimitives.get(id);
+    if (primitive) {
+      this.candleSeries.detachPrimitive(primitive);
+      this.openPositionPrimitives.delete(id);
+    }
+  }
+
+  /**
+   * Detach all open position primitives
+   */
+  public detachAllOpenPositionPrimitives(): void {
+    for (const [id] of this.openPositionPrimitives) {
+      this.detachOpenPositionPrimitive(id);
+    }
+  }
+
+  /**
+   * Update levels for a specific open position primitive
+   * @param id - The trade ID
+   * @param levels - New position levels, or null to hide
+   */
+  public updateOpenPositionLevels(id: string, levels: PositionLevels | null): void {
+    const primitive = this.openPositionPrimitives.get(id);
+    if (primitive) {
+      primitive.updateLevels(levels);
+    }
+  }
+
+  /**
+   * Get a specific open position primitive by ID
+   * @param id - The trade ID
+   * @returns The primitive or undefined if not found
+   */
+  public getOpenPositionPrimitive(id: string): PositionZonePrimitive | undefined {
+    return this.openPositionPrimitives.get(id);
+  }
+
+  /**
+   * Get all open position primitive IDs currently attached
+   * @returns Array of trade IDs
+   */
+  public getOpenPositionIds(): string[] {
+    return Array.from(this.openPositionPrimitives.keys());
+  }
+
+  /**
+   * Sync open positions - removes primitives not in the provided IDs and returns
+   * IDs that need new primitives attached
+   * @param activeIds - Array of trade IDs that should be displayed
+   * @returns Array of IDs that need primitives attached (new positions)
+   */
+  public syncOpenPositions(activeIds: string[]): string[] {
+    const activeSet = new Set(activeIds);
+    const currentIds = this.getOpenPositionIds();
+
+    // Remove primitives for positions no longer active
+    for (const id of currentIds) {
+      if (!activeSet.has(id)) {
+        this.detachOpenPositionPrimitive(id);
+      }
+    }
+
+    // Return IDs that need new primitives
+    const currentSet = new Set(this.getOpenPositionIds());
+    return activeIds.filter(id => !currentSet.has(id));
   }
 }

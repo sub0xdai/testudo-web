@@ -6,6 +6,7 @@ import { TradesContext } from "../../state/TradesProvider";
 import { parseMarketSymbol } from "../../utils/format";
 import { BinanceWsManager } from "../../utils/binance_ws";
 import { PositionDrawingTool, type PersistedPositionState } from "../chart/PositionDrawingTool";
+import { OpenPositionsLayer, type OpenPositionsLayerRef } from "../chart/OpenPositionsLayer";
 
 // Binance-compatible interval values
 type TimeInterval = '1m' | '3m' | '5m' | '15m' | '30m' | '1h' | '2h' | '4h' | '6h' | '12h' | '1d' | '3d' | '1w' | '1M';
@@ -87,6 +88,7 @@ export const TradeView = ({ market }: TradeViewProps) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartManagerRef = useRef<ChartManager | null>(null);
   const isMountedRef = useRef(true);
+  const openPositionsRef = useRef<OpenPositionsLayerRef>(null);
 
   const { setLoading, setError } = useContext(TradesContext);
 
@@ -119,6 +121,11 @@ export const TradeView = ({ market }: TradeViewProps) => {
     positionsByMarket.current.set(market, { drawingState: 'ready', levels: null });
     setPositionToolTrigger(n => n + 1);
   }, [market]);
+
+  // Callback to refresh open positions (called after trade creation)
+  const refreshOpenPositions = useCallback(() => {
+    openPositionsRef.current?.refresh();
+  }, []);
 
   const { base, quote } = useMemo(() => parseMarketSymbol(market), [market]);
 
@@ -288,6 +295,13 @@ export const TradeView = ({ market }: TradeViewProps) => {
         {/* Chart div ALWAYS rendered so ref exists */}
         <div ref={chartRef} className="w-full h-full" />
 
+        {/* Open Positions Layer - renders persistent lines for existing trades */}
+        <OpenPositionsLayer
+          ref={openPositionsRef}
+          chartManager={chartManagerRef.current}
+          market={market}
+        />
+
         {/* Position Drawing Tool Overlay - keyed by market for clean lifecycle */}
         <PositionDrawingTool
           key={market}
@@ -298,6 +312,7 @@ export const TradeView = ({ market }: TradeViewProps) => {
           initialState={currentPositionState}
           onStateChange={handlePositionStateChange}
           onDeactivate={() => handlePositionStateChange(null)}
+          onTradeCreated={refreshOpenPositions}
         />
 
         {/* Overlay states on top of chart */}
