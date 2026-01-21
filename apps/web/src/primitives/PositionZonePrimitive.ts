@@ -101,8 +101,10 @@ class PositionZoneRenderer implements IPrimitivePaneRenderer {
     if (entryY === null || slY === null || tpY === null) return;
 
     // GEOM-03: Convert time to X coordinate for zone left edge
-    const startX = this._timeScale.timeToCoordinate(startTime);
-    if (startX === null) return; // Zone not visible (scrolled off)
+    // FIX: When drawing right of candles, timeToCoordinate returns null
+    // because startTime is beyond chart data. Default to 0 (left edge)
+    // so zones render across the full chart width.
+    const startX = this._timeScale.timeToCoordinate(startTime) ?? 0;
 
     // GEOM-03: Optional endTime for zone right edge (trade timeout feature)
     const endX = endTime ? this._timeScale.timeToCoordinate(endTime) : null;
