@@ -30,7 +30,7 @@ function throttle<T extends (...args: unknown[]) => void>(fn: T, delay: number):
   }) as T;
 }
 
-type HandleType = 'entry' | 'stopLoss' | 'takeProfit';
+export type HandleType = 'entry' | 'stopLoss' | 'takeProfit';
 
 interface PositionHandleOverlayProps {
   chartManager: ChartManager | null;
@@ -46,6 +46,27 @@ interface PositionHandleOverlayProps {
     riskAmount: number;
     riskRewardRatio: number | null;
   };
+  /**
+   * FR-5.2 (007-editable-position-levels)
+   * Handles that should be locked (not draggable).
+   * Used for filled orders where entry cannot be modified.
+   */
+  lockedHandles?: HandleType[];
+  /**
+   * FR-5.3 (007-editable-position-levels)
+   * When true, shows apply/cancel instead of execute button.
+   * Used for editing existing positions vs creating new ones.
+   */
+  isExistingPosition?: boolean;
+  /**
+   * Position ID for existing positions (used for API calls)
+   */
+  positionId?: string;
+  /**
+   * FR-5.1.4 (007-editable-position-levels)
+   * Called when drag ends (mouseup) to trigger API save.
+   */
+  onDragEnd?: (type: HandleType, price: number) => void;
 }
 
 /**
@@ -65,6 +86,9 @@ export function PositionHandleOverlay({
   onCancel,
   isSubmitting = false,
   stats,
+  lockedHandles = [],
+  isExistingPosition = false,
+  onDragEnd,
 }: PositionHandleOverlayProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState<HandleType | null>(null);
@@ -101,6 +125,9 @@ export function PositionHandleOverlay({
     return unsubscribe;
   }, [chartManager, throttledUpdate]);
 
+  // Track last price during drag for onDragEnd
+  const lastDragPriceRef = useRef<number | null>(null);
+
   // V5-12: Handle drag events that update primitive via updateLevels()
   // Sets body cursor for smooth dragging even when mouse moves fast
   useEffect(() => {
@@ -118,11 +145,17 @@ export function PositionHandleOverlay({
       const y = e.clientY - rect.top;
       const price = chartManager.coordinateToPrice(y);
       if (price !== null) {
+        lastDragPriceRef.current = price;
         onLevelChange(dragging, price);
       }
     };
 
     const handleMouseUp = () => {
+      // FR-5.1.4: Call onDragEnd with final price to trigger API save
+      if (onDragEnd && lastDragPriceRef.current !== null) {
+        onDragEnd(dragging, lastDragPriceRef.current);
+      }
+      lastDragPriceRef.current = null;
       setDragging(null);
     };
 
@@ -134,7 +167,7 @@ export function PositionHandleOverlay({
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     };
-  }, [dragging, chartManager, onLevelChange]);
+  }, [dragging, chartManager, onLevelChange, onDragEnd]);
 
   // Handle endTime drag events (X-axis)
   // Sets body cursor for smooth horizontal dragging
@@ -211,7 +244,9 @@ export function PositionHandleOverlay({
           className="flex items-center gap-2 px-2 py-1 rounded text-[11px]"
           style={{ background: 'rgba(30, 34, 45, 0.9)' }}
         >
-          <span style={{ color: '#787b86' }}>Adjust levels or execute</span>
+          <span style={{ color: '#787b86' }}>
+            {isExistingPosition ? 'Drag handles to adjust' : 'Adjust levels or execute'}
+          </span>
           <button
             onClick={onCancel}
             className="px-2 py-0.5 rounded cursor-pointer hover:bg-[#ef5350]/20"
@@ -230,6 +265,7 @@ export function PositionHandleOverlay({
         type="entry"
         isDragging={dragging === 'entry'}
         isHovered={hoveredHandle === 'entry'}
+        isLocked={lockedHandles.includes('entry')}
         onDragStart={() => setDragging('entry')}
         onHover={(h) => setHoveredHandle(h ? 'entry' : null)}
       />
@@ -243,6 +279,7 @@ export function PositionHandleOverlay({
         type="stopLoss"
         isDragging={dragging === 'stopLoss'}
         isHovered={hoveredHandle === 'stopLoss'}
+        isLocked={lockedHandles.includes('stopLoss')}
         onDragStart={() => setDragging('stopLoss')}
         onHover={(h) => setHoveredHandle(h ? 'stopLoss' : null)}
       />
@@ -256,6 +293,7 @@ export function PositionHandleOverlay({
         type="takeProfit"
         isDragging={dragging === 'takeProfit'}
         isHovered={hoveredHandle === 'takeProfit'}
+        isLocked={lockedHandles.includes('takeProfit')}
         onDragStart={() => setDragging('takeProfit')}
         onHover={(h) => setHoveredHandle(h ? 'takeProfit' : null)}
       />
@@ -363,7 +401,32 @@ export function PositionHandleOverlay({
 }
 
 /**
+ * Lock icon SVG for locked handles
+ * FR-5.2.4 (007-editable-position-levels)
+ */
+function LockIcon({ color }: { color: string }) {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  );
+}
+
+/**
  * Handle component - draggable price level indicator
+ *
+ * FR-5.2 (007-editable-position-levels)
+ * Supports locked state for filled orders where entry cannot be modified.
  */
 function Handle({
   y,
@@ -373,6 +436,7 @@ function Handle({
   type,
   isDragging,
   isHovered,
+  isLocked = false,
   onDragStart,
   onHover,
 }: {
@@ -383,6 +447,7 @@ function Handle({
   type: HandleType;
   isDragging: boolean;
   isHovered: boolean;
+  isLocked?: boolean;
   onDragStart: () => void;
   onHover: (hovered: boolean) => void;
 }) {
@@ -404,16 +469,25 @@ function Handle({
       <div
         onMouseDown={(e) => {
           e.preventDefault();
-          onDragStart();
+          // FR-5.2.1: No onMouseDown when locked
+          if (!isLocked) {
+            onDragStart();
+          }
         }}
-        className="flex items-center gap-1 px-1.5 py-0.5 rounded-sm select-none cursor-ns-resize"
+        className="flex items-center gap-1 px-1.5 py-0.5 rounded-sm select-none"
         style={{
           backgroundColor: bg,
-          opacity: isDragging || isHovered ? 1 : 0.9,
-          transform: isDragging ? 'scale(1.05)' : 'none',
-          transition: 'transform 0.1s',
+          // FR-5.2.4: Reduced opacity (0.6) when locked
+          opacity: isLocked ? 0.6 : (isDragging || isHovered ? 1 : 0.9),
+          transform: isDragging && !isLocked ? 'scale(1.05)' : 'none',
+          transition: 'transform 0.1s, opacity 0.15s',
+          // FR-5.2.4: cursor: not-allowed when locked
+          cursor: isLocked ? 'not-allowed' : 'ns-resize',
         }}
+        title={isLocked ? 'Entry price is locked for filled orders' : undefined}
       >
+        {/* FR-5.2.4: Show lock icon for locked handles */}
+        {isLocked && <LockIcon color={text} />}
         <span className="text-[10px] font-bold" style={{ color: text }}>
           {label}
         </span>

@@ -195,15 +195,24 @@ interface ApiResponse<T> {
 }
 
 export async function createTrade(trade: CreateTradeRequest, userId: string): Promise<TradeGroup> {
-  const response = await axios.post<ApiResponse<TradeGroup>>(
-    `${BASE_URL}/trades`,
-    trade,
-    { headers: { 'X-User-Id': userId } }
-  );
-  if (!response.data.success || !response.data.data) {
-    throw new Error(response.data.error || 'Failed to create trade');
+  try {
+    const response = await axios.post<ApiResponse<TradeGroup>>(
+      `${BASE_URL}/trades`,
+      trade,
+      { headers: { 'X-User-Id': userId } }
+    );
+    if (!response.data.success || !response.data.data) {
+      throw new Error(response.data.error || 'Failed to create trade');
+    }
+    return response.data.data;
+  } catch (err) {
+    // Extract error message from axios error response
+    if (axios.isAxiosError(err) && err.response?.data) {
+      const apiError = err.response.data as ApiResponse<unknown>;
+      throw new Error(apiError.error || `Request failed: ${err.response.status}`);
+    }
+    throw err;
   }
-  return response.data.data;
 }
 
 export async function getTradeGroups(userId: string): Promise<TradeGroup[]> {
@@ -253,6 +262,30 @@ export async function updateTakeProfit(
   );
   if (!response.data.success || !response.data.data) {
     throw new Error(response.data.error || 'Failed to update take profit');
+  }
+  return response.data.data;
+}
+
+/**
+ * Update entry price for a pending order
+ *
+ * FR-5.4 (007-editable-position-levels)
+ *
+ * Only works for orders with status="Pending" - filled orders cannot have
+ * their entry price modified.
+ */
+export async function updateEntryPrice(
+  tradeId: string,
+  price: number,
+  userId: string
+): Promise<TradeGroup> {
+  const response = await axios.put<ApiResponse<TradeGroup>>(
+    `${BASE_URL}/trades/${tradeId}/entry`,
+    { price },
+    { headers: { 'X-User-Id': userId } }
+  );
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.error || 'Failed to update entry price');
   }
   return response.data.data;
 }
