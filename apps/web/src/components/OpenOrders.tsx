@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { OpenOrder } from '../utils/types';
-import { getOpenOrders, cancelOrder } from '../utils/requests';
-import { formatPrice, formatQuantity, formatTime, parseMarketSymbol } from '../utils/format';
+import { getTradeGroups, cancelTrade } from '../utils/requests';
+import { parseMarketSymbol } from '../utils/format';
 import { Skeleton } from './ui/Skeleton';
 import { toast } from 'sonner';
 
@@ -10,13 +9,24 @@ interface OpenOrdersProps {
   onOrderCancelled?: () => void;
 }
 
+interface TradeDisplay {
+  id: string;
+  market: string;
+  side: 'BUY' | 'SELL';
+  entryPrice: number | null;
+  quantity: number;
+  stopLoss: number | null;
+  takeProfit: number | null;
+  status: string;
+}
+
 type LoadingState = 'idle' | 'loading' | 'success' | 'error';
 
 /**
  * Displays user's open orders with cancel functionality
  */
 export function OpenOrders({ market, onOrderCancelled }: OpenOrdersProps) {
-  const [orders, setOrders] = useState<OpenOrder[]>([]);
+  const [orders, setOrders] = useState<TradeDisplay[]>([]);
   const [loadingState, setLoadingState] = useState<LoadingState>('idle');
   const [error, setError] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
@@ -32,8 +42,24 @@ export function OpenOrders({ market, onOrderCancelled }: OpenOrdersProps) {
     setError(null);
 
     try {
-      const data = await getOpenOrders(userId, market);
-      setOrders(data);
+      const trades = await getTradeGroups(userId);
+      // Filter to current market and active statuses
+      const filtered = trades
+        .filter(t =>
+          t.symbol === market &&
+          ['Pending', 'Active', 'PartiallyFilled'].includes(t.status)
+        )
+        .map(t => ({
+          id: t.id,
+          market: t.symbol,
+          side: t.entry_quantity > 0 ? 'BUY' as const : 'SELL' as const,
+          entryPrice: t.entry_price,
+          quantity: Math.abs(t.entry_quantity),
+          stopLoss: t.stop_loss_price,
+          takeProfit: t.take_profit_targets?.[0]?.price ?? null,
+          status: t.status,
+        }));
+      setOrders(filtered);
       setLoadingState('success');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load orders';
@@ -57,12 +83,12 @@ export function OpenOrders({ market, onOrderCancelled }: OpenOrdersProps) {
     setCancellingId(orderId);
 
     try {
-      await cancelOrder(orderId, userId);
-      setOrders(prev => prev.filter(o => o.orderId !== orderId));
-      toast.success('Order cancelled');
+      await cancelTrade(orderId, userId);
+      setOrders(prev => prev.filter(o => o.id !== orderId));
+      toast.success('Trade cancelled');
       onOrderCancelled?.();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to cancel order';
+      const message = err instanceof Error ? err.message : 'Failed to cancel trade';
       toast.error(message);
     } finally {
       setCancellingId(null);
@@ -70,7 +96,7 @@ export function OpenOrders({ market, onOrderCancelled }: OpenOrdersProps) {
   }, [onOrderCancelled]);
 
   const sortedOrders = useMemo(() => {
-    return [...orders].sort((a, b) => b.createdAt - a.createdAt);
+    return [...orders]; // TradeGroups don't have createdAt, keep API order
   }, [orders]);
 
   if (loadingState === 'idle') {
@@ -119,10 +145,10 @@ export function OpenOrders({ market, onOrderCancelled }: OpenOrdersProps) {
           <div className="divide-y divide-container-border">
             {sortedOrders.map((order) => (
               <OrderRow
-                key={order.orderId}
+                key={order.id}
                 order={order}
                 onCancel={handleCancelOrder}
-                isCancelling={cancellingId === order.orderId}
+                isCancelling={cancellingId === order.id}
               />
             ))}
           </div>
@@ -133,7 +159,7 @@ export function OpenOrders({ market, onOrderCancelled }: OpenOrdersProps) {
 }
 
 interface OrderRowProps {
-  order: OpenOrder;
+  order: TradeDisplay;
   onCancel: (orderId: string) => void;
   isCancelling: boolean;
 }
@@ -141,78 +167,66 @@ interface OrderRowProps {
 function OrderRow({ order, onCancel, isCancelling }: OrderRowProps) {
   const { base, quote } = parseMarketSymbol(order.market);
   const isBuy = order.side === 'BUY';
-  const filledPercent = (parseFloat(order.filledQuantity) / parseFloat(order.quantity)) * 100;
 
   return (
     <div className="p-3 hover:bg-container-bg-hover/50 transition-colors">
       <div className="flex items-start justify-between gap-2">
-        {/* Order Info */}
         <div className="flex-1 min-w-0">
+          {/* Side + Market + Status */}
           <div className="flex items-center gap-2 mb-1">
-            <span
-              className={`text-[10px] font-imperial font-semibold tracking-wider px-1.5 py-0.5 uppercase ${
-                isBuy
-                  ? 'bg-positive-green/20 text-positive-green'
-                  : 'bg-negative-red/20 text-negative-red'
-              }`}
-            >
-              {order.side}
+            <span className={`text-[10px] font-imperial font-semibold tracking-wider px-1.5 py-0.5 uppercase ${
+              isBuy ? 'bg-positive-green/20 text-positive-green' : 'bg-negative-red/20 text-negative-red'
+            }`}>
+              {isBuy ? 'LONG' : 'SHORT'}
             </span>
             <span className="text-[10px] text-text-secondary font-imperial tracking-wider">
               {base}/{quote}
             </span>
-            <span className="text-[10px] text-text-secondary font-numeral">
-              {formatTime(order.createdAt)}
+            <span className={`text-[10px] font-imperial tracking-wider px-1 py-0.5 ${
+              order.status === 'Active' ? 'text-positive-green' : 'text-steel-primary'
+            }`}>
+              {order.status}
             </span>
           </div>
 
-          <div className="flex items-baseline gap-4 text-xs">
+          {/* Entry / SL / TP */}
+          <div className="flex items-baseline gap-3 text-xs">
             <div>
-              <span className="text-text-secondary font-imperial text-[9px] tracking-wider uppercase">Price: </span>
+              <span className="text-text-secondary font-imperial text-[9px] tracking-wider uppercase">Entry: </span>
               <span className="font-numeral text-text-default">
-                {formatPrice(order.price)}
+                {order.entryPrice != null ? Number(order.entryPrice).toFixed(2) : 'Pending'}
               </span>
             </div>
-            <div>
-              <span className="text-text-secondary font-imperial text-[9px] tracking-wider uppercase">Size: </span>
-              <span className="font-numeral text-text-default">
-                {formatQuantity(order.quantity)}
-              </span>
-            </div>
+            {order.stopLoss != null && (
+              <div>
+                <span className="text-negative-red font-imperial text-[9px] tracking-wider uppercase">SL: </span>
+                <span className="font-numeral text-negative-red">{Number(order.stopLoss).toFixed(2)}</span>
+              </div>
+            )}
+            {order.takeProfit != null && (
+              <div>
+                <span className="text-positive-green font-imperial text-[9px] tracking-wider uppercase">TP: </span>
+                <span className="font-numeral text-positive-green">{Number(order.takeProfit).toFixed(2)}</span>
+              </div>
+            )}
           </div>
 
-          {/* Fill Progress */}
-          {order.status === 'PARTIALLY_FILLED' && (
-            <div className="mt-2">
-              <div className="flex items-center justify-between text-xs mb-1">
-                <span className="text-text-secondary font-imperial text-[9px] tracking-wider uppercase">Filled</span>
-                <span className="text-text-default font-numeral">
-                  {filledPercent.toFixed(1)}%
-                </span>
-              </div>
-              <div className="h-1 bg-container-bg-hover overflow-hidden">
-                <div
-                  className={`h-full ${isBuy ? 'bg-positive-green' : 'bg-negative-red'}`}
-                  style={{ width: `${filledPercent}%` }}
-                />
-              </div>
-            </div>
-          )}
+          {/* Quantity */}
+          <div className="mt-1">
+            <span className="text-text-secondary font-imperial text-[9px] tracking-wider uppercase">Size: </span>
+            <span className="font-numeral text-text-default text-xs">{order.quantity}</span>
+          </div>
         </div>
 
         {/* Cancel Button */}
         <button
-          onClick={() => onCancel(order.orderId)}
+          onClick={() => onCancel(order.id)}
           disabled={isCancelling}
           className="flex-shrink-0 p-1.5 text-text-secondary hover:text-negative-red hover:bg-negative-red/10
                    rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="Cancel order"
+          aria-label="Cancel trade"
         >
-          {isCancelling ? (
-            <LoadingSpinner className="w-4 h-4" />
-          ) : (
-            <CloseIcon className="w-4 h-4" />
-          )}
+          {isCancelling ? <LoadingSpinner className="w-4 h-4" /> : <CloseIcon className="w-4 h-4" />}
         </button>
       </div>
     </div>

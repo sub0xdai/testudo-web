@@ -48,17 +48,30 @@ interface UseOpenPositionsReturn {
 function tradeGroupToOpenPosition(trade: TradeGroup): OpenPosition {
   const side: 'long' | 'short' = trade.entry_quantity > 0 ? 'long' : 'short';
 
+  // DEBUG: Log raw trade data
+  console.log('[tradeGroupToOpenPosition] raw trade:', {
+    id: trade.id,
+    entry_price: trade.entry_price,
+    stop_loss_price: trade.stop_loss_price,
+    take_profit_targets: trade.take_profit_targets,
+  });
+
   // Get the first take profit target price (if any)
-  const takeProfitPrice = trade.take_profit_targets?.[0]?.price ?? null;
+  // Convert to number since API may return strings
+  const takeProfitPrice = trade.take_profit_targets?.[0]?.price != null
+    ? Number(trade.take_profit_targets[0].price)
+    : null;
+  const entryPrice = trade.entry_price != null ? Number(trade.entry_price) : null;
+  const stopLossPrice = trade.stop_loss_price != null ? Number(trade.stop_loss_price) : null;
 
   // Create chart levels if we have all required data
   // For open positions, use current time as startTime (they should extend to chart edge)
   let levels: PositionLevels | null = null;
 
-  if (trade.entry_price && trade.stop_loss_price && takeProfitPrice) {
+  if (entryPrice != null && stopLossPrice != null && takeProfitPrice != null) {
     levels = {
-      entry: trade.entry_price,
-      stopLoss: trade.stop_loss_price,
+      entry: entryPrice,
+      stopLoss: stopLossPrice,
       takeProfit: takeProfitPrice,
       side,
       // Use a time in the past so the zone extends across the visible chart
@@ -71,10 +84,10 @@ function tradeGroupToOpenPosition(trade: TradeGroup): OpenPosition {
     id: trade.id,
     symbol: trade.symbol,
     side,
-    entryPrice: trade.entry_price ?? 0,
-    stopLossPrice: trade.stop_loss_price,
+    entryPrice: entryPrice ?? 0,
+    stopLossPrice,
     takeProfitPrice,
-    quantity: Math.abs(trade.entry_quantity),
+    quantity: Math.abs(Number(trade.entry_quantity)),
     status: trade.status,
     levels,
   };
@@ -139,7 +152,7 @@ export function useOpenPositions({
       .filter(trade =>
         trade.symbol === market &&
         // Include positions that are open or have pending entry
-        (trade.status === 'open' || trade.status === 'pending' || trade.status === 'partial')
+        ['Pending', 'Active', 'PartiallyFilled'].includes(trade.status)
       )
       .map(tradeGroupToOpenPosition);
   }, [tradeGroups, market]);
