@@ -177,7 +177,9 @@ function OrderRow({ order, onCancel, isCancelling }: OrderRowProps) {
             <span className={`text-[10px] font-imperial font-semibold tracking-wider px-1.5 py-0.5 uppercase ${
               isBuy ? 'bg-positive-green/20 text-positive-green' : 'bg-negative-red/20 text-negative-red'
             }`}>
-              {isBuy ? 'LONG' : 'SHORT'}
+              {order.status === 'Pending'
+                ? (isBuy ? 'BUY LIMIT' : 'SELL LIMIT')
+                : (isBuy ? 'LONG' : 'SHORT')}
             </span>
             <span className="text-[10px] text-text-secondary font-imperial tracking-wider">
               {base}/{quote}
