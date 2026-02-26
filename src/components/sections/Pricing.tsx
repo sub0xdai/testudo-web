@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Card } from '../ui/Card'
 
 export function Pricing() {
@@ -12,7 +13,6 @@ export function Pricing() {
         "Real-time data",
         "No holding required"
       ],
-      cta: "GET STARTED",
       highlight: false,
     },
     {
@@ -27,7 +27,6 @@ export function Pricing() {
         "Smart order routing",
         "50% fee discount"
       ],
-      cta: "JOIN WAITLIST",
       highlight: true,
     },
   ]
@@ -80,22 +79,22 @@ export function Pricing() {
                 <ul className="space-y-2 mb-6">
                   {tier.features.map((feature, i) => (
                     <li key={i} className="font-mono text-sm text-text-secondary">
-                      <span className="text-signal-green mr-2">→</span>
+                      <span className="text-signal-green mr-2">&rarr;</span>
                       {feature}
                     </li>
                   ))}
                 </ul>
 
-                <a
-                  href="#waitlist"
+                <Link
+                  to="/register"
                   className={`block w-full py-3 font-mono font-bold text-sm transition-colors text-center ${
                     tier.highlight
                       ? 'bg-signal-green text-main-bg hover:bg-white'
                       : 'border border-container-border text-text-primary hover:border-signal-green'
                   }`}
                 >
-                  {tier.cta}
-                </a>
+                  GET STARTED
+                </Link>
               </div>
             ))}
           </div>

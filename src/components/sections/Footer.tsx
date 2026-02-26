@@ -49,7 +49,7 @@ export function Footer() {
 
           <div className="mt-8 pt-6 border-t border-container-border flex flex-col md:flex-row justify-between gap-4">
             <span className="font-mono text-text-tertiary text-xs">
-              © 2024 TESTUDO. ALL RIGHTS RESERVED.
+              © 2025 TESTUDO. ALL RIGHTS RESERVED.
             </span>
             <div className="flex gap-6">
               <a href="#" className="font-mono text-text-tertiary text-xs hover:text-text-secondary transition-colors">

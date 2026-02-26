@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Card } from '../ui/Card'
 
 export function Hero() {
@@ -17,9 +18,9 @@ export function Hero() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <a href="#waitlist" className="px-8 py-4 bg-signal-green text-main-bg font-mono font-bold text-lg hover:bg-white transition-colors text-center">
-              JOIN WAITLIST
-            </a>
+            <Link to="/register" className="px-8 py-4 bg-signal-green text-main-bg font-mono font-bold text-lg hover:bg-white transition-colors text-center">
+              GET STARTED
+            </Link>
             <a href="https://github.com/sub0xdai/testudo-exchange" target="_blank" rel="noopener noreferrer" className="px-8 py-4 border-2 border-container-border text-text-primary font-mono font-bold text-lg hover:border-signal-green transition-colors text-center">
               VIEW DOCS
             </a>

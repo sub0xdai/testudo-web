@@ -1,36 +1,23 @@
-import { SpotlightBackground } from './components/ui/SpotlightBackground'
+import { Routes, Route } from 'react-router-dom'
 import { Header } from './components/ui/Header'
-import { Hero } from './components/sections/Hero'
-import { Problem } from './components/sections/Problem'
-import { Solution } from './components/sections/Solution'
-import { RiskEngine } from './components/sections/RiskEngine'
-import { HowItWorks } from './components/sections/HowItWorks'
-import { Exchanges } from './components/sections/Exchanges'
-import { Pricing } from './components/sections/Pricing'
-import { FAQ } from './components/sections/FAQ'
-import { FinalCTA } from './components/sections/FinalCTA'
-import { Footer } from './components/sections/Footer'
+import { LandingPage } from './pages/LandingPage'
+import { LoginPage } from './pages/LoginPage'
+import { RegisterPage } from './pages/RegisterPage'
+import { AccountPage } from './pages/AccountPage'
+import { JournalPage } from './pages/JournalPage'
+import { ProtectedRoute } from './context/AuthContext'
 
 function App() {
   return (
     <>
-      <SpotlightBackground
-        imageSrc="/Roman-testudo-Trajan-column-966204074.jpg"
-        spotlightRadius={300}
-      />
       <Header />
-      <main className="relative z-10">
-        <Hero />
-        <Problem />
-        <Solution />
-        <RiskEngine />
-        <HowItWorks />
-        <Exchanges />
-        <Pricing />
-        <FAQ />
-        <FinalCTA />
-        <Footer />
-      </main>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
+        <Route path="/journal" element={<JournalPage />} />
+      </Routes>
     </>
   )
 }
