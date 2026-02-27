@@ -4,6 +4,7 @@ interface CardProps {
   children: ReactNode
   className?: string
   variant?: 'solid' | 'glass'
+  rounded?: boolean
   noPadding?: boolean
 }
 
@@ -11,9 +12,10 @@ export function Card({
   children,
   className = '',
   variant = 'solid',
+  rounded = false,
   noPadding = false,
 }: CardProps) {
-  const baseStyles = 'relative border border-container-border'
+  const baseStyles = `relative border border-container-border${rounded ? ' rounded-lg' : ''}`
 
   const variantStyles = {
     solid: 'bg-main-bg/95',

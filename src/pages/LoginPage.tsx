@@ -63,7 +63,7 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-6">
-      <Card className="max-w-md w-full rounded-lg">
+      <Card className="max-w-md w-full" rounded>
         <h1 className="font-display text-3xl font-bold text-text-primary tracking-wider mb-8">
           SIGN IN
         </h1>
