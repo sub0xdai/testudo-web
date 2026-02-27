@@ -24,7 +24,7 @@ export function RiskEngine() {
     <section className="relative z-10 px-6 md:px-12 lg:px-24 py-24">
       <div className="max-w-5xl">
         <Card>
-          <p className="font-mono text-signal-green text-sm tracking-widest mb-4">
+          <p className="font-mono text-accent-steel text-sm tracking-widest mb-4">
             THE DIFFERENTIATOR
           </p>
 
@@ -34,7 +34,7 @@ export function RiskEngine() {
 
           <p className="font-mono text-xl text-text-secondary mb-10 max-w-2xl">
             Most traders lose because of sizing, not entries.
-            <span className="text-signal-green"> We fix that.</span>
+            <span className="text-accent-steel"> We fix that.</span>
           </p>
 
           <div className="space-y-3">
@@ -43,7 +43,7 @@ export function RiskEngine() {
                 key={i}
                 className="p-5 border border-container-border bg-container-bg flex flex-col md:flex-row md:items-center gap-3"
               >
-                <span className="font-mono text-signal-green text-sm w-56 shrink-0">
+                <span className="font-mono text-accent-steel text-sm w-56 shrink-0">
                   {feature.label}
                 </span>
                 <span className="font-mono text-text-secondary text-sm">

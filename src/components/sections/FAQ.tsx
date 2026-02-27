@@ -46,7 +46,7 @@ export function FAQ() {
                   className="w-full p-5 flex justify-between items-center text-left hover:bg-container-bg-hover transition-colors"
                 >
                   <span className="font-mono text-text-primary text-sm">{faq.question}</span>
-                  <span className="font-mono text-signal-green ml-4">
+                  <span className="font-mono text-accent-steel ml-4">
                     {openIndex === i ? '−' : '+'}
                   </span>
                 </button>

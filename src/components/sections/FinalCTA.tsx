@@ -16,7 +16,7 @@ export function FinalCTA() {
 
           <Link
             to="/register"
-            className="inline-block px-8 py-4 bg-signal-green text-main-bg font-mono font-bold text-lg hover:bg-white transition-colors"
+            className="inline-block px-8 py-4 bg-accent-steel text-main-bg font-mono font-bold text-lg hover:bg-accent-steel-hover transition-colors"
           >
             CREATE ACCOUNT
           </Link>
