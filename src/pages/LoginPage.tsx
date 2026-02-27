@@ -17,7 +17,7 @@ const EyeOffIcon = () => (
   </svg>
 )
 
-const inputClass = 'w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-md text-text-primary placeholder-text-tertiary focus:border-accent-steel focus:outline-none focus:ring-[3px] focus:ring-accent-steel/15 transition-all'
+const inputClass = 'w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-md text-text-primary placeholder-text-tertiary focus:border-signal-green focus:outline-none focus:ring-[3px] focus:ring-signal-green/15 transition-all'
 
 export function LoginPage() {
   const { login, isAuthenticated } = useAuth()
@@ -90,7 +90,7 @@ export function LoginPage() {
               </label>
               <Link
                 to="/forgot-password"
-                className="text-[10px] tracking-widest text-gray-500 hover:text-accent-steel transition-colors"
+                className="text-[10px] tracking-widest text-gray-500 hover:text-signal-green transition-colors"
                 tabIndex={-1}
               >
                 FORGOT?
@@ -125,7 +125,7 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3.5 bg-accent-steel text-main-bg font-bold text-sm tracking-[0.2em] rounded-md hover:bg-accent-steel-hover transition-colors disabled:opacity-50"
+            className="w-full py-3.5 bg-signal-green text-main-bg font-bold text-sm tracking-[0.2em] rounded-md hover:bg-white transition-colors disabled:opacity-50"
           >
             {submitting ? 'SIGNING IN...' : 'SIGN IN'}
           </button>
@@ -133,7 +133,7 @@ export function LoginPage() {
 
         <p className="mt-6 text-sm text-text-secondary text-center">
           Don't have an account?{' '}
-          <Link to="/register" className="text-accent-steel hover:text-white transition-colors">
+          <Link to="/register" className="text-signal-green hover:text-white transition-colors">
             Register
           </Link>
         </p>

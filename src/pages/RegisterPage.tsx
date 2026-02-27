@@ -17,7 +17,7 @@ const EyeOffIcon = () => (
   </svg>
 )
 
-const inputClass = 'w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-md text-text-primary placeholder-text-tertiary focus:border-accent-steel focus:outline-none focus:ring-[3px] focus:ring-accent-steel/15 transition-all'
+const inputClass = 'w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-md text-text-primary placeholder-text-tertiary focus:border-signal-green focus:outline-none focus:ring-[3px] focus:ring-signal-green/15 transition-all'
 
 export function RegisterPage() {
   const { register, isAuthenticated } = useAuth()
@@ -146,7 +146,7 @@ export function RegisterPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3.5 bg-accent-steel text-main-bg font-bold text-sm tracking-[0.2em] rounded-md hover:bg-accent-steel-hover transition-colors disabled:opacity-50"
+            className="w-full py-3.5 bg-signal-green text-main-bg font-bold text-sm tracking-[0.2em] rounded-md hover:bg-white transition-colors disabled:opacity-50"
           >
             {submitting ? 'CREATING...' : 'CREATE ACCOUNT'}
           </button>
@@ -154,7 +154,7 @@ export function RegisterPage() {
 
         <p className="mt-6 text-sm text-text-secondary text-center">
           Already have an account?{' '}
-          <Link to="/login" className="text-accent-steel hover:text-white transition-colors">
+          <Link to="/login" className="text-signal-green hover:text-white transition-colors">
             Sign in
           </Link>
         </p>
