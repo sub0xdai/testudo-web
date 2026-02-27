@@ -35,7 +35,7 @@ export function Pricing() {
     <section id="pricing" className="relative z-10 px-6 md:px-12 lg:px-24 py-24">
       <div className="max-w-4xl">
         <Card>
-          <p className="font-mono text-accent-steel text-sm tracking-widest mb-4">
+          <p className="font-mono text-signal-green text-sm tracking-widest mb-4">
             PRICING
           </p>
 
@@ -53,7 +53,7 @@ export function Pricing() {
                 key={tier.name}
                 className={`p-6 border bg-container-bg ${
                   tier.highlight
-                    ? 'border-accent-steel'
+                    ? 'border-signal-green'
                     : 'border-container-border'
                 }`}
               >
@@ -62,7 +62,7 @@ export function Pricing() {
                 </h3>
 
                 {'requirement' in tier && (
-                  <p className="font-mono text-xs text-accent-steel mb-3">
+                  <p className="font-mono text-xs text-signal-green mb-3">
                     {tier.requirement}
                   </p>
                 )}
@@ -79,7 +79,7 @@ export function Pricing() {
                 <ul className="space-y-2 mb-6">
                   {tier.features.map((feature, i) => (
                     <li key={i} className="font-mono text-sm text-text-secondary">
-                      <span className="text-accent-steel mr-2">&rarr;</span>
+                      <span className="text-signal-green mr-2">&rarr;</span>
                       {feature}
                     </li>
                   ))}
@@ -89,8 +89,8 @@ export function Pricing() {
                   to="/register"
                   className={`block w-full py-3 font-mono font-bold text-sm transition-colors text-center ${
                     tier.highlight
-                      ? 'bg-accent-steel text-main-bg hover:bg-accent-steel-hover'
-                      : 'border border-container-border text-text-primary hover:border-accent-steel'
+                      ? 'bg-signal-green text-main-bg hover:bg-white'
+                      : 'border border-container-border text-text-primary hover:border-signal-green'
                   }`}
                 >
                   GET STARTED

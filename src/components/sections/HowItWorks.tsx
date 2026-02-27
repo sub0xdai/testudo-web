@@ -34,7 +34,7 @@ export function HowItWorks() {
           <div className="grid md:grid-cols-3 gap-8">
             {steps.map((step) => (
               <div key={step.number}>
-                <span className="font-display text-5xl font-black text-accent-steel/30">
+                <span className="font-display text-5xl font-black text-signal-green/30">
                   {step.number}
                 </span>
                 <h3 className="font-display text-xl font-bold text-text-primary mt-4 mb-2">

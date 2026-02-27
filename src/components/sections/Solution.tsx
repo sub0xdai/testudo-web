@@ -20,7 +20,7 @@ export function Solution() {
     <section className="relative z-10 px-6 md:px-12 lg:px-24 py-24">
       <div className="max-w-5xl">
         <Card>
-          <p className="font-mono text-accent-steel text-sm tracking-widest mb-4">
+          <p className="font-mono text-signal-green text-sm tracking-widest mb-4">
             THE SOLUTION
           </p>
 
@@ -32,9 +32,9 @@ export function Solution() {
             {pillars.map((pillar, i) => (
               <div
                 key={i}
-                className="p-5 border border-container-border bg-container-bg hover:border-accent-steel transition-colors"
+                className="p-5 border border-container-border bg-container-bg hover:border-signal-green transition-colors"
               >
-                <h3 className="font-display text-lg font-bold text-accent-steel mb-3">
+                <h3 className="font-display text-lg font-bold text-signal-green mb-3">
                   {pillar.title}
                 </h3>
                 <p className="font-mono text-text-secondary text-sm">

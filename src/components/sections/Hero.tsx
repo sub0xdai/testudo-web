@@ -9,7 +9,7 @@ export function Hero() {
           <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-black tracking-tight text-text-primary mb-6">
             TRADE EVERY EXCHANGE
             <br />
-            <span className="text-accent-steel">FROM ONE SCREEN</span>
+            <span className="text-signal-green">FROM ONE SCREEN</span>
           </h1>
 
           <p className="font-mono text-lg md:text-xl text-text-secondary max-w-2xl mb-10">
@@ -18,10 +18,10 @@ export function Hero() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <Link to="/register" className="px-8 py-4 bg-accent-steel text-main-bg font-mono font-bold text-lg hover:bg-accent-steel-hover transition-colors text-center">
+            <Link to="/register" className="px-8 py-4 bg-signal-green text-main-bg font-mono font-bold text-lg hover:bg-white transition-colors text-center">
               GET STARTED
             </Link>
-            <a href="https://github.com/sub0xdai/testudo-exchange" target="_blank" rel="noopener noreferrer" className="px-8 py-4 border-2 border-container-border text-text-primary font-mono font-bold text-lg hover:border-accent-steel transition-colors text-center">
+            <a href="https://github.com/sub0xdai/testudo-exchange" target="_blank" rel="noopener noreferrer" className="px-8 py-4 border-2 border-container-border text-text-primary font-mono font-bold text-lg hover:border-signal-green transition-colors text-center">
               VIEW DOCS
             </a>
           </div>
