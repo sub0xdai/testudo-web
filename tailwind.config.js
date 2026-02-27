@@ -15,7 +15,7 @@ export default {
         'border-active': '#FFFFFF',
         'accent-steel': '#94A3B8',
         'accent-steel-hover': '#CBD5E1',
-        'signal-green': '#4ADE80',
+        'signal-green': '#00FF41',
         'signal-red': '#FF003C',
         'text-primary': '#FFFFFF',
         'text-secondary': '#888888',
