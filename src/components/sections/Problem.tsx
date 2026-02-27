@@ -24,7 +24,7 @@ export function Problem() {
             {problems.map((problem, i) => (
               <div
                 key={i}
-                className="p-5 border border-container-border bg-container-bg"
+                className="p-5 border border-container-border bg-container-bg rounded-md"
               >
                 <span className="font-mono text-signal-red mr-4">0{i + 1}</span>
                 <span className="font-mono text-text-primary">{problem}</span>

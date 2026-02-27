@@ -41,7 +41,7 @@ export function RiskEngine() {
             {features.map((feature, i) => (
               <div
                 key={i}
-                className="p-5 border border-container-border bg-container-bg flex flex-col md:flex-row md:items-center gap-3"
+                className="p-5 border border-container-border bg-container-bg rounded-md flex flex-col md:flex-row md:items-center gap-3"
               >
                 <span className="font-mono text-signal-green text-sm w-56 shrink-0">
                   {feature.label}

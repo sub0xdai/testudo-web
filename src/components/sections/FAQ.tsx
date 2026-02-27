@@ -39,7 +39,7 @@ export function FAQ() {
             {faqs.map((faq, i) => (
               <div
                 key={i}
-                className="border border-container-border bg-container-bg"
+                className="border border-container-border bg-container-bg rounded-md"
               >
                 <button
                   onClick={() => setOpenIndex(openIndex === i ? null : i)}

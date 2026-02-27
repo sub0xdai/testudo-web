@@ -80,11 +80,11 @@ export function Header() {
               </svg>
             </a>
             {isAuthenticated ? (
-              <Link to="/account" className="px-6 py-2 bg-signal-green text-main-bg font-mono font-bold text-sm hover:bg-white transition-colors">
+              <Link to="/account" className="px-6 py-2 bg-signal-green text-main-bg font-mono font-bold text-sm rounded-md hover:bg-white transition-colors">
                 ACCOUNT
               </Link>
             ) : (
-              <Link to="/login" className="px-6 py-2 bg-signal-green text-main-bg font-mono font-bold text-sm hover:bg-white transition-colors">
+              <Link to="/login" className="px-6 py-2 bg-signal-green text-main-bg font-mono font-bold text-sm rounded-md hover:bg-white transition-colors">
                 LOGIN
               </Link>
             )}

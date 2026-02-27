@@ -20,7 +20,7 @@ export function Exchanges() {
             {exchanges.map((exchange) => (
               <div
                 key={exchange}
-                className="px-5 py-3 border border-container-border font-mono text-text-primary hover:border-signal-green transition-colors"
+                className="px-5 py-3 border border-container-border rounded-md font-mono text-text-primary hover:border-signal-green transition-colors"
               >
                 {exchange}
               </div>

@@ -51,7 +51,7 @@ export function Pricing() {
             {tiers.map((tier) => (
               <div
                 key={tier.name}
-                className={`p-6 border bg-container-bg ${
+                className={`p-6 border bg-container-bg rounded-md ${
                   tier.highlight
                     ? 'border-signal-green'
                     : 'border-container-border'
@@ -87,7 +87,7 @@ export function Pricing() {
 
                 <Link
                   to="/register"
-                  className={`block w-full py-3 font-mono font-bold text-sm transition-colors text-center ${
+                  className={`block w-full py-3 font-mono font-bold text-sm rounded-md transition-colors text-center ${
                     tier.highlight
                       ? 'bg-signal-green text-main-bg hover:bg-white'
                       : 'border border-container-border text-text-primary hover:border-signal-green'

@@ -15,7 +15,7 @@ export function Card({
   rounded = false,
   noPadding = false,
 }: CardProps) {
-  const baseStyles = `relative border border-container-border${rounded ? ' rounded-lg' : ''}`
+  const baseStyles = `relative border border-container-border${rounded ? ' rounded-lg' : ' rounded-md'}`
 
   const variantStyles = {
     solid: 'bg-main-bg/95',

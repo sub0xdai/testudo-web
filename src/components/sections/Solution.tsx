@@ -32,7 +32,7 @@ export function Solution() {
             {pillars.map((pillar, i) => (
               <div
                 key={i}
-                className="p-5 border border-container-border bg-container-bg hover:border-signal-green transition-colors"
+                className="p-5 border border-container-border bg-container-bg rounded-md hover:border-signal-green transition-colors"
               >
                 <h3 className="font-display text-lg font-bold text-signal-green mb-3">
                   {pillar.title}
