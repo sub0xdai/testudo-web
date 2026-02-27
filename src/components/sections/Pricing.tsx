@@ -4,28 +4,27 @@ import { Card } from '../ui/Card'
 export function Pricing() {
   const tiers = [
     {
-      name: "BASIC",
-      price: "0.1%",
-      subtitle: "per trade",
+      name: "PAPER",
+      price: "FREE",
+      subtitle: "",
       features: [
-        "Multi-exchange trading",
-        "Basic order types",
-        "Real-time data",
-        "No holding required"
+        "Shadow trading engine",
+        "Full risk engine",
+        "Position sizing",
+        "No API keys needed"
       ],
       highlight: false,
     },
     {
-      name: "HOLDER",
-      price: "0.05%",
-      subtitle: "per trade",
-      requirement: "Hold 0.1% $TESTUDO",
+      name: "LIVE",
+      price: "FREE",
+      subtitle: "while in beta",
       features: [
-        "Everything in Basic",
-        "Full risk engine",
-        "Volatility-based sizing",
-        "Smart order routing",
-        "50% fee discount"
+        "Everything in Paper",
+        "Live exchange execution",
+        "Multi-exchange support",
+        "Real-time WebSocket data",
+        "Trade journal"
       ],
       highlight: true,
     },
@@ -40,11 +39,11 @@ export function Pricing() {
           </p>
 
           <h2 className="font-display text-3xl md:text-4xl font-bold text-text-primary mb-3">
-            HOLD $TESTUDO. PAY LESS.
+            FREE WHILE IN BETA.
           </h2>
 
           <p className="font-mono text-text-secondary mb-10">
-            No subscriptions. Just hold the bag and trade for less.
+            No subscriptions. No token gates. Just trade.
           </p>
 
           <div className="grid md:grid-cols-2 gap-6 max-w-2xl">
@@ -61,19 +60,15 @@ export function Pricing() {
                   {tier.name}
                 </h3>
 
-                {'requirement' in tier && (
-                  <p className="font-mono text-xs text-signal-green mb-3">
-                    {tier.requirement}
-                  </p>
-                )}
-
                 <div className="mb-5">
                   <span className="font-display text-4xl font-black text-text-primary">
                     {tier.price}
                   </span>
-                  <span className="font-mono text-text-secondary text-sm ml-2">
-                    {tier.subtitle}
-                  </span>
+                  {tier.subtitle && (
+                    <span className="font-mono text-text-secondary text-sm ml-2">
+                      {tier.subtitle}
+                    </span>
+                  )}
                 </div>
 
                 <ul className="space-y-2 mb-6">

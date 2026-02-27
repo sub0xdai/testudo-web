@@ -7,13 +7,13 @@ export function Hero() {
       <div className="max-w-5xl">
         <Card className="max-w-3xl">
           <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-black tracking-tight text-text-primary mb-6">
-            TRADE EVERY EXCHANGE
+            YOUR EDGE ON
             <br />
-            <span className="text-signal-green">FROM ONE SCREEN</span>
+            <span className="text-signal-green">EVERY EXCHANGE</span>
           </h1>
 
           <p className="font-mono text-lg md:text-xl text-text-secondary max-w-2xl mb-10">
-            Multi-exchange aggregator with automated risk management.
+            Automated risk management overlay for futures trading.
             Position sizing that adapts to volatility so you don't blow up.
           </p>
 
@@ -22,7 +22,7 @@ export function Hero() {
               GET STARTED
             </Link>
             <a href="https://github.com/sub0xdai/testudo-exchange" target="_blank" rel="noopener noreferrer" className="px-8 py-4 border-2 border-container-border text-text-primary font-mono font-bold text-lg rounded-md hover:border-signal-green transition-colors text-center">
-              VIEW DOCS
+              GITHUB
             </a>
           </div>
         </Card>

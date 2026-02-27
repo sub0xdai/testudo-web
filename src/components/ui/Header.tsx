@@ -6,21 +6,7 @@ export function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-6 md:px-8 py-4 bg-main-bg/70 backdrop-blur-md border-b border-container-border/50">
-      <div className="flex flex-col gap-2">
-        {/* Mobile CA - shows above main nav on small screens */}
-        <div className="flex md:hidden justify-center">
-          <span
-            className="font-mono text-xs text-signal-green cursor-pointer px-3 py-1 border border-signal-green/30 rounded"
-            title="Click to copy"
-            onClick={() => navigator.clipboard.writeText('84DLtsGugS6gA1rAnYGceEZtubZrVzwWT8avUFFKBAGS')}
-          >
-            CA: 84DLts...BAGS
-          </span>
-        </div>
-
-        {/* Main nav row */}
-        <div className="flex items-center justify-between">
-          {/* Left side - Logo + CA */}
+      <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link to="/">
               <img
@@ -29,13 +15,6 @@ export function Header() {
                 className="h-10 w-auto"
               />
             </Link>
-            <span
-              className="font-mono text-xs text-signal-green cursor-pointer hidden md:block hover:text-white transition-colors"
-              title="Click to copy: 84DLtsGugS6gA1rAnYGceEZtubZrVzwWT8avUFFKBAGS"
-              onClick={() => navigator.clipboard.writeText('84DLtsGugS6gA1rAnYGceEZtubZrVzwWT8avUFFKBAGS')}
-            >
-              CA: 84DLts...BAGS
-            </span>
           </div>
 
           {/* Right side - Nav items */}
@@ -89,7 +68,6 @@ export function Header() {
               </Link>
             )}
           </nav>
-        </div>
       </div>
     </header>
   )

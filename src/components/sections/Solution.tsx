@@ -3,12 +3,12 @@ import { Card } from '../ui/Card'
 export function Solution() {
   const pillars = [
     {
-      title: "UNIFIED TRADING",
-      description: "One interface, all exchanges. Smart order routing finds the best venue.",
+      title: "RISK ENGINE",
+      description: "Volatility-adjusted position sizing enforced on every trade. The system sizes for you.",
     },
     {
-      title: "RISK ENGINE",
-      description: "Volatility-adjusted sizing. Portfolio-wide limits. No more 3am mistakes.",
+      title: "MULTI-EXCHANGE",
+      description: "Connect any CCXT-supported exchange. One risk layer across all your accounts.",
     },
     {
       title: "STAY IN CONTROL",

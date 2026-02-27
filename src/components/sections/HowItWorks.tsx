@@ -5,7 +5,7 @@ export function HowItWorks() {
     {
       number: "01",
       title: "CONNECT",
-      description: "Link your exchange API keys. Encrypted at rest. We never touch your funds.",
+      description: "Add your exchange API keys. Trade-only permissions — we never touch withdrawals.",
     },
     {
       number: "02",
@@ -15,7 +15,7 @@ export function HowItWorks() {
     {
       number: "03",
       title: "TRADE",
-      description: "Execute from one interface. We handle routing, sizing, and protection.",
+      description: "Execute from the browser extension or API. We handle sizing and protection.",
     },
   ]
 

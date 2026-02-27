@@ -9,7 +9,7 @@ export function Footer() {
             <div className="flex items-center gap-4">
               <img src="/logo.png" alt="Testudo" className="h-8 w-auto" />
               <p className="font-mono text-text-tertiary text-xs">
-                Trade every exchange from one screen.
+                Automated risk management for futures trading.
               </p>
             </div>
 
@@ -49,7 +49,7 @@ export function Footer() {
 
           <div className="mt-8 pt-6 border-t border-container-border flex flex-col md:flex-row justify-between gap-4">
             <span className="font-mono text-text-tertiary text-xs">
-              © 2025 TESTUDO. ALL RIGHTS RESERVED.
+              © 2026 TESTUDO. ALL RIGHTS RESERVED.
             </span>
             <div className="flex gap-6">
               <a href="#" className="font-mono text-text-tertiary text-xs hover:text-text-secondary transition-colors">

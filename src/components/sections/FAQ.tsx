@@ -12,12 +12,12 @@ export function FAQ() {
       answer: "Encrypted at rest using AES-256. Never stored in plaintext. You can revoke access from your exchange at any time.",
     },
     {
-      question: "What happens if an exchange goes down?",
-      answer: "Circuit breakers activate. Orders route to available exchanges. You get notified immediately.",
+      question: "What exchanges are supported?",
+      answer: "Any exchange with a CCXT adapter. We currently support Binance, WOO, Coinbase, Kraken, Hyperliquid, and more.",
     },
     {
-      question: "Can I use this for bots?",
-      answer: "Elite tier includes full API access for programmatic trading and custom integrations.",
+      question: "Is there an API for programmatic trading?",
+      answer: "Yes. The backend exposes REST and WebSocket endpoints for order submission, position tracking, and real-time data.",
     },
   ]
 

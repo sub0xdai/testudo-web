@@ -3,6 +3,7 @@ import { Card } from '../ui/Card'
 export function Exchanges() {
   const exchanges = [
     "BINANCE",
+    "WOO",
     "COINBASE",
     "KRAKEN",
     "HYPERLIQUID",
@@ -12,8 +13,11 @@ export function Exchanges() {
     <section className="relative z-10 px-6 md:px-12 lg:px-24 py-24">
       <div className="max-w-5xl">
         <Card>
-          <p className="font-mono text-text-secondary text-sm tracking-widest mb-6">
+          <p className="font-mono text-text-secondary text-sm tracking-widest mb-2">
             SUPPORTED EXCHANGES
+          </p>
+          <p className="font-mono text-text-tertiary text-xs mb-6">
+            Any CCXT-compatible exchange via adapter
           </p>
 
           <div className="flex flex-wrap gap-4 items-center">
