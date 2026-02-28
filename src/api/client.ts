@@ -109,7 +109,7 @@ export const authApi = {
 
 export const exchangeApi = {
   listExchanges: () =>
-    api.get<ExchangeInfo[]>('/exchanges').then((r) => r.data),
+    api.get<{ exchanges: ExchangeInfo[] }>('/exchanges').then((r) => r.data.exchanges),
 
   listAccounts: () =>
     api.get<ExchangeAccount[]>('/exchanges/accounts').then((r) => r.data),

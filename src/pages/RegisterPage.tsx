@@ -54,7 +54,7 @@ export function RegisterPage() {
     setSubmitting(true)
     try {
       await register(email, password)
-      navigate('/account')
+      navigate('/account', { state: { freshRegistration: true } })
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'response' in err) {
         const axiosErr = err as { response?: { data?: { error?: string } } }
