@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useState, type ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import { authApi } from '../api/client'
 
@@ -30,19 +30,17 @@ function decodeJwtPayload(token: string): { sub?: string; email?: string } | nul
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
+  const [user, setUser] = useState<User | null>(() => {
     const token = localStorage.getItem('access_token')
     if (token) {
       const payload = decodeJwtPayload(token)
       if (payload?.sub && payload?.email) {
-        setUser({ id: payload.sub, email: payload.email })
+        return { id: payload.sub, email: payload.email }
       }
     }
-    setLoading(false)
-  }, [])
+    return null
+  })
+  const [loading] = useState(false)
 
   const login = async (email: string, password: string) => {
     const data = await authApi.login(email, password)

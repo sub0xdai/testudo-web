@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { useAuth } from '../context/AuthContext'
+import { LoginFormSchema } from '../validation/forms'
 
 const EyeIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -36,18 +37,15 @@ export function LoginPage() {
     e.preventDefault()
     setError('')
 
-    if (!email.includes('@')) {
-      setError('Invalid email format')
-      return
-    }
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters')
+    const validation = LoginFormSchema.safeParse({ email: email.trim(), password })
+    if (!validation.success) {
+      setError(validation.error.issues[0]?.message || 'Invalid login fields')
       return
     }
 
     setSubmitting(true)
     try {
-      await login(email, password)
+      await login(validation.data.email, validation.data.password)
       navigate('/account')
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'response' in err) {

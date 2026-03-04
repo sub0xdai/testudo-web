@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { useAuth } from '../context/AuthContext'
+import { RegisterFormSchema } from '../validation/forms'
 
 const EyeIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -38,22 +39,19 @@ export function RegisterPage() {
     e.preventDefault()
     setError('')
 
-    if (!email.includes('@')) {
-      setError('Invalid email format')
-      return
-    }
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters')
-      return
-    }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match')
+    const validation = RegisterFormSchema.safeParse({
+      email: email.trim(),
+      password,
+      confirmPassword,
+    })
+    if (!validation.success) {
+      setError(validation.error.issues[0]?.message || 'Invalid registration fields')
       return
     }
 
     setSubmitting(true)
     try {
-      await register(email, password)
+      await register(validation.data.email, validation.data.password)
       navigate('/account', { state: { freshRegistration: true } })
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'response' in err) {

@@ -9,6 +9,7 @@ import type {
   AddExchangeAccountPayload,
   TestConnectionResult,
 } from '../types'
+import { ExchangeAccountFormSchema } from '../validation/forms'
 
 export function AccountPage() {
   const { user, logout } = useAuth()
@@ -71,8 +72,15 @@ export function AccountPage() {
   }
 
   async function handleAdd() {
-    if (!formExchange || !formApiKey || !formSecret) {
-      setError('Exchange, API key, and secret are required')
+    const validation = ExchangeAccountFormSchema.safeParse({
+      exchange_name: formExchange,
+      api_key: formApiKey.trim(),
+      secret: formSecret.trim(),
+      passphrase: formPassphrase.trim() || undefined,
+    })
+
+    if (!validation.success) {
+      setError(validation.error.issues[0]?.message || 'Invalid exchange form fields')
       return
     }
 
@@ -82,11 +90,11 @@ export function AccountPage() {
     setError('')
 
     const payload: AddExchangeAccountPayload = {
-      exchange_name: formExchange,
-      api_key: formApiKey,
-      secret: formSecret,
+      exchange_name: validation.data.exchange_name,
+      api_key: validation.data.api_key,
+      secret: validation.data.secret,
     }
-    if (formPassphrase) payload.passphrase = formPassphrase
+    if (validation.data.passphrase) payload.passphrase = validation.data.passphrase
 
     try {
       await exchangeApi.addAccount(payload)

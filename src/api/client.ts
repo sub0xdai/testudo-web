@@ -7,9 +7,10 @@ import type {
   AddExchangeAccountPayload,
   TestConnectionResult,
 } from '../types'
+import { env } from '../config/env'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1',
+  baseURL: env.VITE_API_URL,
 })
 
 // Attach bearer token to every request
