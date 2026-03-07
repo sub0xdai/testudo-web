@@ -106,6 +106,9 @@ export const authApi = {
 
   logout: (refreshToken: string) =>
     api.post('/auth/logout', { refresh_token: refreshToken }).then(() => {}),
+
+  forgotPassword: (email: string) =>
+    api.post('/auth/forgot-password', { email }).then(() => {}),
 }
 
 export const exchangeApi = {
