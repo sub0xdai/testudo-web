@@ -6,6 +6,9 @@ import type {
   ExchangeAccount,
   AddExchangeAccountPayload,
   TestConnectionResult,
+  InitAgentWalletResponse,
+  ApproveDataResponse,
+  ApproveAgentResponse,
 } from '../types'
 import { env } from '../config/env'
 
@@ -126,6 +129,23 @@ export const exchangeApi = {
 
   testConnection: (id: string) =>
     api.post<TestConnectionResult>(`/exchanges/accounts/${id}/test`).then((r) => r.data),
+
+  initAgentWallet: (walletAddress: string) =>
+    api.post<InitAgentWalletResponse>('/exchanges/agent-wallet/init', {
+      wallet_address: walletAddress,
+    }).then((r) => r.data),
+
+  getApproveData: (accountId: string) =>
+    api.post<ApproveDataResponse>('/exchanges/agent-wallet/approve-data', {
+      account_id: accountId,
+    }).then((r) => r.data),
+
+  approveAgent: (accountId: string, signature: string, nonce: number) =>
+    api.post<ApproveAgentResponse>('/exchanges/agent-wallet/approve', {
+      account_id: accountId,
+      signature,
+      nonce,
+    }).then((r) => r.data),
 }
 
 export default api

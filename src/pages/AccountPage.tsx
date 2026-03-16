@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
+import { WalletConnect } from '../components/WalletConnect'
 import { useAuth } from '../context/AuthContext'
 import { exchangeApi } from '../api/client'
 import type {
@@ -10,6 +11,11 @@ import type {
   TestConnectionResult,
 } from '../types'
 import { ExchangeAccountFormSchema } from '../validation/forms'
+
+function truncateAddress(addr: string): string {
+  if (addr.length < 10) return addr
+  return `${addr.slice(0, 6)}...${addr.slice(-4)}`
+}
 
 export function AccountPage() {
   const { user, logout } = useAuth()
@@ -60,6 +66,7 @@ export function AccountPage() {
   )
 
   const needsPassphrase = formExchange === 'okx' || formExchange === 'kucoin'
+  const isHyperliquid = formExchange === 'hyperliquid'
 
   const isOnboarding = !loading && accounts.length === 0 && !setupComplete
 
@@ -74,8 +81,8 @@ export function AccountPage() {
   async function handleAdd() {
     const validation = ExchangeAccountFormSchema.safeParse({
       exchange_name: formExchange,
-      api_key: formApiKey.trim(),
-      secret: formSecret.trim(),
+      api_key: formApiKey.trim() || undefined,
+      secret: formSecret.trim() || undefined,
       passphrase: formPassphrase.trim() || undefined,
     })
 
@@ -91,8 +98,8 @@ export function AccountPage() {
 
     const payload: AddExchangeAccountPayload = {
       exchange_name: validation.data.exchange_name,
-      api_key: validation.data.api_key,
-      secret: validation.data.secret,
+      api_key: validation.data.api_key || '',
+      secret: validation.data.secret || '',
     }
     if (validation.data.passphrase) payload.passphrase = validation.data.passphrase
 
@@ -154,27 +161,19 @@ export function AccountPage() {
     }
   }
 
-  // Exchange connection form — shared between onboarding and normal add
-  const exchangeForm = (
-    <div className="space-y-4">
-      <div>
-        <label className="block font-mono text-sm text-text-secondary mb-2">
-          EXCHANGE
-        </label>
-        <select
-          value={formExchange}
-          onChange={(e) => setFormExchange(e.target.value)}
-          className="w-full px-4 py-3 bg-container-bg border border-container-border rounded-md font-mono text-text-primary focus:border-signal-green focus:outline-none"
-        >
-          <option value="">Select exchange...</option>
-          {(isOnboarding ? exchanges : availableExchanges).map((ex) => (
-            <option key={ex.id} value={ex.id}>
-              {ex.name}
-            </option>
-          ))}
-        </select>
-      </div>
+  function handleWalletComplete() {
+    const wasOnboarding = accounts.length === 0
+    clearForm()
+    setShowForm(false)
+    fetchData()
+    if (wasOnboarding) {
+      setSetupComplete(true)
+    }
+  }
 
+  // API key form for traditional exchanges
+  const apiKeyForm = (
+    <div className="space-y-4">
       <div>
         <label className="block font-mono text-sm text-text-secondary mb-2">
           API KEY
@@ -235,6 +234,39 @@ export function AccountPage() {
     </div>
   )
 
+  // Exchange selector shared by onboarding and normal add
+  const exchangeSelector = (
+    <div>
+      <label className="block font-mono text-sm text-text-secondary mb-2">
+        EXCHANGE
+      </label>
+      <select
+        value={formExchange}
+        onChange={(e) => setFormExchange(e.target.value)}
+        className="w-full px-4 py-3 bg-container-bg border border-container-border rounded-md font-mono text-text-primary focus:border-signal-green focus:outline-none"
+      >
+        <option value="">Select exchange...</option>
+        {(isOnboarding ? exchanges : availableExchanges).map((ex) => (
+          <option key={ex.id} value={ex.id}>
+            {ex.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  )
+
+  // Exchange form — conditionally renders wallet connect or API key form
+  const exchangeForm = (
+    <div className="space-y-4">
+      {exchangeSelector}
+      {formExchange && (
+        isHyperliquid
+          ? <WalletConnect onComplete={handleWalletComplete} />
+          : apiKeyForm
+      )}
+    </div>
+  )
+
   // Setup complete — success screen
   if (setupComplete) {
     return (
@@ -251,7 +283,7 @@ export function AccountPage() {
                 EXCHANGE CONNECTED
               </h2>
               <p className="font-mono text-sm text-text-secondary max-w-md mx-auto">
-                Your exchange API keys have been validated and encrypted. Return to the Testudo extension and log in to start trading.
+                Your exchange has been validated and configured. Return to the Testudo extension and log in to start trading.
               </p>
               <button
                 onClick={() => setSetupComplete(false)}
@@ -352,6 +384,7 @@ export function AccountPage() {
             <div className="space-y-4">
               {accounts.map((account) => {
                 const result = testResults[account.id]
+                const isAgentWallet = account.auth_mode === 'agent_wallet'
                 return (
                   <div
                     key={account.id}
@@ -366,6 +399,11 @@ export function AccountPage() {
                         <span className="font-mono text-xs text-text-tertiary uppercase">
                           {account.exchange_name}
                         </span>
+                        {isAgentWallet && (
+                          <span className="px-2 py-0.5 font-mono text-[10px] text-signal-green border border-signal-green/30 rounded-md bg-signal-green/10">
+                            AGENT WALLET
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <button
@@ -400,6 +438,12 @@ export function AccountPage() {
                         )}
                       </div>
                     </div>
+                    {/* Wallet address for agent-wallet accounts */}
+                    {isAgentWallet && account.wallet_address && (
+                      <p className="font-mono text-xs text-text-tertiary">
+                        Wallet: {truncateAddress(account.wallet_address)}
+                      </p>
+                    )}
                     {result && (
                       <div className="font-mono text-xs">
                         {result.status === 'success' ? (
