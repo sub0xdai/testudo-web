@@ -36,10 +36,11 @@ export function AccountPage() {
   const [formPassphrase, setFormPassphrase] = useState('')
   const [formSubmitting, setFormSubmitting] = useState(false)
 
-  // Test/delete state
+  // Test/delete/revoke state
   const [testResults, setTestResults] = useState<Record<string, TestConnectionResult>>({})
   const [testingId, setTestingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [revokingId, setRevokingId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -158,6 +159,22 @@ export function AccountPage() {
         setError('Connection failed')
       }
       setDeletingId(null)
+    }
+  }
+
+  async function handleRevoke(accountId: string) {
+    try {
+      await exchangeApi.revokeAgent(accountId)
+      setRevokingId(null)
+      await fetchData()
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosErr = err as { response?: { data?: { error?: string } } }
+        setError(axiosErr.response?.data?.error || 'Failed to revoke agent wallet')
+      } else {
+        setError('Connection failed')
+      }
+      setRevokingId(null)
     }
   }
 
@@ -413,6 +430,31 @@ export function AccountPage() {
                         >
                           {testingId === account.id ? '...' : 'TEST'}
                         </button>
+                        {isAgentWallet && (
+                          revokingId === account.id ? (
+                            <>
+                              <button
+                                onClick={() => handleRevoke(account.id)}
+                                className="px-3 py-1 font-mono text-xs text-signal-red border border-signal-red/30 rounded-md bg-signal-red/10"
+                              >
+                                CONFIRM REVOKE
+                              </button>
+                              <button
+                                onClick={() => setRevokingId(null)}
+                                className="px-3 py-1 font-mono text-xs text-text-tertiary border border-container-border rounded-md"
+                              >
+                                NO
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={() => setRevokingId(account.id)}
+                              className="px-3 py-1 font-mono text-xs text-text-tertiary border border-container-border rounded-md hover:text-signal-red hover:border-signal-red/30 transition-colors"
+                            >
+                              REVOKE
+                            </button>
+                          )
+                        )}
                         {deletingId === account.id ? (
                           <>
                             <button
@@ -443,6 +485,23 @@ export function AccountPage() {
                       <p className="font-mono text-xs text-text-tertiary">
                         Wallet: {truncateAddress(account.wallet_address)}
                       </p>
+                    )}
+                    {/* Migration prompt for direct-key Hyperliquid accounts */}
+                    {!isAgentWallet && account.exchange_name === 'hyperliquid' && (
+                      <div className="px-3 py-2 border border-signal-green/20 rounded-md bg-signal-green/5">
+                        <p className="font-mono text-xs text-text-secondary">
+                          Upgrade to agent wallet mode for improved security.
+                          <button
+                            onClick={() => {
+                              setFormExchange('hyperliquid')
+                              setShowForm(true)
+                            }}
+                            className="ml-2 text-signal-green hover:underline"
+                          >
+                            MIGRATE
+                          </button>
+                        </p>
+                      </div>
                     )}
                     {result && (
                       <div className="font-mono text-xs">

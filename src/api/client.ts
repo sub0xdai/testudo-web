@@ -9,6 +9,8 @@ import type {
   InitAgentWalletResponse,
   ApproveDataResponse,
   ApproveAgentResponse,
+  MigrateToAgentWalletResponse,
+  RevokeAgentResponse,
 } from '../types'
 import { env } from '../config/env'
 
@@ -146,6 +148,15 @@ export const exchangeApi = {
       signature,
       nonce,
     }).then((r) => r.data),
+
+  migrateToAgentWallet: (accountId: string, walletAddress: string) =>
+    api.post<MigrateToAgentWalletResponse>('/exchanges/agent-wallet/migrate', {
+      account_id: accountId,
+      wallet_address: walletAddress,
+    }).then((r) => r.data),
+
+  revokeAgent: (id: string) =>
+    api.delete<RevokeAgentResponse>(`/exchanges/agent-wallet/${id}/revoke`).then((r) => r.data),
 }
 
 export default api

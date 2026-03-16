@@ -62,6 +62,17 @@ export interface ApproveAgentResponse {
   message: string;
 }
 
+export interface MigrateToAgentWalletResponse {
+  account_id: string;
+  agent_address: string;
+  message: string;
+}
+
+export interface RevokeAgentResponse {
+  success: boolean;
+  message: string;
+}
+
 export interface TestConnectionResult {
   account_id: string;
   exchange_name: string;
