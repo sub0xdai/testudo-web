@@ -21,6 +21,7 @@ export function AccountPage() {
   const { user, logout } = useAuth()
   const location = useLocation()
   const isFreshRegistration = !!(location.state as { freshRegistration?: boolean })?.freshRegistration
+  const isFromExtension = new URLSearchParams(location.search).get('source') === 'extension'
 
   const [exchanges, setExchanges] = useState<ExchangeInfo[]>([])
   const [accounts, setAccounts] = useState<ExchangeAccount[]>([])
@@ -28,9 +29,9 @@ export function AccountPage() {
   const [error, setError] = useState('')
   const [setupComplete, setSetupComplete] = useState(false)
 
-  // Form state
-  const [showForm, setShowForm] = useState(false)
-  const [formExchange, setFormExchange] = useState('')
+  // Form state — auto-select Hyperliquid and show form when opened from extension
+  const [showForm, setShowForm] = useState(isFromExtension)
+  const [formExchange, setFormExchange] = useState(isFromExtension ? 'hyperliquid' : '')
   const [formApiKey, setFormApiKey] = useState('')
   const [formSecret, setFormSecret] = useState('')
   const [formPassphrase, setFormPassphrase] = useState('')
