@@ -75,6 +75,14 @@ export function WalletConnect({ onComplete }: WalletConnectProps) {
 
       if (result.success) {
         setState({ step: 'success', accountId: account_id, agentAddress: result.agent_address })
+        // EXT-33 FR-2: Notify extension content script of successful wallet connection
+        window.postMessage(
+          {
+            type: "TESTUDO_ACCOUNT_LINKED",
+            account: { id: account_id, exchange_name: "hyperliquid" },
+          },
+          window.location.origin,
+        )
       } else {
         setState({ step: 'error', message: result.message, retryStep: 'idle' })
       }
