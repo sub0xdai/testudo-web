@@ -40,6 +40,9 @@ export function SpotlightBackground({
           background: `radial-gradient(circle ${spotlightRadius}px at ${mousePos.x}px ${mousePos.y}px, transparent 0%, rgba(5, 5, 5, 0.85) 80%, rgba(5, 5, 5, 0.95) 100%)`,
         }}
       />
+
+      {/* Scan-line overlay */}
+      <div className="absolute inset-0 scan-lines" />
     </div>
   )
 }

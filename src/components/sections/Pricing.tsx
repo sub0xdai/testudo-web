@@ -1,30 +1,40 @@
 import { Link } from 'react-router-dom'
-import { Card } from '../ui/Card'
 
 export function Pricing() {
   const tiers = [
     {
-      name: "PAPER",
-      price: "FREE",
-      subtitle: "",
+      name: 'SNIPER',
+      price: '$20',
+      subtitle: '/mo',
       features: [
-        "Shadow trading engine",
-        "Full risk engine",
-        "Position sizing",
-        "No API keys needed"
+        'Risk engine + position sizing',
+        'Multi-exchange execution',
+        'Browser extension',
+        'Real-time WebSocket fills',
       ],
       highlight: false,
     },
     {
-      name: "LIVE",
-      price: "FREE",
-      subtitle: "while in beta",
+      name: 'COMMAND',
+      price: '$50',
+      subtitle: '/mo',
       features: [
-        "Everything in Paper",
-        "Live exchange execution",
-        "Multi-exchange support",
-        "Real-time WebSocket data",
-        "Trade journal"
+        'Everything in Sniper',
+        'Trade journal + analytics',
+        'Performance tracking',
+        'P&L breakdowns',
+      ],
+      highlight: false,
+    },
+    {
+      name: 'LIFETIME',
+      price: '$50',
+      subtitle: 'one-time',
+      features: [
+        'Everything in Command',
+        'One payment, forever',
+        'Early adopter pricing',
+        'All future updates',
       ],
       highlight: true,
     },
@@ -33,67 +43,65 @@ export function Pricing() {
   return (
     <section id="pricing" className="relative z-10 px-6 md:px-12 lg:px-24 py-24">
       <div className="max-w-4xl">
-        <Card>
-          <p className="font-mono text-signal-green text-sm tracking-widest mb-4">
-            PRICING
-          </p>
+        <div className="font-mono text-xs tracking-widest text-text-secondary/70 animate-flicker mb-6">
+          // PRICING_MODULE
+        </div>
 
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-text-primary mb-3">
-            FREE WHILE IN BETA.
-          </h2>
+        <h2 className="font-mono text-2xl md:text-3xl font-bold text-text-primary mb-2">
+          [PRICING]
+        </h2>
 
-          <p className="font-mono text-text-secondary mb-10">
-            No subscriptions. No token gates. Just trade.
-          </p>
+        <p className="font-mono text-sm text-text-secondary mb-12">
+          Two tiers. No hidden fees. Cancel anytime.
+        </p>
 
-          <div className="grid md:grid-cols-2 gap-6 max-w-2xl">
-            {tiers.map((tier) => (
-              <div
-                key={tier.name}
-                className={`p-6 border bg-container-bg rounded-md ${
+        <div className="grid md:grid-cols-3 gap-6 max-w-3xl">
+          {tiers.map((tier) => (
+            <div
+              key={tier.name}
+              className={`p-6 border ${
+                tier.highlight
+                  ? 'border-text-primary'
+                  : 'border-container-border'
+              }`}
+            >
+              <h3 className="font-mono text-sm tracking-wider text-text-primary mb-1">
+                {tier.name}
+              </h3>
+
+              <div className="mb-5">
+                <span className="font-mono text-3xl font-bold text-text-primary">
+                  {tier.price}
+                </span>
+                {tier.subtitle && (
+                  <span className="font-mono text-text-tertiary text-xs ml-2">
+                    {tier.subtitle}
+                  </span>
+                )}
+              </div>
+
+              <ul className="space-y-2 mb-6">
+                {tier.features.map((feature, i) => (
+                  <li key={i} className="font-mono text-xs text-text-secondary">
+                    <span className="text-text-tertiary mr-2">&rarr;</span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                to="/register"
+                className={`block w-full py-2.5 font-mono text-xs tracking-wider transition-colors text-center ${
                   tier.highlight
-                    ? 'border-signal-green'
-                    : 'border-container-border'
+                    ? 'border border-text-primary text-text-primary hover:bg-text-primary hover:text-main-bg'
+                    : 'border border-container-border text-text-secondary hover:border-text-primary hover:text-text-primary'
                 }`}
               >
-                <h3 className="font-display text-lg font-bold text-text-primary mb-1">
-                  {tier.name}
-                </h3>
-
-                <div className="mb-5">
-                  <span className="font-display text-4xl font-black text-text-primary">
-                    {tier.price}
-                  </span>
-                  {tier.subtitle && (
-                    <span className="font-mono text-text-secondary text-sm ml-2">
-                      {tier.subtitle}
-                    </span>
-                  )}
-                </div>
-
-                <ul className="space-y-2 mb-6">
-                  {tier.features.map((feature, i) => (
-                    <li key={i} className="font-mono text-sm text-text-secondary">
-                      <span className="text-signal-green mr-2">&rarr;</span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  to="/register"
-                  className={`block w-full py-3 font-mono font-bold text-sm rounded-md transition-colors text-center ${
-                    tier.highlight
-                      ? 'bg-signal-green text-main-bg hover:bg-white'
-                      : 'border border-container-border text-text-primary hover:border-signal-green'
-                  }`}
-                >
-                  GET STARTED
-                </Link>
-              </div>
-            ))}
-          </div>
-        </Card>
+                [ GET STARTED ]
+              </Link>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   )

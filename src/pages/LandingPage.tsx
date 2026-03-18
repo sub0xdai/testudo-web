@@ -1,13 +1,7 @@
 import { SpotlightBackground } from '../components/ui/SpotlightBackground'
 import { Hero } from '../components/sections/Hero'
-import { Problem } from '../components/sections/Problem'
-import { Solution } from '../components/sections/Solution'
-import { RiskEngine } from '../components/sections/RiskEngine'
-import { HowItWorks } from '../components/sections/HowItWorks'
-import { Exchanges } from '../components/sections/Exchanges'
+import { Features } from '../components/sections/Features'
 import { Pricing } from '../components/sections/Pricing'
-import { FAQ } from '../components/sections/FAQ'
-import { FinalCTA } from '../components/sections/FinalCTA'
 import { Footer } from '../components/sections/Footer'
 
 export function LandingPage() {
@@ -19,14 +13,8 @@ export function LandingPage() {
       />
       <main className="relative z-10">
         <Hero />
-        <Problem />
-        <Solution />
-        <RiskEngine />
-        <HowItWorks />
-        <Exchanges />
+        <Features />
         <Pricing />
-        <FAQ />
-        <FinalCTA />
         <Footer />
       </main>
     </>
