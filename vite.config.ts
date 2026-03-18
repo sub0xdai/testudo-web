@@ -5,5 +5,17 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3001,
+    proxy: {
+      // Same-origin proxy: journal sub-app served from testudo-journal dev server
+      '/journal': {
+        target: 'http://localhost:3002',
+        changeOrigin: true,
+      },
+      // API proxy: all backend requests to the Rust server
+      '/api': {
+        target: 'http://127.0.0.1:8080',
+        changeOrigin: true,
+      },
+    },
   },
 })
