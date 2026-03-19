@@ -6,8 +6,8 @@ export default defineConfig({
   server: {
     port: 3001,
     proxy: {
-      // Same-origin proxy: journal sub-app served from testudo-journal dev server
-      '/journal': {
+      // Same-origin proxy: trading desk sub-app served from testudo-journal dev server
+      '/desk': {
         target: 'http://localhost:3002',
         changeOrigin: true,
       },

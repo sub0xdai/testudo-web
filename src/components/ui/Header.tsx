@@ -25,10 +25,10 @@ export function Header() {
             PRICING
           </a>
           <a
-            href="http://localhost:3002/journal"
+            href="/desk/"
             className="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block"
           >
-            JOURNAL
+            DESK
           </a>
           <a
             href="https://github.com/sub0xdai/testudo-exchange"
