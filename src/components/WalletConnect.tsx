@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useAccount, useConnect, useDisconnect, useSignTypedData } from 'wagmi'
+import { useAccount, useConnect, useDisconnect } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { exchangeApi } from '../api/client'
 
@@ -21,7 +21,6 @@ export function WalletConnect({ onComplete }: WalletConnectProps) {
   const { address, isConnected } = useAccount()
   const { connectors } = useConnect()
   const { disconnect } = useDisconnect()
-  const { signTypedDataAsync } = useSignTypedData()
 
   const startFlow = useCallback(async () => {
     if (!address) return
@@ -46,27 +45,17 @@ export function WalletConnect({ onComplete }: WalletConnectProps) {
       })
 
       // Step 3: Request wallet signature
-      const typedDataObj = typed_data as {
-        domain: Record<string, unknown>
-        types: Record<string, Array<{ name: string; type: string }>>
-        primaryType: string
-        message: Record<string, unknown>
-      }
+      // Use eth_signTypedData_v4 directly instead of wagmi's signTypedDataAsync.
+      // Wagmi validates domain.chainId against the connected network, but Hyperliquid
+      // uses a fixed chainId (421614 / Arbitrum Sepolia) for all EIP-712 signing
+      // regardless of network. Direct MetaMask call bypasses this validation.
+      const provider = window.ethereum
+      if (!provider) throw new Error('No wallet provider found')
 
-      // Remove EIP712Domain from types since wagmi adds it automatically
-      const { EIP712Domain: _, ...signingTypes } = typedDataObj.types
-
-      const signature = await signTypedDataAsync({
-        domain: typedDataObj.domain as {
-          name?: string
-          version?: string
-          chainId?: number
-          verifyingContract?: `0x${string}`
-        },
-        types: signingTypes,
-        primaryType: typedDataObj.primaryType,
-        message: typedDataObj.message,
-      })
+      const signature = await provider.request({
+        method: 'eth_signTypedData_v4',
+        params: [address, JSON.stringify(typed_data)],
+      }) as string
 
       setState({ step: 'approving', accountId: account_id, signature, nonce })
 
@@ -100,7 +89,7 @@ export function WalletConnect({ onComplete }: WalletConnectProps) {
       }
       setState({ step: 'error', message, retryStep: 'idle' })
     }
-  }, [address, signTypedDataAsync])
+  }, [address])
 
   const handleRetry = useCallback(() => {
     setState({ step: 'idle' })
