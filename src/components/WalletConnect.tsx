@@ -45,17 +45,59 @@ export function WalletConnect({ onComplete }: WalletConnectProps) {
       })
 
       // Step 3: Request wallet signature
-      // Use eth_signTypedData_v4 directly instead of wagmi's signTypedDataAsync.
-      // Wagmi validates domain.chainId against the connected network, but Hyperliquid
-      // uses a fixed chainId (421614 / Arbitrum Sepolia) for all EIP-712 signing
-      // regardless of network. Direct MetaMask call bypasses this validation.
+      // Hyperliquid uses chainId 421614 (Arbitrum Sepolia) for ALL EIP-712 signing.
+      // MetaMask validates domain.chainId against the connected chain, so we must
+      // temporarily switch to Arbitrum Sepolia, sign, then switch back.
       const provider = window.ethereum
       if (!provider) throw new Error('No wallet provider found')
 
-      const signature = await provider.request({
-        method: 'eth_signTypedData_v4',
-        params: [address, JSON.stringify(typed_data)],
-      }) as string
+      const HL_SIGN_CHAIN_ID = '0x66eee' // 421614 = Arbitrum Sepolia
+      let originalChainId: string | undefined
+
+      // Remember current chain and switch to Arbitrum Sepolia for signing
+      originalChainId = await provider.request({ method: 'eth_chainId' }) as string
+
+      if (originalChainId !== HL_SIGN_CHAIN_ID) {
+        try {
+          await provider.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: HL_SIGN_CHAIN_ID }],
+          })
+        } catch (switchErr: unknown) {
+          // Chain not in MetaMask — add it
+          if (switchErr && typeof switchErr === 'object' && 'code' in switchErr && (switchErr as { code: number }).code === 4902) {
+            await provider.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: HL_SIGN_CHAIN_ID,
+                chainName: 'Arbitrum Sepolia',
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                rpcUrls: ['https://sepolia-rollup.arbitrum.io/rpc'],
+                blockExplorerUrls: ['https://sepolia.arbiscan.io'],
+              }],
+            })
+          } else {
+            throw switchErr
+          }
+        }
+      }
+
+      let signature: string
+      try {
+        // Sign EIP-712 data (now on matching chain 421614)
+        signature = await provider.request({
+          method: 'eth_signTypedData_v4',
+          params: [address, JSON.stringify(typed_data)],
+        }) as string
+      } finally {
+        // Always switch back to original chain
+        if (originalChainId && originalChainId !== HL_SIGN_CHAIN_ID) {
+          await provider.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: originalChainId }],
+          }).catch(() => { /* best effort */ })
+        }
+      }
 
       setState({ step: 'approving', accountId: account_id, signature, nonce })
 
