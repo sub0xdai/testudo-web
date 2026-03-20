@@ -12,10 +12,10 @@ export function Card({
   children,
   className = '',
   variant = 'solid',
-  rounded = false,
+  rounded: _rounded = false,
   noPadding = false,
 }: CardProps) {
-  const baseStyles = `relative border border-container-border${rounded ? ' rounded-lg' : ' rounded-md'}`
+  const baseStyles = `relative border border-container-border`
 
   const variantStyles = {
     solid: 'bg-main-bg/95',

@@ -18,7 +18,7 @@ const EyeOffIcon = () => (
   </svg>
 )
 
-const inputClass = 'w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-md text-text-primary placeholder-text-tertiary focus:border-signal-green focus:outline-none focus:ring-[3px] focus:ring-signal-green/15 transition-all'
+const inputClass = 'w-full px-4 py-3 bg-container-bg border border-container-border text-text-primary placeholder-text-tertiary focus:border-text-secondary focus:outline-none focus:ring-[3px] focus:ring-white/10 transition-all'
 
 export function RegisterPage() {
   const { register, isAuthenticated } = useAuth()
@@ -74,7 +74,7 @@ export function RegisterPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-xs font-semibold tracking-widest text-gray-400 mb-2">
+            <label className="block text-xs font-semibold tracking-widest text-text-secondary mb-2">
               EMAIL
             </label>
             <input
@@ -88,7 +88,7 @@ export function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold tracking-widest text-gray-400 mb-2">
+            <label className="block text-xs font-semibold tracking-widest text-text-secondary mb-2">
               PASSWORD
             </label>
             <div className="relative">
@@ -103,7 +103,7 @@ export function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-0 top-0 h-full w-10 flex items-center justify-center text-gray-400 hover:text-text-primary bg-transparent border-0 transition-colors"
+                className="absolute right-0 top-0 h-full w-10 flex items-center justify-center text-text-secondary hover:text-text-primary bg-transparent border-0 transition-colors"
                 tabIndex={-1}
               >
                 {showPassword ? <EyeOffIcon /> : <EyeIcon />}
@@ -112,7 +112,7 @@ export function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold tracking-widest text-gray-400 mb-2">
+            <label className="block text-xs font-semibold tracking-widest text-text-secondary mb-2">
               CONFIRM PASSWORD
             </label>
             <div className="relative">
@@ -127,7 +127,7 @@ export function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-0 top-0 h-full w-10 flex items-center justify-center text-gray-400 hover:text-text-primary bg-transparent border-0 transition-colors"
+                className="absolute right-0 top-0 h-full w-10 flex items-center justify-center text-text-secondary hover:text-text-primary bg-transparent border-0 transition-colors"
                 tabIndex={-1}
               >
                 {showConfirm ? <EyeOffIcon /> : <EyeIcon />}
@@ -136,7 +136,7 @@ export function RegisterPage() {
           </div>
 
           {error && (
-            <div className="text-sm text-red-400 py-2.5 px-3.5 border border-red-500/20 bg-red-500/5 rounded-md">
+            <div className="text-sm text-signal-red py-2.5 px-3.5 border border-signal-red/20 bg-signal-red/5">
               {error}
             </div>
           )}
@@ -144,7 +144,7 @@ export function RegisterPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3.5 bg-signal-green text-main-bg font-bold text-sm tracking-[0.2em] rounded-md hover:bg-white transition-colors disabled:opacity-50"
+            className="w-full py-3.5 bg-transparent border border-white text-white font-bold text-sm tracking-[0.2em] hover:bg-white hover:text-main-bg transition-colors disabled:opacity-50"
           >
             {submitting ? 'CREATING...' : 'CREATE ACCOUNT'}
           </button>
@@ -152,7 +152,7 @@ export function RegisterPage() {
 
         <p className="mt-6 text-sm text-text-secondary text-center">
           Already have an account?{' '}
-          <Link to="/login" className="text-signal-green hover:text-white transition-colors">
+          <Link to="/login" className="text-white underline hover:text-text-secondary transition-colors">
             Sign in
           </Link>
         </p>

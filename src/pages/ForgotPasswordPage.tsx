@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 const EmailSchema = z.string().email('Invalid email format')
 
-const inputClass = 'w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-md text-text-primary placeholder-text-tertiary focus:border-signal-green focus:outline-none focus:ring-[3px] focus:ring-signal-green/15 transition-all'
+const inputClass = 'w-full px-4 py-3 bg-container-bg border border-container-border text-text-primary placeholder-text-tertiary focus:border-text-secondary focus:outline-none focus:ring-[3px] focus:ring-white/10 transition-all'
 
 export function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -48,11 +48,11 @@ export function ForgotPasswordPage() {
             CHECK YOUR EMAIL
           </h1>
           <p className="text-sm text-text-secondary mb-6">
-            If an account exists for <span className="text-signal-green font-mono">{email}</span>, you'll receive a password reset link shortly.
+            If an account exists for <span className="text-white font-mono">{email}</span>, you'll receive a password reset link shortly.
           </p>
           <Link
             to="/login"
-            className="block w-full py-3.5 bg-signal-green text-main-bg font-bold text-sm tracking-[0.2em] rounded-md hover:bg-white transition-colors text-center"
+            className="block w-full py-3.5 bg-transparent border border-white text-white font-bold text-sm tracking-[0.2em] hover:bg-white hover:text-main-bg transition-colors text-center"
           >
             BACK TO LOGIN
           </Link>
@@ -73,7 +73,7 @@ export function ForgotPasswordPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-xs font-semibold tracking-widest text-gray-400 mb-2">
+            <label className="block text-xs font-semibold tracking-widest text-text-secondary mb-2">
               EMAIL
             </label>
             <input
@@ -87,7 +87,7 @@ export function ForgotPasswordPage() {
           </div>
 
           {error && (
-            <div className="text-sm text-red-400 py-2.5 px-3.5 border border-red-500/20 bg-red-500/5 rounded-md">
+            <div className="text-sm text-signal-red py-2.5 px-3.5 border border-signal-red/20 bg-signal-red/5">
               {error}
             </div>
           )}
@@ -95,7 +95,7 @@ export function ForgotPasswordPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3.5 bg-signal-green text-main-bg font-bold text-sm tracking-[0.2em] rounded-md hover:bg-white transition-colors disabled:opacity-50"
+            className="w-full py-3.5 bg-transparent border border-white text-white font-bold text-sm tracking-[0.2em] hover:bg-white hover:text-main-bg transition-colors disabled:opacity-50"
           >
             {submitting ? 'SENDING...' : 'SEND RESET LINK'}
           </button>
@@ -103,7 +103,7 @@ export function ForgotPasswordPage() {
 
         <p className="mt-6 text-sm text-text-secondary text-center">
           Remember your password?{' '}
-          <Link to="/login" className="text-signal-green hover:text-white transition-colors">
+          <Link to="/login" className="text-white underline hover:text-text-secondary transition-colors">
             Sign in
           </Link>
         </p>
