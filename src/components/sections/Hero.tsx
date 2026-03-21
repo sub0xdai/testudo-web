@@ -28,14 +28,6 @@ export function Hero() {
           >
             GET STARTED
           </Link>
-          <a
-            href="https://github.com/sub0xdai/testudo-exchange"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-6 py-3 border border-container-border text-text-secondary font-mono text-sm tracking-wider hover:border-text-primary hover:text-text-primary transition-colors text-center"
-          >
-            VIEW SOURCE &gt;&gt;
-          </a>
         </div>
       </div>
 

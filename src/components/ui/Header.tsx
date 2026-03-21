@@ -12,12 +12,12 @@ export function Header() {
         </Link>
 
         <nav className="flex items-center gap-6 md:gap-8">
-          <a
-            href="#features"
+          <Link
+            to="/about"
             className="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block"
           >
-            SYSTEMS
-          </a>
+            ABOUT
+          </Link>
           <a
             href="#pricing"
             className="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block"
@@ -26,25 +26,27 @@ export function Header() {
           </a>
           <a
             href="/desk/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block"
           >
             DESK
           </a>
           <a
-            href="https://github.com/sub0xdai/testudo-exchange"
+            href="/docs/"
             target="_blank"
             rel="noopener noreferrer"
             className="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block"
           >
-            GITHUB
+            DOCS
           </a>
           <a
-            href="https://x.com/i/communities/2009337617720987685"
+            href="https://chromewebstore.google.com"
             target="_blank"
             rel="noopener noreferrer"
             className="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block"
           >
-            COMMUNITY
+            EXTENSION
           </a>
           {isAuthenticated ? (
             <Link
