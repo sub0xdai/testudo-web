@@ -19,9 +19,9 @@ export function Hero() {
           className="font-mono text-base md:text-lg text-text-secondary max-w-xl mb-12 leading-relaxed"
           style={{ textShadow: '0 1px 12px rgb(var(--bg-core) / 0.8)' }}
         >
-          Position sizing that adapts to volatility.
+          Adapt to the chaos. Outlast the market.
           <br />
-          Engineered for traders who don't blow up.
+          Trade without breaking.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 mb-20">

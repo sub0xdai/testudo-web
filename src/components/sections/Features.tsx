@@ -2,11 +2,11 @@ export function Features() {
   const features = [
     {
       label: 'RISK ENGINE',
-      detail: 'Automated position sizing enforced on every trade. Risk-per-trade limits so you never oversize.',
+      detail: 'Automated position sizing. Every trade. Never overexposed.',
     },
     {
       label: 'DEX + CEX',
-      detail: 'Hyperliquid, Binance, Bybit, WOO. One risk layer across all your accounts.',
+      detail: 'Command from a single banner. Hyperliquid, Binance, Bybit, WOO. One risk layer across all your accounts.',
     },
     {
       label: 'CIRCUIT BREAKERS',
@@ -14,12 +14,9 @@ export function Features() {
     },
     {
       label: 'BROWSER EXTENSION',
-      detail: 'Execute from TradingView with Alt+X. Shadow DOM overlay. Real-time WebSocket fills.',
+      detail: 'Strike direct. Execute from TradingView with Alt+X. Seamless execution. No hesitation.',
     },
-    {
-      label: 'AGENT WALLETS',
-      detail: 'EIP-712 signed approvals for Hyperliquid. Revoke anytime. Your keys, your control.',
-    },
+    
   ]
 
   return (
