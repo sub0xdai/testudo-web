@@ -108,8 +108,8 @@ export function WalletConnect({ onComplete }: WalletConnectProps) {
     return (
       <div className="space-y-6">
         <div className="text-center py-4">
-          <div className="w-12 h-12 mx-auto border-2 border-white flex items-center justify-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+          <div className="w-12 h-12 mx-auto border-2 border-text-primary flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-text-primary">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
@@ -125,7 +125,7 @@ export function WalletConnect({ onComplete }: WalletConnectProps) {
         </div>
         <button
           onClick={onComplete}
-          className="w-full px-8 py-4 bg-transparent border border-white text-white font-mono font-bold text-lg hover:bg-white hover:text-main-bg transition-colors"
+          className="w-full px-8 py-4 bg-transparent btn-primary font-mono font-bold text-lg"
         >
           VIEW ACCOUNT
         </button>
@@ -142,7 +142,7 @@ export function WalletConnect({ onComplete }: WalletConnectProps) {
         </div>
         <button
           onClick={handleRetry}
-          className="w-full px-8 py-4 bg-transparent border border-white text-white font-mono font-bold text-lg hover:bg-white hover:text-main-bg transition-colors"
+          className="w-full px-8 py-4 bg-transparent btn-primary font-mono font-bold text-lg"
         >
           TRY AGAIN
         </button>
@@ -167,9 +167,9 @@ export function WalletConnect({ onComplete }: WalletConnectProps) {
           <div key={label} className="flex items-center">
             <div className={`w-6 h-6 flex items-center justify-center text-xs font-mono font-bold ${
               i < stepIndex
-                ? 'bg-white text-main-bg'
+                ? 'bg-text-primary text-main-bg'
                 : i === stepIndex
-                  ? 'border-2 border-white text-white'
+                  ? 'border-2 border-text-primary text-text-primary'
                   : 'border border-container-border text-text-tertiary'
             }`}>
               {i < stepIndex ? (
@@ -187,7 +187,7 @@ export function WalletConnect({ onComplete }: WalletConnectProps) {
             </span>
             {i < stepLabels.length - 1 && (
               <div className={`w-8 h-px mx-2 ${
-                i < stepIndex ? 'bg-white' : 'bg-container-border'
+                i < stepIndex ? 'bg-text-primary' : 'bg-container-border'
               }`} />
             )}
           </div>
@@ -215,7 +215,7 @@ export function WalletConnect({ onComplete }: WalletConnectProps) {
             </div>
             <button
               onClick={() => { disconnect(); setState({ step: 'idle' }) }}
-              className="px-3 py-1 font-mono text-xs text-text-tertiary border border-container-border hover:text-white hover:border-white/30 transition-colors"
+              className="px-3 py-1 font-mono text-xs text-text-tertiary border border-container-border hover:text-text-primary hover:border-text-primary/30 transition-colors"
             >
               Disconnect
             </button>
@@ -223,7 +223,7 @@ export function WalletConnect({ onComplete }: WalletConnectProps) {
 
           {isProcessing ? (
             <div className="text-center py-4">
-              <div className="inline-block w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin mb-3" />
+              <div className="inline-block w-6 h-6 border-2 border-text-primary border-t-transparent rounded-full animate-spin mb-3" />
               <p className="font-mono text-sm text-text-secondary">
                 {state.step === 'init-agent' && 'Generating agent keypair...'}
                 {state.step === 'signing' && 'Waiting for wallet signature...'}
@@ -239,7 +239,7 @@ export function WalletConnect({ onComplete }: WalletConnectProps) {
             <button
               onClick={startFlow}
               disabled={!isConnected || !address || !connectors.length}
-              className="w-full px-8 py-4 bg-transparent border border-white text-white font-mono font-bold text-lg hover:bg-white hover:text-main-bg transition-colors disabled:opacity-50"
+              className="w-full px-8 py-4 bg-transparent btn-primary font-mono font-bold text-lg disabled:opacity-50"
             >
               AUTHORIZE AGENT WALLET
             </button>

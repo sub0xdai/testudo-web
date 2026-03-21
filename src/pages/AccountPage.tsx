@@ -245,7 +245,7 @@ export function AccountPage() {
       <button
         onClick={handleAdd}
         disabled={formSubmitting}
-        className="w-full px-8 py-4 bg-transparent border border-white text-white font-mono font-bold text-lg hover:bg-white hover:text-main-bg transition-colors disabled:opacity-50"
+        className="w-full px-8 py-4 bg-transparent btn-primary font-mono font-bold text-lg disabled:opacity-50"
       >
         {formSubmitting ? 'VALIDATING...' : 'CONNECT EXCHANGE'}
       </button>
@@ -292,8 +292,8 @@ export function AccountPage() {
         <div className="max-w-2xl mx-auto">
           <Card rounded>
             <div className="text-center py-8 space-y-6">
-              <div className="w-16 h-16 mx-auto border-2 border-white flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+              <div className="w-16 h-16 mx-auto border-2 border-text-primary flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-text-primary">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </div>
@@ -305,7 +305,7 @@ export function AccountPage() {
               </p>
               <button
                 onClick={() => setSetupComplete(false)}
-                className="px-8 py-3 bg-transparent border border-white text-white font-mono font-bold text-sm hover:bg-white hover:text-main-bg transition-colors"
+                className="px-8 py-3 bg-transparent btn-primary font-mono font-bold text-sm"
               >
                 VIEW ACCOUNT
               </button>
@@ -367,7 +367,7 @@ export function AccountPage() {
           </div>
           <button
             onClick={logout}
-            className="px-6 py-2 border border-container-border font-mono font-bold text-sm text-text-secondary hover:text-white hover:border-white transition-colors"
+            className="px-6 py-2 border border-container-border font-mono font-bold text-sm text-text-secondary hover:text-text-primary hover:border-text-primary transition-colors"
           >
             LOGOUT
           </button>
@@ -384,7 +384,7 @@ export function AccountPage() {
                 setShowForm(!showForm)
                 if (showForm) clearForm()
               }}
-              className="px-4 py-2 font-mono text-sm font-bold text-white border border-container-border hover:bg-white hover:text-main-bg transition-colors"
+              className="px-4 py-2 font-mono text-sm font-bold text-text-primary border border-container-border hover:bg-text-primary hover:text-main-bg transition-colors"
             >
               {showForm ? 'CANCEL' : '+ ADD EXCHANGE'}
             </button>
@@ -410,7 +410,7 @@ export function AccountPage() {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="w-2 h-2 rounded-full bg-white" />
+                        <span className="w-2 h-2 rounded-full bg-text-primary" />
                         <span className="font-mono text-text-primary font-bold">
                           {account.account_name || account.exchange_name}
                         </span>
@@ -418,7 +418,7 @@ export function AccountPage() {
                           {account.exchange_name}
                         </span>
                         {isAgentWallet && (
-                          <span className="px-2 py-0.5 font-mono text-[10px] text-white border border-container-border bg-white/10">
+                          <span className="px-2 py-0.5 font-mono text-[10px] text-text-primary border border-container-border bg-text-primary/10">
                             AGENT WALLET
                           </span>
                         )}
@@ -427,7 +427,7 @@ export function AccountPage() {
                         <button
                           onClick={() => handleTest(account.id)}
                           disabled={testingId === account.id}
-                          className="px-3 py-1 font-mono text-xs text-text-secondary border border-container-border hover:text-white hover:border-white/30 transition-colors disabled:opacity-50"
+                          className="px-3 py-1 font-mono text-xs text-text-secondary border border-container-border hover:text-text-primary hover:border-text-primary/30 transition-colors disabled:opacity-50"
                         >
                           {testingId === account.id ? '...' : 'TEST'}
                         </button>
@@ -450,7 +450,7 @@ export function AccountPage() {
                           ) : (
                             <button
                               onClick={() => setRevokingId(account.id)}
-                              className="px-3 py-1 font-mono text-xs text-text-tertiary border border-container-border hover:text-white hover:border-white/30 transition-colors"
+                              className="px-3 py-1 font-mono text-xs text-text-tertiary border border-container-border hover:text-text-primary hover:border-text-primary/30 transition-colors"
                             >
                               REVOKE
                             </button>
@@ -474,7 +474,7 @@ export function AccountPage() {
                         ) : (
                           <button
                             onClick={() => setDeletingId(account.id)}
-                            className="px-3 py-1 font-mono text-xs text-text-tertiary border border-container-border hover:text-white hover:border-white/30 transition-colors"
+                            className="px-3 py-1 font-mono text-xs text-text-tertiary border border-container-border hover:text-text-primary hover:border-text-primary/30 transition-colors"
                           >
                             DEL
                           </button>
@@ -489,7 +489,7 @@ export function AccountPage() {
                     )}
                     {/* Migration prompt for direct-key Hyperliquid accounts */}
                     {!isAgentWallet && account.exchange_name === 'hyperliquid' && (
-                      <div className="px-3 py-2 border border-container-border bg-white/5">
+                      <div className="px-3 py-2 border border-container-border bg-text-primary/5">
                         <p className="font-mono text-xs text-text-secondary">
                           Upgrade to agent wallet mode for improved security.
                           <button
@@ -497,7 +497,7 @@ export function AccountPage() {
                               setFormExchange('hyperliquid')
                               setShowForm(true)
                             }}
-                            className="ml-2 text-white hover:underline"
+                            className="ml-2 text-text-primary hover:underline"
                           >
                             MIGRATE
                           </button>

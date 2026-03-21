@@ -59,7 +59,7 @@ export function Pricing() {
           {tiers.map((tier) => (
             <div
               key={tier.name}
-              className={`p-6 border ${
+              className={`p-6 border bg-main-bg/90 backdrop-blur-sm flex flex-col ${
                 tier.highlight
                   ? 'border-text-primary'
                   : 'border-container-border'
@@ -80,7 +80,7 @@ export function Pricing() {
                 )}
               </div>
 
-              <ul className="space-y-2 mb-6">
+              <ul className="space-y-2 mb-6 flex-1">
                 {tier.features.map((feature, i) => (
                   <li key={i} className="font-mono text-xs text-text-secondary">
                     <span className="text-text-tertiary mr-2">&rarr;</span>
@@ -91,11 +91,7 @@ export function Pricing() {
 
               <Link
                 to="/register"
-                className={`block w-full py-2.5 font-mono text-xs tracking-wider transition-colors text-center ${
-                  tier.highlight
-                    ? 'border border-text-primary text-text-primary hover:bg-text-primary hover:text-main-bg'
-                    : 'border border-container-border text-text-secondary hover:border-text-primary hover:text-text-primary'
-                }`}
+                className="block w-full py-2.5 font-mono text-xs tracking-wider transition-colors text-center mt-auto border border-text-primary text-text-primary hover:bg-text-primary hover:text-main-bg"
               >
                 [ GET STARTED ]
               </Link>

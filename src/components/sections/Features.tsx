@@ -35,7 +35,7 @@ export function Features() {
 
         <div className="grid md:grid-cols-2 gap-x-12 gap-y-8">
           {features.map((feature) => (
-            <div key={feature.label} className="border-l border-container-border pl-4">
+            <div key={feature.label} className="border border-container-border bg-main-bg/90 backdrop-blur-sm p-5">
               <h3 className="font-mono text-sm text-text-primary tracking-wider mb-2">
                 {feature.label}
               </h3>

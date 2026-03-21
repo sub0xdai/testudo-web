@@ -13,7 +13,7 @@ export function JournalPage() {
         </p>
         <Link
           to="/"
-          className="font-mono text-white underline hover:text-text-secondary transition-colors"
+          className="font-mono text-text-primary underline hover:text-text-secondary transition-colors"
         >
           &larr; BACK TO HOME
         </Link>

@@ -4,7 +4,7 @@ export function Hero() {
   return (
     <section className="relative z-10 min-h-screen flex flex-col justify-center px-6 md:px-12 lg:px-24 py-32">
       {/* Ghost metadata */}
-      <div className="font-mono text-xs tracking-widest text-text-secondary/70 animate-flicker mb-8">
+      <div className="font-mono text-xs tracking-widest text-text-secondary/70 animate-flicker mb-8" style={{ textShadow: '0 1px 8px rgb(var(--bg-core) / 0.6)' }}>
         // RISK_OVERLAY_ACTIVE &bull; POSITION_SIZING: ADAPTIVE &bull; EXCHANGES: MULTI
       </div>
 
@@ -15,7 +15,10 @@ export function Hero() {
           RISK [MANAGEMENT]
         </h1>
 
-        <p className="font-mono text-base md:text-lg text-text-secondary max-w-xl mb-12 leading-relaxed">
+        <p
+          className="font-mono text-base md:text-lg text-text-secondary max-w-xl mb-12 leading-relaxed"
+          style={{ textShadow: '0 1px 12px rgb(var(--bg-core) / 0.8)' }}
+        >
           Position sizing that adapts to volatility.
           <br />
           Engineered for traders who don't blow up.
@@ -24,9 +27,9 @@ export function Hero() {
         <div className="flex flex-col sm:flex-row gap-4 mb-20">
           <Link
             to="/register"
-            className="px-6 py-3 border border-text-primary text-text-primary font-mono text-sm tracking-wider hover:bg-text-primary hover:text-main-bg transition-colors text-center"
+            className="px-6 py-3 bg-text-primary text-main-bg font-mono text-sm font-semibold tracking-wider hover:opacity-80 transition-opacity text-center"
           >
-            GET STARTED
+            [ GET STARTED ]
           </Link>
         </div>
       </div>
