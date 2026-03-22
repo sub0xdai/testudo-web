@@ -5,7 +5,7 @@ export function Hero() {
     <section className="relative z-10 min-h-screen flex flex-col justify-center px-6 md:px-12 lg:px-24 py-32">
       {/* Ghost metadata */}
       <div className="font-mono text-xs tracking-widest text-text-secondary/70 animate-flicker mb-8" style={{ textShadow: '0 1px 8px rgb(var(--bg-core) / 0.6)' }}>
-        // RISK_OVERLAY_ACTIVE &bull; POSITION_SIZING: ADAPTIVE &bull; EXCHANGES: MULTI
+        // RISK_OVERLAY_ACTIVE &bull; POSITION_SIZING: FORGEDDABOUDITT &bull; EXCHANGES: MULTI
       </div>
 
       <div className="max-w-5xl">
@@ -36,7 +36,7 @@ export function Hero() {
 
       {/* Data ticker — bottom right (green/red kept for financial data only) */}
       <div className="absolute bottom-12 right-6 md:right-12 lg:right-24 font-mono text-xs animate-ticker-pulse">
-        <div className="border border-container-border/50 bg-main-bg/60 backdrop-blur-sm p-4 space-y-2">
+        <div className="border border-container-border/50 bg-main-bg/95 p-4 space-y-2">
           <div className="flex items-center justify-between gap-6">
             <span className="text-text-tertiary">BTC</span>
             <span className="text-text-primary">$98,240</span>

@@ -3,7 +3,6 @@ import { ReactNode } from 'react'
 interface CardProps {
   children: ReactNode
   className?: string
-  variant?: 'solid' | 'glass'
   rounded?: boolean
   noPadding?: boolean
 }
@@ -11,21 +10,14 @@ interface CardProps {
 export function Card({
   children,
   className = '',
-  variant = 'solid',
   rounded: _rounded = false,
   noPadding = false,
 }: CardProps) {
-  const baseStyles = `relative border border-container-border`
-
-  const variantStyles = {
-    solid: 'bg-main-bg/95',
-    glass: 'bg-main-bg/80 backdrop-blur-md',
-  }
-
+  const baseStyles = 'relative border border-container-border bg-main-bg/95'
   const paddingStyles = noPadding ? '' : 'p-6 md:p-8'
 
   return (
-    <div className={`${baseStyles} ${variantStyles[variant]} ${paddingStyles} ${className}`}>
+    <div className={`${baseStyles} ${paddingStyles} ${className}`}>
       {children}
     </div>
   )

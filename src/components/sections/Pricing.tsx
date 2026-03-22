@@ -59,7 +59,7 @@ export function Pricing() {
           {tiers.map((tier) => (
             <div
               key={tier.name}
-              className={`p-6 border bg-main-bg/90 backdrop-blur-sm flex flex-col ${
+              className={`p-6 border bg-main-bg/95 flex flex-col ${
                 tier.highlight
                   ? 'border-text-primary'
                   : 'border-container-border'
