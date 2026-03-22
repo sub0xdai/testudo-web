@@ -49,7 +49,7 @@ export function SpotlightBackground({
         className="absolute inset-0 pointer-events-none"
         style={{
           background: isLight
-            ? `radial-gradient(circle ${spotlightRadius}px at ${mousePos.x}px ${mousePos.y}px, rgb(var(--bg-core) / 0.70) 0%, rgb(var(--bg-core) / 0.85) 80%, rgb(var(--bg-core) / 0.92) 100%)`
+            ? `radial-gradient(circle ${spotlightRadius}px at ${mousePos.x}px ${mousePos.y}px, rgb(var(--bg-core) / 0.55) 0%, rgb(var(--bg-core) / 0.80) 70%, rgb(var(--bg-core) / 0.92) 100%)`
             : `radial-gradient(circle ${spotlightRadius}px at ${mousePos.x}px ${mousePos.y}px, transparent 0%, rgb(var(--bg-core) / 0.85) 80%, rgb(var(--bg-core) / 0.95) 100%)`,
         }}
       />

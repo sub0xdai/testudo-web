@@ -4,8 +4,9 @@ export function Hero() {
   return (
     <section className="relative z-10 min-h-screen flex flex-col justify-center px-6 md:px-12 lg:px-24 py-32">
       {/* Ghost metadata */}
-      <div className="font-mono text-xs tracking-widest text-text-secondary/70 animate-flicker mb-8" style={{ textShadow: '0 1px 8px rgb(var(--bg-core) / 0.6)' }}>
-        // RISK_OVERLAY_ACTIVE &bull; POSITION_SIZING: FORGEDDABOUDITT &bull; EXCHANGES: POLYAMOROUS 
+      <div className="font-mono text-text-secondary/70 animate-flicker mb-8" style={{ textShadow: '0 1px 8px rgb(var(--bg-core) / 0.6)' }}>
+        <div className="text-[10px] text-text-tertiary tracking-widest mb-1">// TESTUDO v0.1 &bull; FUTURES_OVERLAY</div>
+        <div className="text-xs tracking-widest">// RISK_OVERLAY_ACTIVE &bull; POSITION_SIZING: FORGEDDABOUDITT &bull; EXCHANGES: POLYAMOROUS</div>
       </div>
 
       <div className="max-w-5xl">
@@ -34,31 +35,6 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Data ticker — bottom right (green/red kept for financial data only) */}
-      <div className="absolute bottom-12 right-6 md:right-12 lg:right-24 font-mono text-xs animate-ticker-pulse">
-        <div className="border border-container-border/50 bg-main-bg/95 p-4 space-y-2">
-          <div className="flex items-center justify-between gap-6">
-            <span className="text-text-tertiary">BTC</span>
-            <span className="text-text-primary">$98,240</span>
-            <span className="text-signal-green text-[10px]">+1.2%</span>
-          </div>
-          <div className="flex items-center justify-between gap-6">
-            <span className="text-text-tertiary">ETH</span>
-            <span className="text-text-primary">$3,412</span>
-            <span className="text-signal-red text-[10px]">-2.3%</span>
-          </div>
-          <div className="flex items-center justify-between gap-6">
-            <span className="text-text-tertiary">SOL</span>
-            <span className="text-text-primary">$187</span>
-            <span className="text-signal-green text-[10px]">+0.8%</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Ghost annotation — bottom left */}
-      <div className="absolute bottom-12 left-6 md:left-12 lg:left-24 font-mono text-[10px] text-text-tertiary animate-flicker">
-        // TESTUDO v0.1 &bull; FUTURES_OVERLAY
-      </div>
     </section>
   )
 }
