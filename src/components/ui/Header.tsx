@@ -1,40 +1,10 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-
-const THEMES = ['amoled', 'light'] as const
-type Theme = (typeof THEMES)[number]
-
-const THEME_LABELS: Record<Theme, string> = {
-  amoled: 'DARK',
-  light: 'LIGHT',
-}
-
-function getStoredTheme(): Theme {
-  const stored = localStorage.getItem('testudo-theme')
-  if (stored && THEMES.includes(stored as Theme)) return stored as Theme
-  return 'amoled'
-}
-
-function applyTheme(theme: Theme) {
-  localStorage.setItem('testudo-theme', theme)
-  if (theme === 'amoled') {
-    document.documentElement.removeAttribute('data-theme')
-  } else {
-    document.documentElement.setAttribute('data-theme', theme)
-  }
-}
+import { useTheme, THEME_LABELS } from '../../context/ThemeContext'
 
 export function Header() {
   const { isAuthenticated } = useAuth()
-  const [theme, setTheme] = useState<Theme>(getStoredTheme)
-
-  function cycleTheme() {
-    const currentIndex = THEMES.indexOf(theme)
-    const next = THEMES[(currentIndex + 1) % THEMES.length]
-    setTheme(next)
-    applyTheme(next)
-  }
+  const { theme, cycleTheme } = useTheme()
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-6 md:px-8 py-4 bg-main-bg/90 border-b border-container-border/30">
@@ -106,7 +76,6 @@ export function Header() {
           >
             EXTENSION
           </a>
-          {/* TODO: RainbowKit in main.tsx uses hardcoded darkTheme() — needs context lift for light */}
           {isAuthenticated ? (
             <Link
               to="/account"

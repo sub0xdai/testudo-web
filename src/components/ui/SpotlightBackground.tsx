@@ -20,19 +20,16 @@ export function SpotlightBackground({
     const observer = new MutationObserver(checkTheme)
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
 
-    if (!isLight) {
-      const handleMouseMove = (e: MouseEvent) => {
-        setMousePos({ x: e.clientX, y: e.clientY })
-      }
-      window.addEventListener('mousemove', handleMouseMove)
-      return () => {
-        observer.disconnect()
-        window.removeEventListener('mousemove', handleMouseMove)
-      }
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY })
     }
+    window.addEventListener('mousemove', handleMouseMove)
 
-    return () => observer.disconnect()
-  }, [isLight])
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('mousemove', handleMouseMove)
+    }
+  }, [])
 
   return (
     <div className="fixed inset-0 z-0 overflow-hidden">
@@ -47,18 +44,18 @@ export function SpotlightBackground({
         }}
       />
 
-      {/* Dark mode: spotlight follows mouse. Light mode: flat wash. */}
+      {/* Spotlight follows mouse in both themes */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background: isLight
-            ? `rgb(var(--bg-core) / 0.80)`
+            ? `radial-gradient(circle ${spotlightRadius}px at ${mousePos.x}px ${mousePos.y}px, rgb(var(--bg-core) / 0.70) 0%, rgb(var(--bg-core) / 0.85) 80%, rgb(var(--bg-core) / 0.92) 100%)`
             : `radial-gradient(circle ${spotlightRadius}px at ${mousePos.x}px ${mousePos.y}px, transparent 0%, rgb(var(--bg-core) / 0.85) 80%, rgb(var(--bg-core) / 0.95) 100%)`,
         }}
       />
 
-      {/* Scan-line overlay - dark mode only */}
-      {!isLight && <div className="absolute inset-0 scan-lines" />}
+      {/* Texture overlay - scan lines (dark) or paper grain (light) */}
+      <div className={`absolute inset-0 ${isLight ? 'texture-grain' : 'scan-lines'}`} />
     </div>
   )
 }
