@@ -17,7 +17,7 @@ createRoot(document.getElementById('root')!).render(
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider theme={darkTheme({
-          accentColor: '#00FF41',
+          accentColor: '#22C55E',
           accentColorForeground: '#050505',
           borderRadius: 'medium',
         })}>
