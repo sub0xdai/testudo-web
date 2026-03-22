@@ -44,7 +44,7 @@ export function Features() {
           <h3 className="font-display text-2xl md:text-3xl font-bold text-text-primary mb-3">
             {primary.label}
           </h3>
-          <p className="font-mono text-sm text-text-secondary max-w-xl leading-relaxed">
+          <p className="font-display text-sm text-text-secondary max-w-xl leading-relaxed">
             {primary.detail}
           </p>
         </div>
@@ -59,7 +59,7 @@ export function Features() {
               <h4 className="font-mono text-xs tracking-widest text-text-secondary mb-1">
                 {feature.label}
               </h4>
-              <p className="font-mono text-sm text-text-tertiary leading-relaxed">
+              <p className="font-display text-sm text-text-tertiary leading-relaxed">
                 {feature.detail}
               </p>
             </div>

@@ -51,7 +51,7 @@ export function Pricing() {
           [PRICING]
         </h2>
 
-        <p className="font-mono text-sm text-text-secondary mb-12">
+        <p className="font-display text-sm text-text-secondary mb-12">
           Two tiers. No hidden fees. Cancel anytime.
         </p>
 
@@ -82,7 +82,7 @@ export function Pricing() {
 
               <ul className="space-y-2 mb-6 flex-1">
                 {tier.features.map((feature, i) => (
-                  <li key={i} className="font-mono text-xs text-text-secondary">
+                  <li key={i} className="font-display text-xs text-text-secondary">
                     <span className="text-text-tertiary mr-2">&rarr;</span>
                     {feature}
                   </li>
