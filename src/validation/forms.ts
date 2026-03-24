@@ -1,17 +1,5 @@
 import { z } from 'zod'
 
-export const LoginFormSchema = z.object({
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-})
-
-export const RegisterFormSchema = LoginFormSchema.extend({
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-})
-
 export const ExchangeAccountFormSchema = z.object({
   exchange_name: z.string().min(1, 'Exchange is required'),
   api_key: z.string().optional(),

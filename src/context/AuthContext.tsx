@@ -1,68 +1,36 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import { authApi } from '../api/client'
-
-interface User {
-  id: string
-  email: string
-}
+import type { User } from '../types'
 
 interface AuthContextValue {
   user: User | null
   isAuthenticated: boolean
   loading: boolean
-  login: (email: string, password: string) => Promise<void>
-  register: (email: string, password: string) => Promise<void>
-  logout: () => void
+  login: (user: User) => void
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-function decodeJwtPayload(token: string): { sub?: string; email?: string } | null {
-  try {
-    const parts = token.split('.')
-    if (parts.length !== 3) return null
-    const payload = JSON.parse(atob(parts[1]))
-    return payload
-  } catch {
-    return null
-  }
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    const token = localStorage.getItem('access_token')
-    if (token) {
-      const payload = decodeJwtPayload(token)
-      if (payload?.sub && payload?.email) {
-        return { id: payload.sub, email: payload.email }
-      }
-    }
-    return null
-  })
-  const [loading] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  const login = async (email: string, password: string) => {
-    const data = await authApi.login(email, password)
-    localStorage.setItem('access_token', data.tokens.access_token)
-    localStorage.setItem('refresh_token', data.tokens.refresh_token)
-    setUser(data.user)
+  useEffect(() => {
+    authApi.me()
+      .then((data) => setUser(data.user))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const login = (u: User) => {
+    setUser(u)
+    setLoading(false)
   }
 
-  const register = async (email: string, password: string) => {
-    const data = await authApi.register(email, password)
-    localStorage.setItem('access_token', data.tokens.access_token)
-    localStorage.setItem('refresh_token', data.tokens.refresh_token)
-    setUser(data.user)
-  }
-
-  const logout = () => {
-    const refreshToken = localStorage.getItem('refresh_token')
-    if (refreshToken) {
-      authApi.logout(refreshToken).catch(() => {})
-    }
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
+  const logout = async () => {
+    await authApi.logout().catch(() => {})
     setUser(null)
   }
 
@@ -73,7 +41,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: user !== null,
         loading,
         login,
-        register,
         logout,
       }}
     >

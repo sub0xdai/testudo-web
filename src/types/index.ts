@@ -1,18 +1,6 @@
-export interface AuthTokens {
-  access_token: string;
-  refresh_token: string;
-  expires_in: number;
-}
-
-export interface LoginResponse {
-  user: { id: string; email: string };
-  tokens: AuthTokens;
-}
-
-export interface TokenResponse {
-  access_token: string;
-  refresh_token: string;
-  expires_in: number;
+export interface User {
+  id: string
+  wallet_address: string
 }
 
 export interface ExchangeInfo {

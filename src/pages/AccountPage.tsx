@@ -11,6 +11,7 @@ import type {
   TestConnectionResult,
 } from '../types'
 import { ExchangeAccountFormSchema } from '../validation/forms'
+import { SpotlightBackground } from '../components/ui/SpotlightBackground'
 
 function truncateAddress(addr: string): string {
   if (addr.length < 10) return addr
@@ -289,7 +290,8 @@ export function AccountPage() {
   if (setupComplete) {
     return (
       <div className="min-h-screen px-6 py-24">
-        <div className="max-w-2xl mx-auto">
+        <SpotlightBackground imageSrc="/Roman-testudo-Trajan-column-966204074.jpg" spotlightRadius={300} />
+        <div className="relative z-10 max-w-2xl mx-auto">
           <Card rounded>
             <div className="text-center py-8 space-y-6">
               <div className="w-16 h-16 mx-auto border-2 border-text-primary flex items-center justify-center">
@@ -320,7 +322,8 @@ export function AccountPage() {
   if (isOnboarding) {
     return (
       <div className="min-h-screen px-6 py-24">
-        <div className="max-w-2xl mx-auto">
+        <SpotlightBackground imageSrc="/Roman-testudo-Trajan-column-966204074.jpg" spotlightRadius={300} />
+        <div className="relative z-10 max-w-2xl mx-auto">
           <Card rounded>
             <div className="space-y-6">
               {isFreshRegistration && (
@@ -354,7 +357,8 @@ export function AccountPage() {
   // Normal account management
   return (
     <div className="min-h-screen px-6 py-24">
-      <div className="max-w-2xl mx-auto space-y-8">
+      <SpotlightBackground imageSrc="/Roman-testudo-Trajan-column-966204074.jpg" spotlightRadius={300} />
+      <div className="relative z-10 max-w-2xl mx-auto space-y-8">
         {/* Page header */}
         <div className="flex items-center justify-between">
           <div>
@@ -362,7 +366,7 @@ export function AccountPage() {
               ACCOUNT
             </h1>
             <p className="font-mono text-sm text-text-secondary mt-1">
-              {user?.email}
+              {user?.wallet_address ? `${user.wallet_address.slice(0, 6)}...${user.wallet_address.slice(-4)}` : ''}
             </p>
           </div>
           <button
@@ -417,11 +421,6 @@ export function AccountPage() {
                         <span className="font-mono text-xs text-text-tertiary uppercase">
                           {account.exchange_name}
                         </span>
-                        {isAgentWallet && (
-                          <span className="px-2 py-0.5 font-mono text-[10px] text-text-primary border border-container-border bg-text-primary/10">
-                            AGENT WALLET
-                          </span>
-                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <button
