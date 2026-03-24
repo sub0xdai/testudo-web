@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
-import type { ExchangeAccount, TestConnectionResult } from '../types'
+import type { ExchangeAccount, TestConnectionResult, ExchangeBalanceResponse } from '../types'
 
 interface ExchangeCardProps {
   account: ExchangeAccount
   testResult?: TestConnectionResult
+  balance?: ExchangeBalanceResponse
   isTesting: boolean
   isDeleting: boolean
   isRevoking: boolean
@@ -126,9 +127,20 @@ function KebabMenu({
   )
 }
 
+function formatBalance(balance?: ExchangeBalanceResponse): string | null {
+  if (!balance || balance.balances.length === 0) return null
+  // Show the primary asset total (usually USDT or USDC)
+  const primary = balance.balances.find((b) => b.asset === 'USDT' || b.asset === 'USDC')
+    || balance.balances[0]
+  const total = parseFloat(primary.total)
+  if (isNaN(total)) return null
+  return `$${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
 export function ExchangeCard({
   account,
   testResult,
+  balance,
   isTesting,
   onTest,
   onDelete,
@@ -182,14 +194,19 @@ export function ExchangeCard({
         </button>
       )}
 
-      {/* Balance placeholder / test result */}
-      <div className="font-mono text-xl text-text-primary mt-auto">
-        {testResult?.status === 'success' ? (
-          <span className="text-signal-green">{testResult.latency_ms}ms</span>
-        ) : testResult ? (
-          <span className="text-signal-red text-sm">{testResult.message}</span>
-        ) : (
-          '---'
+      {/* Balance / test result */}
+      <div className="mt-auto">
+        <div className="font-mono text-xl text-text-primary">
+          {formatBalance(balance) || '---'}
+        </div>
+        {testResult && (
+          <div className="font-mono text-xs mt-1">
+            {testResult.status === 'success' ? (
+              <span className="text-signal-green">{testResult.latency_ms}ms</span>
+            ) : (
+              <span className="text-signal-red">{testResult.message}</span>
+            )}
+          </div>
         )}
       </div>
     </div>

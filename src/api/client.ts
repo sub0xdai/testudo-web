@@ -4,6 +4,7 @@ import type {
   ExchangeAccount,
   AddExchangeAccountPayload,
   TestConnectionResult,
+  ExchangeBalanceResponse,
   InitAgentWalletResponse,
   ApproveDataResponse,
   ApproveAgentResponse,
@@ -18,12 +19,17 @@ const api = axios.create({
   withCredentials: true,
 })
 
-// 401 refresh-and-retry interceptor (cookie-based)
+// 401 refresh-and-retry interceptor (cookie-based).
+// Skip refresh for auth probe endpoints — a 401 on /auth/me just means "not logged in".
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config
-    if (error.response?.status !== 401 || originalRequest._retry) {
+    const url = originalRequest?.url || ''
+
+    // Don't retry auth endpoints — they're expected to 401 when not logged in
+    const isAuthProbe = url.includes('/auth/me') || url.includes('/auth/refresh')
+    if (error.response?.status !== 401 || originalRequest._retry || isAuthProbe) {
       return Promise.reject(error)
     }
 
@@ -32,7 +38,7 @@ api.interceptors.response.use(
       await axios.post(`${api.defaults.baseURL}/auth/refresh`, {}, { withCredentials: true })
       return api(originalRequest)
     } catch {
-      window.location.href = '/login'
+      // Don't redirect — let AuthContext handle the unauthenticated state
       return Promise.reject(error)
     }
   },
@@ -70,6 +76,9 @@ export const exchangeApi = {
 
   testConnection: (id: string) =>
     api.post<TestConnectionResult>(`/exchanges/accounts/${id}/test`).then((r) => r.data),
+
+  fetchBalance: (id: string) =>
+    api.get<ExchangeBalanceResponse>(`/exchanges/accounts/${id}/balance`).then((r) => r.data),
 
   initAgentWallet: (walletAddress: string) =>
     api.post<InitAgentWalletResponse>('/exchanges/agent-wallet/init', {

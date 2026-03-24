@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { WalletConnect } from '../components/WalletConnect'
-import { ExtensionPairing } from '../components/ExtensionPairing'
+import { ExtensionPairingBanner } from '../components/ExtensionPairingBanner'
+import { ExchangeCard } from '../components/ExchangeCard'
+import { AddExchangeCard } from '../components/AddExchangeCard'
 import { useAuth } from '../context/AuthContext'
 import { exchangeApi } from '../api/client'
 import type {
@@ -10,14 +12,10 @@ import type {
   ExchangeAccount,
   AddExchangeAccountPayload,
   TestConnectionResult,
+  ExchangeBalanceResponse,
 } from '../types'
 import { ExchangeAccountFormSchema } from '../validation/forms'
 import { SpotlightBackground } from '../components/ui/SpotlightBackground'
-
-function truncateAddress(addr: string): string {
-  if (addr.length < 10) return addr
-  return `${addr.slice(0, 6)}...${addr.slice(-4)}`
-}
 
 export function AccountPage() {
   const { user, logout } = useAuth()
@@ -44,6 +42,9 @@ export function AccountPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [revokingId, setRevokingId] = useState<string | null>(null)
 
+  // Balance state — async per-card fetching
+  const [balances, setBalances] = useState<Record<string, ExchangeBalanceResponse>>({})
+
   useEffect(() => {
     fetchData()
   }, [])
@@ -57,6 +58,12 @@ export function AccountPage() {
       ])
       setExchanges(exData)
       setAccounts(accData)
+      // Fetch balances for all accounts in parallel (fire-and-forget per card)
+      for (const acc of accData) {
+        exchangeApi.fetchBalance(acc.id)
+          .then((bal) => setBalances((prev) => ({ ...prev, [acc.id]: bal })))
+          .catch(() => {}) // Silently ignore balance fetch failures
+      }
     } catch {
       setError('Failed to load exchange data')
     } finally {
@@ -149,6 +156,7 @@ export function AccountPage() {
   }
 
   async function handleDelete(accountId: string) {
+    setDeletingId(accountId)
     try {
       await exchangeApi.deleteAccount(accountId)
       setDeletingId(null)
@@ -165,6 +173,7 @@ export function AccountPage() {
   }
 
   async function handleRevoke(accountId: string) {
+    setRevokingId(accountId)
     try {
       await exchangeApi.revokeAgent(accountId)
       setRevokingId(null)
@@ -188,6 +197,12 @@ export function AccountPage() {
     if (wasOnboarding) {
       setSetupComplete(true)
     }
+  }
+
+  function handleMigrate(accountId: string) {
+    void accountId
+    setFormExchange('hyperliquid')
+    setShowForm(true)
   }
 
   // API key form for traditional exchanges
@@ -343,11 +358,11 @@ export function AccountPage() {
     )
   }
 
-  // Normal account management
+  // Normal account management — card grid layout
   return (
     <div className="min-h-screen px-6 py-24">
       <SpotlightBackground imageSrc="/Roman-testudo-Trajan-column-966204074.jpg" spotlightRadius={300} />
-      <div className="relative z-10 max-w-2xl mx-auto space-y-8">
+      <div className="relative z-10 max-w-5xl mx-auto">
         {/* Page header */}
         <div className="flex items-center justify-between">
           <div>
@@ -366,165 +381,56 @@ export function AccountPage() {
           </button>
         </div>
 
-        {/* Exchange accounts */}
-        <Card rounded>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-display text-xl font-bold text-text-primary">
-              EXCHANGE ACCOUNTS
-            </h2>
-            <button
-              onClick={() => {
-                setShowForm(!showForm)
-                if (showForm) clearForm()
-              }}
-              className="px-4 py-2 font-mono text-sm font-bold text-text-primary border border-container-border hover:bg-text-primary hover:text-main-bg transition-colors"
-            >
-              {showForm ? 'CANCEL' : '+ ADD EXCHANGE'}
-            </button>
+        {error && !showForm && (
+          <div className="mt-6 px-4 py-3 border border-signal-red bg-signal-red/10 font-mono text-sm text-signal-red">
+            {error}
           </div>
+        )}
 
-          {error && !showForm && (
-            <div className="mb-4 px-4 py-3 border border-signal-red bg-signal-red/10 font-mono text-sm text-signal-red">
-              {error}
+        {/* Card Grid */}
+        {loading ? (
+          <p className="font-mono text-text-secondary mt-8">Loading...</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+            {accounts.map((account) => (
+              <ExchangeCard
+                key={account.id}
+                account={account}
+                testResult={testResults[account.id]}
+                balance={balances[account.id]}
+                isTesting={testingId === account.id}
+                isDeleting={deletingId === account.id}
+                isRevoking={revokingId === account.id}
+                onTest={() => handleTest(account.id)}
+                onDelete={() => handleDelete(account.id)}
+                onRevoke={() => handleRevoke(account.id)}
+                onMigrate={() => handleMigrate(account.id)}
+              />
+            ))}
+            <AddExchangeCard onClick={() => setShowForm(true)} />
+          </div>
+        )}
+
+        {/* Add form — inline below grid */}
+        {showForm && (
+          <div className="mt-6 p-6 border border-container-border bg-container-bg">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-lg font-bold text-text-primary">
+                ADD EXCHANGE
+              </h3>
+              <button
+                onClick={() => { setShowForm(false); clearForm() }}
+                className="px-4 py-2 font-mono text-xs text-text-tertiary border border-container-border hover:text-text-primary hover:border-text-primary transition-colors"
+              >
+                CANCEL
+              </button>
             </div>
-          )}
+            {exchangeForm}
+          </div>
+        )}
 
-          {loading ? (
-            <p className="font-mono text-text-secondary">Loading...</p>
-          ) : (
-            <div className="space-y-4">
-              {accounts.map((account) => {
-                const result = testResults[account.id]
-                const isAgentWallet = account.auth_mode === 'agent_wallet'
-                return (
-                  <div
-                    key={account.id}
-                    className="p-4 border border-container-border bg-main-bg space-y-3"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="w-2 h-2 rounded-full bg-text-primary" />
-                        <span className="font-mono text-text-primary font-bold">
-                          {account.account_name || account.exchange_name}
-                        </span>
-                        <span className="font-mono text-xs text-text-tertiary uppercase">
-                          {account.exchange_name}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleTest(account.id)}
-                          disabled={testingId === account.id}
-                          className="px-3 py-1 font-mono text-xs text-text-secondary border border-container-border hover:text-text-primary hover:border-text-primary/30 transition-colors disabled:opacity-50"
-                        >
-                          {testingId === account.id ? '...' : 'TEST'}
-                        </button>
-                        {isAgentWallet && (
-                          revokingId === account.id ? (
-                            <>
-                              <button
-                                onClick={() => handleRevoke(account.id)}
-                                className="px-3 py-1 font-mono text-xs text-signal-red border border-signal-red/30 bg-signal-red/10"
-                              >
-                                CONFIRM REVOKE
-                              </button>
-                              <button
-                                onClick={() => setRevokingId(null)}
-                                className="px-3 py-1 font-mono text-xs text-text-tertiary border border-container-border"
-                              >
-                                NO
-                              </button>
-                            </>
-                          ) : (
-                            <button
-                              onClick={() => setRevokingId(account.id)}
-                              className="px-3 py-1 font-mono text-xs text-text-tertiary border border-container-border hover:text-text-primary hover:border-text-primary/30 transition-colors"
-                            >
-                              REVOKE
-                            </button>
-                          )
-                        )}
-                        {deletingId === account.id ? (
-                          <>
-                            <button
-                              onClick={() => handleDelete(account.id)}
-                              className="px-3 py-1 font-mono text-xs text-signal-red border border-signal-red/30 bg-signal-red/10"
-                            >
-                              CONFIRM
-                            </button>
-                            <button
-                              onClick={() => setDeletingId(null)}
-                              className="px-3 py-1 font-mono text-xs text-text-tertiary border border-container-border"
-                            >
-                              NO
-                            </button>
-                          </>
-                        ) : (
-                          <button
-                            onClick={() => setDeletingId(account.id)}
-                            className="px-3 py-1 font-mono text-xs text-text-tertiary border border-container-border hover:text-text-primary hover:border-text-primary/30 transition-colors"
-                          >
-                            DEL
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    {/* Wallet address for agent-wallet accounts */}
-                    {isAgentWallet && account.wallet_address && (
-                      <p className="font-mono text-xs text-text-tertiary">
-                        Wallet: {truncateAddress(account.wallet_address)}
-                      </p>
-                    )}
-                    {/* Migration prompt for direct-key Hyperliquid accounts */}
-                    {!isAgentWallet && account.exchange_name === 'hyperliquid' && (
-                      <div className="px-3 py-2 border border-container-border bg-text-primary/5">
-                        <p className="font-mono text-xs text-text-secondary">
-                          Upgrade to agent wallet mode for improved security.
-                          <button
-                            onClick={() => {
-                              setFormExchange('hyperliquid')
-                              setShowForm(true)
-                            }}
-                            className="ml-2 text-text-primary hover:underline"
-                          >
-                            MIGRATE
-                          </button>
-                        </p>
-                      </div>
-                    )}
-                    {result && (
-                      <div className="font-mono text-xs">
-                        {result.status === 'success' ? (
-                          <span className="text-signal-green">{result.latency_ms}ms</span>
-                        ) : (
-                          <span className="text-signal-red">{result.message}</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-
-              {accounts.length === 0 && !showForm && (
-                <p className="font-mono text-text-tertiary py-4">
-                  No exchange accounts connected.
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Add form */}
-          {showForm && (
-            <div className="mt-6 p-6 border border-container-border bg-main-bg">
-              {exchangeForm}
-            </div>
-          )}
-        </Card>
-
-        {/* Extension pairing */}
-        <Card rounded>
-          <ExtensionPairing />
-        </Card>
+        {/* Extension Pairing — compact banner below grid */}
+        <ExtensionPairingBanner />
       </div>
     </div>
   )

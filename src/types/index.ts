@@ -69,3 +69,17 @@ export interface TestConnectionResult {
   tested_at: string;
   latency_ms: number | null;
 }
+
+export interface ExchangeBalanceEntry {
+  asset: string;
+  total: string;
+  free: string;
+  used: string;
+}
+
+export interface ExchangeBalanceResponse {
+  account_id: string;
+  exchange_name: string;
+  balances: ExchangeBalanceEntry[];
+  fetched_at: string;
+}
