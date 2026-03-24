@@ -1,7 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import { Header } from './components/ui/Header'
 import { LandingPage } from './pages/LandingPage'
-import { LoginPage } from './pages/LoginPage'
 import { AccountPage } from './pages/AccountPage'
 import { AboutPage } from './pages/AboutPage'
 import { ProtectedRoute } from './context/AuthContext'
@@ -13,7 +12,6 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/about" element={<AboutPage />} />
-        <Route path="/login" element={<LoginPage />} />
         <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
       </Routes>
     </>

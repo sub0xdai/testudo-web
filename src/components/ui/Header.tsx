@@ -1,6 +1,61 @@
-import { Link } from 'react-router-dom'
+import { useState, useRef, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme, THEME_LABELS } from '../../context/ThemeContext'
+
+function AccountChip() {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  if (!user) return null
+
+  const addr = user.wallet_address
+  const truncated = `${addr.slice(0, 6)}...${addr.slice(-4)}`
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 px-4 py-1.5 border border-container-border text-text-primary font-mono text-xs tracking-wider hover:border-text-primary transition-colors"
+      >
+        <span className="inline-block w-2 h-2 rounded-full bg-signal-green animate-pulse" />
+        {truncated}
+        <svg width="10" height="10" viewBox="0 0 10 10" className={`text-text-tertiary transition-transform ${open ? 'rotate-180' : ''}`}>
+          <path d="M2 4L5 7L8 4" stroke="currentColor" strokeWidth="1.5" fill="none" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute right-0 mt-1 w-44 bg-container-bg border border-container-border z-50 flex flex-col">
+          <button
+            onClick={() => { navigate('/account'); setOpen(false) }}
+            className="text-left px-4 py-2.5 text-xs font-mono text-text-secondary hover:bg-main-bg hover:text-text-primary transition-colors"
+          >
+            ACCOUNT
+          </button>
+          <button
+            onClick={() => { logout(); setOpen(false) }}
+            className="text-left px-4 py-2.5 text-xs font-mono text-signal-red hover:bg-signal-red/10 transition-colors border-t border-container-border"
+          >
+            DISCONNECT
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export function Header() {
   const { isAuthenticated } = useAuth()
@@ -40,56 +95,16 @@ export function Header() {
         </div>
 
         <nav className="flex items-center gap-6 md:gap-8">
-          <Link
-            to="/about"
-            className="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block"
-          >
-            ABOUT
-          </Link>
-          <a
-            href="#pricing"
-            className="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block"
-          >
-            PRICING
-          </a>
-          <a
-            href="/desk/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block"
-          >
-            DESK
-          </a>
-          <a
-            href="/docs/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block"
-          >
-            DOCS
-          </a>
-          <a
-            href="https://chromewebstore.google.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block"
-          >
-            EXTENSION
-          </a>
+          <Link to="/about" className="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block">ABOUT</Link>
+          <a href="#pricing" className="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block">PRICING</a>
+          <a href="/desk/" target="_blank" rel="noopener noreferrer" className="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block">DESK</a>
+          <a href="/docs/" target="_blank" rel="noopener noreferrer" className="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block">DOCS</a>
+          <a href="https://chromewebstore.google.com" target="_blank" rel="noopener noreferrer" className="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block">EXTENSION</a>
+
           {isAuthenticated ? (
-            <Link
-              to="/account"
-              className="px-4 py-1.5 border border-text-primary text-text-primary font-mono text-xs tracking-wider hover:bg-text-primary hover:text-main-bg transition-colors"
-            >
-              [ ACCOUNT ]
-            </Link>
+            <AccountChip />
           ) : (
-            <Link
-              to="/login"
-              className="px-4 py-1.5 border border-text-primary text-text-primary font-mono text-xs tracking-wider hover:bg-text-primary hover:text-main-bg transition-colors"
-            >
-              [ LOGIN ]
-            </Link>
+            <ConnectButton label="[ CONNECT ]" showBalance={false} chainStatus="none" accountStatus="address" />
           )}
         </nav>
       </div>
