@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { WalletConnect } from '../components/WalletConnect'
+import { ExtensionPairing } from '../components/ExtensionPairing'
 import { useAuth } from '../context/AuthContext'
 import { exchangeApi } from '../api/client'
 import type {
@@ -21,7 +22,6 @@ function truncateAddress(addr: string): string {
 export function AccountPage() {
   const { user, logout } = useAuth()
   const location = useLocation()
-  const isFreshRegistration = !!(location.state as { freshRegistration?: boolean })?.freshRegistration
   const isFromExtension = new URLSearchParams(location.search).get('source') === 'extension'
 
   const [exchanges, setExchanges] = useState<ExchangeInfo[]>([])
@@ -326,20 +326,9 @@ export function AccountPage() {
         <div className="relative z-10 max-w-2xl mx-auto">
           <Card rounded>
             <div className="space-y-6">
-              {isFreshRegistration && (
-                <div className="text-center mb-2">
-                  <h1 className="font-display text-3xl font-bold text-text-primary tracking-wider">
-                    WELCOME TO TESTUDO
-                  </h1>
-                  <p className="font-mono text-sm text-text-secondary mt-2">
-                    Account created successfully
-                  </p>
-                </div>
-              )}
-
               <div>
                 <h2 className="font-display text-xl font-bold text-text-primary">
-                  {isFreshRegistration ? 'CONNECT YOUR EXCHANGE' : 'GET STARTED'}
+                  GET STARTED
                 </h2>
                 <p className="font-mono text-sm text-text-secondary mt-2">
                   Link your exchange API keys to enable trading through the Testudo extension. Your credentials are encrypted and stored securely.
@@ -530,6 +519,11 @@ export function AccountPage() {
               {exchangeForm}
             </div>
           )}
+        </Card>
+
+        {/* Extension pairing */}
+        <Card rounded>
+          <ExtensionPairing />
         </Card>
       </div>
     </div>
