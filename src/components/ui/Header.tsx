@@ -1,9 +1,12 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, lazy, Suspense } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount, useDisconnect } from 'wagmi'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme, THEME_LABELS } from '../../context/ThemeContext'
+
+const LazyConnectButton = lazy(() =>
+  import('@rainbow-me/rainbowkit').then(m => ({ default: m.ConnectButton }))
+)
 
 function AccountChip() {
   const { user, logout } = useAuth()
@@ -107,9 +110,11 @@ export function Header() {
           {isAuthenticated || isConnected ? (
             <AccountChip />
           ) : (
-            <div className="rk-header-btn">
-              <ConnectButton label="CONNECT" showBalance={false} chainStatus="none" accountStatus="address" />
-            </div>
+            <Suspense fallback={<span className="font-mono text-xs tracking-wider text-text-secondary">CONNECT</span>}>
+              <div className="rk-header-btn">
+                <LazyConnectButton label="CONNECT" showBalance={false} chainStatus="none" accountStatus="address" />
+              </div>
+            </Suspense>
           )}
         </nav>
       </div>

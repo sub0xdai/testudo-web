@@ -42,11 +42,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [isConnected])
 
-  // SIWE: only fires when wallet transitions from disconnected → connected
-  // (i.e., user clicked Connect), NOT on page-load reconnect
+  // SIWE: fires when wallet is connected but no session exists.
+  // Covers both fresh connects (user clicked Connect) and stale reconnects
+  // (wagmi restored wallet from localStorage but cookie session expired).
   useEffect(() => {
     if (!isConnected || !address || user || loading) return
-    if (!wasDisconnected.current) return // skip stale reconnect
     if (siweInFlight.current) return
 
     siweInFlight.current = true
@@ -103,8 +103,9 @@ export function useAuth() {
 }
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, loading, siweError } = useAuth()
   const { isConnected } = useAccount()
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -112,6 +113,25 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
       </div>
     )
   }
-  if (!isAuthenticated && !isConnected) return <Navigate to="/" replace />
+
+  // Not connected at all → redirect
+  if (!isAuthenticated && !isConnected) {
+    return <Navigate to="/" replace />
+  }
+
+  // Connected but not authenticated → SIWE auto-triggers via AuthContext useEffect
+  // Show signing prompt instead of broken account page with 401 errors
+  if (!isAuthenticated && isConnected) {
+    if (siweError) {
+      return <Navigate to="/?auth_error=signature_rejected" replace />
+    }
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <div className="w-4 h-4 border-2 border-text-secondary border-t-text-primary rounded-full animate-spin" />
+        <p className="font-mono text-xs text-text-secondary tracking-wider">VERIFYING WALLET...</p>
+      </div>
+    )
+  }
+
   return <>{children}</>
 }

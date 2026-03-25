@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent, cleanup } from '@testing-library/react'
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react'
 
 // --- Mocks ---
 
@@ -68,13 +68,16 @@ afterEach(() => {
 // --- Tests ---
 
 describe('Header (FR-5)', () => {
-  it('when disconnected (!isAuthenticated, !isConnected), renders ConnectButton', () => {
+  it('when disconnected (!isAuthenticated, !isConnected), renders ConnectButton', async () => {
     mockIsAuthenticated = false
     mockIsConnected = false
 
     render(<Header />)
 
-    expect(screen.getByTestId('connect-button')).toBeInTheDocument()
+    // Lazy-loaded ConnectButton may render asynchronously via Suspense
+    await waitFor(() => {
+      expect(screen.getByTestId('connect-button')).toBeInTheDocument()
+    })
     expect(screen.getByTestId('connect-button').textContent).toBe('CONNECT')
   })
 

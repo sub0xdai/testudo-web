@@ -155,7 +155,7 @@ describe('ProtectedRoute (FR-3)', () => {
     expect(screen.queryByTestId('navigate')).not.toBeInTheDocument()
   })
 
-  it('when !isAuthenticated && isConnected, renders children (relaxed guard)', async () => {
+  it('when !isAuthenticated && isConnected, shows VERIFYING WALLET spinner', async () => {
     mockMe.mockRejectedValueOnce(new Error('not logged in'))
     mockIsConnected = true
 
@@ -166,8 +166,9 @@ describe('ProtectedRoute (FR-3)', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByTestId('protected-child')).toBeInTheDocument()
+      expect(screen.getByText('VERIFYING WALLET...')).toBeInTheDocument()
     })
+    expect(screen.queryByTestId('protected-child')).not.toBeInTheDocument()
     expect(screen.queryByTestId('navigate')).not.toBeInTheDocument()
   })
 })
