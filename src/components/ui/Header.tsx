@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { useAccount, useDisconnect } from 'wagmi'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme, THEME_LABELS } from '../../context/ThemeContext'
 
 function AccountChip() {
   const { user, logout } = useAuth()
+  const { address } = useAccount()
+  const { disconnect } = useDisconnect()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -19,9 +22,8 @@ function AccountChip() {
     return () => document.removeEventListener('mousedown', handler)
   }, [open])
 
-  if (!user) return null
-
-  const addr = user.wallet_address
+  const addr = user?.wallet_address ?? address ?? ''
+  if (!addr) return null
   const truncated = `${addr.slice(0, 6)}...${addr.slice(-4)}`
 
   return (
@@ -46,7 +48,7 @@ function AccountChip() {
             ACCOUNT
           </button>
           <button
-            onClick={() => { logout(); setOpen(false) }}
+            onClick={() => { logout(); disconnect(); setOpen(false) }}
             className="text-left px-4 py-2.5 text-xs font-mono text-signal-red hover:bg-signal-red/10 transition-colors border-t border-container-border"
           >
             DISCONNECT
@@ -59,6 +61,7 @@ function AccountChip() {
 
 export function Header() {
   const { isAuthenticated } = useAuth()
+  const { isConnected } = useAccount()
   const { theme, cycleTheme } = useTheme()
 
   return (
@@ -101,10 +104,12 @@ export function Header() {
           <a href="/docs/" target="_blank" rel="noopener noreferrer" className="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block">DOCS</a>
           <a href="https://chromewebstore.google.com" target="_blank" rel="noopener noreferrer" className="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block">EXTENSION</a>
 
-          {isAuthenticated ? (
+          {isAuthenticated || isConnected ? (
             <AccountChip />
           ) : (
-            <ConnectButton label="[ CONNECT ]" showBalance={false} chainStatus="none" accountStatus="address" />
+            <div className="rk-header-btn">
+              <ConnectButton label="CONNECT" showBalance={false} chainStatus="none" accountStatus="address" />
+            </div>
           )}
         </nav>
       </div>
