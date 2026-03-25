@@ -90,8 +90,8 @@ export function Pricing() {
               </ul>
 
               <Link
-                to="/register"
-                className="block w-full py-2.5 font-mono text-xs tracking-wider transition-colors text-center mt-auto border border-text-primary text-text-primary hover:bg-text-primary hover:text-main-bg"
+                to="/account"
+                className="block w-full py-2.5 bg-transparent btn-primary font-mono font-bold text-xs tracking-wider text-center mt-auto"
               >
                 [ GET STARTED ]
               </Link>

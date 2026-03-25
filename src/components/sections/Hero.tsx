@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom'
-
 export function Hero() {
   return (
     <section className="relative z-10 min-h-screen flex flex-col justify-center px-6 md:px-12 lg:px-24 py-32">
@@ -24,15 +22,6 @@ export function Hero() {
           <br />
           Trade without breaking.
         </p>
-
-        <div className="flex flex-col sm:flex-row gap-4 mb-20">
-          <Link
-            to="/register"
-            className="px-6 py-3 bg-text-primary text-main-bg font-mono text-sm font-semibold tracking-wider hover:opacity-80 transition-opacity text-center"
-          >
-            [ GET STARTED ]
-          </Link>
-        </div>
       </div>
 
     </section>

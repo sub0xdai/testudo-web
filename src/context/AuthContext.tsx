@@ -104,6 +104,7 @@ export function useAuth() {
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const { isAuthenticated, loading } = useAuth()
+  const { isConnected } = useAccount()
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -111,6 +112,6 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
       </div>
     )
   }
-  if (!isAuthenticated) return <Navigate to="/" replace />
+  if (!isAuthenticated && !isConnected) return <Navigate to="/" replace />
   return <>{children}</>
 }

@@ -45,6 +45,15 @@ export function ExtensionPairingBanner() {
     }
   }
 
+  const [copied, setCopied] = useState(false)
+
+  const copyCode = () => {
+    if (!code) return
+    navigator.clipboard.writeText(code)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
   const minutes = Math.floor(countdown / 60)
   const seconds = String(countdown % 60).padStart(2, '0')
 
@@ -56,9 +65,13 @@ export function ExtensionPairingBanner() {
             <h3 className="font-display text-sm font-bold text-text-primary whitespace-nowrap">
               EXTENSION PAIRING
             </h3>
-            <span className="font-mono text-2xl font-bold text-text-primary tracking-[0.3em]">
-              {code}
-            </span>
+            <button
+              onClick={copyCode}
+              title="Click to copy"
+              className="font-mono text-2xl font-bold text-text-primary tracking-[0.3em] hover:opacity-60 transition-opacity cursor-pointer"
+            >
+              {copied ? '✓ COPIED' : code}
+            </button>
             <span className="font-mono text-xs text-text-tertiary">
               {minutes}:{seconds}
             </span>
@@ -66,7 +79,7 @@ export function ExtensionPairingBanner() {
           <button
             onClick={generateCode}
             disabled={generating}
-            className="px-4 py-2 font-mono text-xs text-text-secondary border border-container-border hover:text-text-primary hover:border-text-primary transition-colors disabled:opacity-50 whitespace-nowrap"
+            className="px-4 py-2 font-mono text-xs text-text-primary border border-text-tertiary hover:border-text-primary transition-colors disabled:opacity-50 whitespace-nowrap"
           >
             {generating ? 'GENERATING...' : 'NEW CODE'}
           </button>

@@ -51,6 +51,7 @@ export function AccountPage() {
 
   async function fetchData() {
     setLoading(true)
+    setError('')
     try {
       const [exData, accData] = await Promise.all([
         exchangeApi.listExchanges(),
@@ -375,7 +376,7 @@ export function AccountPage() {
           </div>
           <button
             onClick={logout}
-            className="px-6 py-2 border border-container-border font-mono font-bold text-sm text-text-secondary hover:text-text-primary hover:border-text-primary transition-colors"
+            className="px-6 py-2 border border-text-tertiary font-mono font-bold text-sm text-text-primary hover:border-text-primary transition-colors"
           >
             LOGOUT
           </button>
