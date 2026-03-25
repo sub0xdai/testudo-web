@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom'
-
 export function Pricing() {
   const tiers = [
     {
@@ -89,12 +87,12 @@ export function Pricing() {
                 ))}
               </ul>
 
-              <Link
-                to="/account"
+              <a
+                href="/desk/account"
                 className="block w-full py-2.5 bg-transparent btn-primary font-mono font-bold text-xs tracking-wider text-center mt-auto"
               >
                 [ GET STARTED ]
-              </Link>
+              </a>
             </div>
           ))}
         </div>

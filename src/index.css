@@ -120,26 +120,3 @@ body {
 .animate-ticker-pulse {
   animation: ticker-pulse 3s ease-in-out infinite;
 }
-
-/* RainbowKit connect button override — match header nav aesthetic */
-.rk-header-btn button[data-testid="rk-connect-button"],
-.rk-header-btn button[data-testid="rk-connect-button"] * {
-  background: transparent !important;
-  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace !important;
-  font-size: 0.75rem !important;
-  line-height: 1rem !important;
-  font-weight: 400 !important;
-  letter-spacing: 0.05em !important;
-  color: rgb(var(--text-secondary)) !important;
-}
-.rk-header-btn button[data-testid="rk-connect-button"] {
-  border: none !important;
-  padding: 0 !important;
-  height: auto !important;
-  box-shadow: none !important;
-  transition: color 0.2s !important;
-}
-.rk-header-btn button[data-testid="rk-connect-button"]:hover,
-.rk-header-btn button[data-testid="rk-connect-button"]:hover * {
-  color: rgb(var(--text-primary)) !important;
-}
