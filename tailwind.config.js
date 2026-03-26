@@ -4,8 +4,7 @@ import preset from '../packages/tailwind-preset/index.ts'
 export default {
   presets: [preset],
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}",
   ],
   theme: {
     extend: {

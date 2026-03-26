@@ -1,0 +1,74 @@
+---
+import Header from '../components/Header.astro'
+import '../styles/global.css'
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script is:inline>
+      let t = localStorage.getItem('testudo-theme');
+      if (t === 'soft-dark') { t = 'amoled'; localStorage.setItem('testudo-theme', t); }
+      if (t && t !== 'amoled') document.documentElement.setAttribute('data-theme', t);
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TESTUDO | Trade Every Exchange From One Screen</title>
+    <meta name="description" content="Multi-exchange trading aggregator with automated risk management. One interface. All your exchanges." />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <Header />
+
+    <!-- Background image -->
+    <div class="fixed inset-0 z-0 overflow-hidden">
+      <div
+        class="absolute inset-0"
+        style="background-image: url('/Roman-testudo-Trajan-column-966204074.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;"
+      ></div>
+
+      <!-- Spotlight overlay -->
+      <div id="spotlight-overlay" class="absolute inset-0 pointer-events-none"></div>
+
+      <!-- Texture overlay -->
+      <div id="texture-overlay" class="absolute inset-0 scan-lines"></div>
+    </div>
+
+    <slot />
+
+    <script is:inline>
+      const spotlight = document.getElementById('spotlight-overlay')
+      const texture = document.getElementById('texture-overlay')
+      if (spotlight) {
+        const radius = 200
+        function checkTheme() {
+          return document.documentElement.getAttribute('data-theme') === 'light'
+        }
+        // Set initial texture class
+        if (texture) {
+          texture.className = checkTheme()
+            ? 'absolute inset-0 texture-grain'
+            : 'absolute inset-0 scan-lines'
+        }
+        document.addEventListener('mousemove', function(e) {
+          var isLight = checkTheme()
+          spotlight.style.background = isLight
+            ? 'radial-gradient(circle ' + radius + 'px at ' + e.clientX + 'px ' + e.clientY + 'px, rgb(var(--bg-core) / 0.55) 0%, rgb(var(--bg-core) / 0.80) 70%, rgb(var(--bg-core) / 0.92) 100%)'
+            : 'radial-gradient(circle ' + radius + 'px at ' + e.clientX + 'px ' + e.clientY + 'px, transparent 0%, rgb(var(--bg-core) / 0.85) 80%, rgb(var(--bg-core) / 0.95) 100%)'
+        })
+        // Watch for theme changes to update texture overlay
+        new MutationObserver(function() {
+          if (texture) {
+            texture.className = checkTheme()
+              ? 'absolute inset-0 texture-grain'
+              : 'absolute inset-0 scan-lines'
+          }
+        }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+      }
+    </script>
+  </body>
+</html>
