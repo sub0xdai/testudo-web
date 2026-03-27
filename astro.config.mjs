@@ -4,18 +4,24 @@ import tailwind from '@astrojs/tailwind'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 
+import cloudflare from '@astrojs/cloudflare';
+
 export default defineConfig({
   output: 'static',
+
   integrations: [
     solidJs(),
     tailwind(),
   ],
+
   markdown: {
     remarkPlugins: [remarkMath],
     rehypePlugins: [rehypeKatex],
   },
+
   server: { port: 3001 },
   devToolbar: { enabled: false },
+
   vite: {
     server: {
       proxy: {
@@ -24,4 +30,6 @@ export default defineConfig({
       },
     },
   },
+
+  adapter: cloudflare(),
 })

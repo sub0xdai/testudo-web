@@ -79,3 +79,9 @@ yarn-error.log*
 # PNPM cache
 .pnpm-debug.log*
 .pnpm-store/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
