@@ -1,0 +1,155 @@
+---
+import Base from '../layouts/Base.astro'
+import Footer from '../components/Footer.astro'
+---
+
+<Base>
+  <main class="relative z-10">
+    <section class="px-6 md:px-12 lg:px-24 pt-32 pb-16">
+      <div class="max-w-3xl">
+
+        <h1
+          class="font-display text-4xl md:text-5xl font-bold tracking-tight text-text-primary leading-[0.95] mb-4"
+          style="text-shadow: 0 2px 16px rgb(var(--bg-core) / 0.6);"
+        >
+          TERMS OF SERVICE
+        </h1>
+
+        <p class="font-mono text-xs text-text-tertiary mb-16">
+          Last updated: March 27, 2026
+        </p>
+
+        <div class="space-y-12 font-display text-sm text-text-secondary leading-relaxed" style="text-shadow: 0 1px 12px rgb(var(--bg-core) / 0.8);">
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">1. What Testudo Is</h2>
+            <p>
+              Testudo is a risk management and trade execution tool for cryptocurrency perpetual futures. It provides automated position sizing, trade journaling, and performance analytics. Testudo is a tool — not a financial advisor, broker, or custodian.
+            </p>
+            <p>
+              By using Testudo, you agree to these terms. If you don't agree, don't use the platform.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">2. Not Financial Advice</h2>
+            <p>
+              Nothing on this platform constitutes financial, investment, or trading advice. Position sizes, risk metrics, analytics, and any other output are calculations based on your configuration — not recommendations. You are solely responsible for your trading decisions and their outcomes.
+            </p>
+            <p>
+              Trading cryptocurrency derivatives involves substantial risk of loss. You can lose more than your initial investment. Only trade with capital you can afford to lose.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">3. No Custody of Funds</h2>
+            <p>
+              Testudo never holds, controls, or has access to your funds. All trades execute on your exchange account through your API keys or wallet authorization. Testudo cannot withdraw, transfer, or move your assets.
+            </p>
+            <p>
+              For centralized exchanges (Binance, WOO, Bybit, OKX): you provide API keys with trading permissions only. For Hyperliquid: you authorize an agent wallet that can trade but cannot withdraw.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">4. API Keys & Credentials</h2>
+            <p>
+              Your exchange API keys are encrypted at rest using AES-256-GCM. However, by providing API credentials to Testudo, you accept the inherent risk of granting a third-party service access to your exchange account.
+            </p>
+            <p>
+              You are responsible for:
+            </p>
+            <ul class="space-y-1 pl-4">
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Only granting trading permissions (never withdrawal)</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Using IP restrictions where your exchange supports them</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Revoking API keys if you suspect unauthorized access</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Keeping your wallet and signing keys secure</li>
+            </ul>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">5. Agent Wallets (Hyperliquid)</h2>
+            <p>
+              For Hyperliquid integration, Testudo generates a dedicated agent wallet — a keypair authorized by your main wallet to execute trades on your behalf. The agent wallet can place, modify, and cancel orders. It cannot withdraw funds or transfer assets.
+            </p>
+            <p>
+              You can revoke agent wallet authorization at any time from the Desk account page or directly on-chain. Revocation is immediate and permanent until you re-authorize.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">6. Position Sizing & Risk Engine</h2>
+            <p>
+              The risk engine calculates position sizes based on your configured parameters (risk percentage, max risk amount, max position size, leverage limits). These calculations are deterministic — the same inputs produce the same outputs.
+            </p>
+            <p>
+              You are ultimately responsible for your risk configuration and the trades that result from it. Testudo does not guarantee that any position sizing strategy will be profitable or prevent losses.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">7. Availability & Reliability</h2>
+            <p>
+              Testudo is provided "as is." We do not guarantee 100% uptime, uninterrupted service, or error-free operation. We are not liable for:
+            </p>
+            <ul class="space-y-1 pl-4">
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Missed trades due to service downtime or network issues</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Order execution failures caused by exchange API outages</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Latency in order placement or fill detection</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Losses arising from any of the above</li>
+            </ul>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">8. Acceptable Use</h2>
+            <p>
+              You agree not to use Testudo for:
+            </p>
+            <ul class="space-y-1 pl-4">
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Market manipulation, wash trading, or spoofing</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Any activity that violates the terms of your exchange</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Any activity prohibited by applicable law in your jurisdiction</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Reverse engineering, scraping, or reselling the platform</li>
+            </ul>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">9. Limitation of Liability</h2>
+            <p>
+              To the maximum extent permitted by law, Testudo's total liability to you for any claims arising from your use of the platform is limited to the total fees you have paid in the 12 months preceding the claim.
+            </p>
+            <p>
+              In no event shall Testudo be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, trading losses, or loss of data.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">10. Termination</h2>
+            <p>
+              You can delete your account at any time. On deletion, your exchange API credentials are permanently destroyed. Your trade history and journal data are deleted within 30 days.
+            </p>
+            <p>
+              We reserve the right to suspend or terminate accounts that violate these terms, with or without notice.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">11. Changes to These Terms</h2>
+            <p>
+              We may update these terms from time to time. Material changes will be communicated through the platform. Continued use after changes constitutes acceptance.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">12. Contact</h2>
+            <p>
+              Questions about these terms? Reach out via <a href="https://github.com/sub0xdai/" target="_blank" rel="noopener noreferrer" class="text-accent-steel hover:text-accent-steel-hover underline underline-offset-2 transition-colors">GitHub</a> or the <a href="https://x.com/i/communities/2009337617720987685" target="_blank" rel="noopener noreferrer" class="text-accent-steel hover:text-accent-steel-hover underline underline-offset-2 transition-colors">community</a>.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+    <Footer />
+  </main>
+</Base>

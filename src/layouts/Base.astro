@@ -31,8 +31,8 @@ import '../styles/global.css'
         style="background-image: url('/Roman-testudo-Trajan-column-966204074.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;"
       ></div>
 
-      <!-- Spotlight overlay -->
-      <div id="spotlight-overlay" class="absolute inset-0 pointer-events-none"></div>
+      <!-- Spotlight overlay — initial dark state before first mousemove -->
+      <div id="spotlight-overlay" class="absolute inset-0 pointer-events-none" style="background: rgb(var(--bg-core) / 0.93);"></div>
 
       <!-- Texture overlay -->
       <div id="texture-overlay" class="absolute inset-0 scan-lines"></div>

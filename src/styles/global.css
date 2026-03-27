@@ -17,8 +17,8 @@
   --signal-red: 239 68 68;
   --signal-amber: 245 158 11;
   --text-primary: 237 237 237;
-  --text-secondary: 153 153 153;
-  --text-tertiary: 102 102 102;
+  --text-secondary: 190 190 190;
+  --text-tertiary: 120 120 120;
 }
 
 [data-theme="light"] {

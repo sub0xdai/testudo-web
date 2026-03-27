@@ -1,0 +1,107 @@
+---
+import Base from '../layouts/Base.astro'
+import Footer from '../components/Footer.astro'
+
+const tiers = [
+  {
+    name: 'SNIPER',
+    price: '$20',
+    subtitle: '/mo',
+    description: 'Essential execution for individual traders.',
+    features: [
+      'Risk engine + position sizing',
+      'Multi-exchange execution',
+      'Browser extension',
+      'Real-time WebSocket fills',
+    ],
+    highlight: false,
+  },
+  {
+    name: 'COMMAND',
+    price: '$50',
+    subtitle: '/mo',
+    description: 'Full platform. Journal, analytics, and edge refinement.',
+    features: [
+      'Everything in Sniper',
+      'Trade journal + thesis workflow',
+      'Performance analytics + charts',
+      'P&L breakdowns + R-multiples',
+      'Markdown export',
+    ],
+    highlight: true,
+  },
+]
+---
+
+<Base>
+  <main class="relative z-10 px-6 md:px-12 lg:px-24 pt-32 pb-16">
+    <div class="max-w-3xl mx-auto">
+      <h1 class="font-mono text-3xl md:text-4xl font-bold text-text-primary mb-2">
+        [PRICING]
+      </h1>
+
+      <p class="font-display text-sm text-text-secondary mb-12">
+        Two tiers. No hidden fees. Cancel anytime.
+      </p>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        {tiers.map((tier) => (
+          <a
+            href="/desk/account"
+            class:list={[
+              'pricing-card block p-6 border bg-main-bg/80 backdrop-blur-sm flex flex-col cursor-pointer no-underline transition-all duration-300',
+              tier.highlight
+                ? 'border-white hover:shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:-translate-y-1.5'
+                : 'border-neutral-800 hover:border-neutral-600 hover:shadow-[0_0_15px_rgba(255,255,255,0.07)] hover:-translate-y-1',
+            ]}
+          >
+            <h2 class="font-mono text-sm tracking-wider text-text-primary mb-1">
+              {tier.name}
+            </h2>
+
+            <div class="mb-2">
+              <span class="font-mono text-3xl font-bold text-text-primary">
+                {tier.price}
+              </span>
+              <span class="font-mono text-text-tertiary text-xs ml-2">
+                {tier.subtitle}
+              </span>
+            </div>
+
+            <p class="font-display text-xs text-text-tertiary mb-6">
+              {tier.description}
+            </p>
+
+            <div class="font-mono text-[10px] tracking-widest text-text-tertiary mb-3">
+              // INCLUDED
+            </div>
+
+            <ul class="space-y-2 flex-1">
+              {tier.features.map((feature) => (
+                <li class="font-display text-xs text-text-secondary">
+                  <span class="text-text-primary mr-2">&rarr;</span>
+                  {feature}
+                </li>
+              ))}
+            </ul>
+
+            <div class:list={[
+              'mt-6 font-mono font-bold text-[10px] tracking-widest text-center transition-colors duration-300',
+              tier.highlight ? 'text-text-primary' : 'text-text-tertiary',
+            ]}>
+              [ SELECT ]
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </main>
+  <Footer />
+</Base>
+
+<style>
+  .pricing-card:hover [class*="[ SELECT ]"],
+  .pricing-card:hover .select-label {
+    color: rgb(var(--text-primary));
+  }
+</style>

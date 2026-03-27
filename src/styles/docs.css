@@ -1,3 +1,17 @@
+/* Docs layout depth — theme-aware sidebar/content separation */
+.docs-sidebar {
+  background-color: rgb(0 0 0);
+}
+.docs-content {
+  background-color: rgb(var(--bg-panel));
+}
+[data-theme="light"] .docs-sidebar {
+  background-color: rgb(var(--bg-core));
+}
+[data-theme="light"] .docs-content {
+  background-color: rgb(var(--bg-panel));
+}
+
 /* Testudo docs prose styling — brutalist dark theme */
 
 .prose-testudo {
@@ -47,7 +61,7 @@ a.no-underline, a.no-underline * {
 
 .prose-testudo ul li::before {
   content: '→';
-  @apply absolute left-0 text-text-tertiary;
+  @apply absolute left-0 text-text-primary;
 }
 
 .prose-testudo ol {
@@ -55,7 +69,7 @@ a.no-underline, a.no-underline * {
 }
 
 .prose-testudo ol li {
-  @apply marker:text-text-tertiary marker:font-mono;
+  @apply marker:text-text-primary marker:font-mono;
 }
 
 .prose-testudo blockquote {

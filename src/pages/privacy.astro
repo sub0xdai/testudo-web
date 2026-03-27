@@ -1,0 +1,162 @@
+---
+import Base from '../layouts/Base.astro'
+import Footer from '../components/Footer.astro'
+---
+
+<Base>
+  <main class="relative z-10">
+    <section class="px-6 md:px-12 lg:px-24 pt-32 pb-16">
+      <div class="max-w-3xl">
+
+        <h1
+          class="font-display text-4xl md:text-5xl font-bold tracking-tight text-text-primary leading-[0.95] mb-4"
+          style="text-shadow: 0 2px 16px rgb(var(--bg-core) / 0.6);"
+        >
+          PRIVACY POLICY
+        </h1>
+
+        <p class="font-mono text-xs text-text-tertiary mb-16">
+          Last updated: March 27, 2026
+        </p>
+
+        <div class="space-y-12 font-display text-sm text-text-secondary leading-relaxed" style="text-shadow: 0 1px 12px rgb(var(--bg-core) / 0.8);">
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">1. What We Collect</h2>
+            <p>
+              Testudo collects the minimum data necessary to operate the platform. Here is exactly what we store:
+            </p>
+            <ul class="space-y-1 pl-4">
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> <strong class="text-text-primary">Wallet address</strong> — Your Ethereum wallet address, used as your identity (via SIWE)</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> <strong class="text-text-primary">Exchange API keys</strong> — Encrypted at rest with AES-256-GCM. Used to execute trades and fetch balances</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> <strong class="text-text-primary">Trade history</strong> — Imported from your exchanges and recorded from live trades. Used for journal and analytics</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> <strong class="text-text-primary">Journal entries</strong> — Your trade notes, theses, tags, and uploaded images</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> <strong class="text-text-primary">Risk configuration</strong> — Your position sizing and risk management settings</li>
+            </ul>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">2. What We Don't Collect</h2>
+            <p>
+              Testudo uses wallet-based authentication. We do not collect:
+            </p>
+            <ul class="space-y-1 pl-4">
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Email addresses</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Passwords</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Real names or personal identification</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Phone numbers</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Location or IP-based tracking data</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Third-party tracking cookies or advertising pixels</li>
+            </ul>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">3. How We Store Your Data</h2>
+            <p>
+              All data is stored in a PostgreSQL database. Exchange API credentials are encrypted with AES-256-GCM before storage — they are never stored in plaintext and are only decrypted at the moment of use (executing a trade, fetching a balance).
+            </p>
+            <p>
+              Agent wallet private keys (for Hyperliquid) are encrypted with the same scheme. You can revoke agent wallet authorization at any time, which immediately disables the key on-chain regardless of our storage.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">4. Cookies</h2>
+            <p>
+              Testudo uses two HttpOnly cookies for authentication:
+            </p>
+            <ul class="space-y-1 pl-4">
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> <strong class="text-text-primary">access_token</strong> — JWT session token (15 minute TTL)</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> <strong class="text-text-primary">refresh_token</strong> — Session refresh token (7 day TTL)</li>
+            </ul>
+            <p>
+              Both cookies are <code class="font-mono text-xs bg-elevated px-1.5 py-0.5 text-text-primary">Secure</code>, <code class="font-mono text-xs bg-elevated px-1.5 py-0.5 text-text-primary">HttpOnly</code>, and <code class="font-mono text-xs bg-elevated px-1.5 py-0.5 text-text-primary">SameSite=Strict</code>. They cannot be read by JavaScript and are only sent to Testudo's API. We do not use tracking cookies, analytics cookies, or any third-party cookies.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">5. Third-Party Services</h2>
+            <p>
+              When you connect an exchange, Testudo makes API calls to that exchange on your behalf using your credentials. This is necessary to execute trades, fetch balances, and import trade history. The exchanges that receive these calls are:
+            </p>
+            <ul class="space-y-1 pl-4">
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Hyperliquid (via native API)</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Binance (via REST API)</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Bybit (via REST API)</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> WOO (via REST API)</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> OKX (via REST API)</li>
+            </ul>
+            <p>
+              We do not share your data with any other third parties. We do not use analytics services, advertising networks, or data brokers.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">6. We Don't Sell Your Data</h2>
+            <p>
+              Your trading data, journal entries, performance metrics, and exchange credentials are never sold, shared, or provided to any third party for any purpose. Your data exists solely to operate the platform for you.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">7. Your Rights</h2>
+            <p>
+              You have the right to:
+            </p>
+            <ul class="space-y-1 pl-4">
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> <strong class="text-text-primary">Export your data</strong> — Trade history and journal entries can be exported as markdown files from the Desk</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> <strong class="text-text-primary">Delete your account</strong> — All data including encrypted credentials is permanently deleted</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> <strong class="text-text-primary">Revoke exchange access</strong> — Remove API keys or revoke agent wallets at any time</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> <strong class="text-text-primary">Request your data</strong> — Contact us for a full export of everything we store about you</li>
+            </ul>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">8. Data Retention</h2>
+            <p>
+              While your account is active, all data is retained to provide the service. If you delete your account:
+            </p>
+            <ul class="space-y-1 pl-4">
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Exchange credentials are destroyed immediately</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Trade history, journal entries, and analytics are deleted within 30 days</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Authentication sessions are revoked immediately</li>
+            </ul>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">9. Security</h2>
+            <p>
+              We take the security of your data seriously:
+            </p>
+            <ul class="space-y-1 pl-4">
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> Credentials encrypted with AES-256-GCM at rest</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> HTTPS/TLS for all data in transit</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> HttpOnly, Secure, SameSite=Strict cookies</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> JWT tokens with short TTL and server-side session tracking</li>
+              <li class="text-text-secondary"><span class="text-text-primary mr-2">&rarr;</span> No plaintext credential storage anywhere in the system</li>
+            </ul>
+            <p>
+              If you discover a security vulnerability, please report it via <a href="https://github.com/sub0xdai/" target="_blank" rel="noopener noreferrer" class="text-accent-steel hover:text-accent-steel-hover underline underline-offset-2 transition-colors">GitHub</a>.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">10. Changes to This Policy</h2>
+            <p>
+              We may update this policy as the platform evolves. Material changes will be communicated through the platform. Continued use after changes constitutes acceptance.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-mono text-xs tracking-widest text-text-tertiary uppercase">11. Contact</h2>
+            <p>
+              Questions about privacy? Reach out via <a href="https://github.com/sub0xdai/" target="_blank" rel="noopener noreferrer" class="text-accent-steel hover:text-accent-steel-hover underline underline-offset-2 transition-colors">GitHub</a> or the <a href="https://x.com/i/communities/2009337617720987685" target="_blank" rel="noopener noreferrer" class="text-accent-steel hover:text-accent-steel-hover underline underline-offset-2 transition-colors">community</a>.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+    <Footer />
+  </main>
+</Base>

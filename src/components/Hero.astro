@@ -1,27 +1,120 @@
 ---
+const capabilities = [
+  { label: 'RISK ENGINE', detail: 'Automated position sizing. Every trade.' },
+  { label: 'DEX + CEX', detail: 'Hyperliquid, Binance, Bybit, WOO.' },
+  { label: 'CIRCUIT BREAKERS', detail: 'Daily loss limits. Portfolio heat.' },
+  { label: 'EXTENSION', detail: 'Alt+X from TradingView. Instant.' },
+]
 ---
 
-<section class="relative z-10 min-h-screen flex flex-col justify-center px-6 md:px-12 lg:px-24 py-32">
-  <!-- Ghost metadata -->
-  <div class="font-mono text-text-secondary/70 animate-flicker mb-8" style="text-shadow: 0 1px 8px rgb(var(--bg-core) / 0.6);">
-    <div class="text-[10px] text-text-tertiary tracking-widest mb-1">// TESTUDO v0.1 &bull; FUTURES_OVERLAY</div>
-    <div class="text-xs tracking-widest">// RISK_OVERLAY_ACTIVE &bull; POSITION_SIZING: FORGEDDABOUDITT &bull; EXCHANGES: POLYAMOROUS</div>
-  </div>
+<section class="relative z-10 px-6 md:px-12 lg:px-24 pt-32 pb-16 min-h-[calc(100vh-4rem)] flex flex-col justify-center">
+  <!-- Scrim: gradient wash protecting text, fading out toward the right -->
+  <div class="hero-scrim absolute inset-0 pointer-events-none" aria-hidden="true"></div>
 
-  <div class="max-w-5xl">
-    <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-text-primary leading-[0.95] mb-8">
-      AUTOMATED
-      <br />
-      RISK [MANAGEMENT]
-    </h1>
+  <div class="relative flex flex-col lg:flex-row lg:items-start lg:justify-between gap-12 lg:gap-16 max-w-6xl">
+    <!-- Left: text content -->
+    <div class="flex-1 min-w-0">
+      <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-text-primary leading-[0.95] mb-8">
+        AUTOMATED
+        <br />
+        RISK [MANAGEMENT]
+      </h1>
 
-    <p
-      class="font-display text-base md:text-lg text-text-secondary max-w-xl mb-12 leading-relaxed"
-      style="text-shadow: 0 1px 12px rgb(var(--bg-core) / 0.8);"
-    >
-      Adapt to the chaos. Outlast the market.
-      <br />
-      Trade without breaking.
-    </p>
+      <p class="font-display text-base md:text-lg text-text-primary/80 max-w-xl mb-16 leading-relaxed">
+        Adapt to the chaos. Outlast the market.
+        <br />
+        Trade without breaking.
+      </p>
+
+      <!-- Capabilities — containerized with semi-transparent backgrounds -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3">
+        {capabilities.map((cap) => (
+          <div class="border-l border-container-border pl-3 py-2 bg-main-bg/85 backdrop-blur-sm">
+            <div class="font-mono text-[10px] tracking-widest text-text-tertiary mb-0.5 font-medium">
+              {cap.label}
+            </div>
+            <p class="font-display text-xs text-text-secondary leading-relaxed font-medium">
+              {cap.detail}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Right: pricing box — drops in, rattles, clickable -->
+    <div class="lg:mt-16 lg:shrink-0 self-start lg:self-auto animate-land-rattle">
+      <a
+        href="/desk/account"
+        class="block border border-text-primary p-5 w-44 bg-main-bg/80 backdrop-blur-sm no-underline cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+      >
+        <div class="font-mono text-[9px] tracking-widest text-text-tertiary mb-2">
+          // EARLY_ADOPTER
+        </div>
+        <div class="font-mono text-3xl font-bold text-text-primary mb-0.5">
+          $50
+        </div>
+        <div class="font-mono text-[10px] text-text-tertiary mb-3">
+          one-time &bull; lifetime
+        </div>
+        <div class="font-display text-[11px] text-text-secondary leading-relaxed mb-3 font-medium">
+          Full platform. All updates.
+        </div>
+        <div class="font-mono font-bold text-[9px] tracking-widest text-text-tertiary text-center transition-colors duration-300 select-label">
+          [ SELECT ]
+        </div>
+      </a>
+      <a href="/pricing" class="block mt-2 font-mono text-[10px] text-text-tertiary hover:text-text-secondary transition-colors text-center">
+        Compare plans &rarr;
+      </a>
+    </div>
   </div>
 </section>
+
+<style>
+  /* Scrim: solid on the left where text lives, fading to transparent on the right */
+  .hero-scrim {
+    background: linear-gradient(
+      to right,
+      rgb(var(--bg-core) / 0.92) 0%,
+      rgb(var(--bg-core) / 0.80) 40%,
+      rgb(var(--bg-core) / 0.45) 70%,
+      transparent 100%
+    );
+  }
+
+  @keyframes land-rattle {
+    0% {
+      opacity: 0;
+      transform: translateY(-80px) rotate(-1deg);
+    }
+    30% {
+      opacity: 1;
+      transform: translateY(0) rotate(0deg);
+    }
+    38% {
+      transform: translateY(0) rotate(1.5deg);
+    }
+    46% {
+      transform: translateY(0) rotate(-1.2deg);
+    }
+    54% {
+      transform: translateY(0) rotate(0.8deg);
+    }
+    62% {
+      transform: translateY(0) rotate(-0.4deg);
+    }
+    70% {
+      transform: translateY(0) rotate(0.15deg);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) rotate(0deg);
+    }
+  }
+
+  .animate-land-rattle {
+    animation: land-rattle 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.4s;
+    opacity: 0;
+  }
+</style>
