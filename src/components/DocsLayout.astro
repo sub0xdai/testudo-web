@@ -27,6 +27,14 @@ const { title, description, prev, next } = Astro.props
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title} | TESTUDO Docs</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={new URL(Astro.url.pathname, 'https://testudo.vip').href} />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content={`${title} | TESTUDO Docs`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content="TESTUDO" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={`${title} | TESTUDO Docs`} />
+    <meta name="twitter:description" content={description} />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

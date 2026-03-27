@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://testudo.vip/sitemap-index.xml
