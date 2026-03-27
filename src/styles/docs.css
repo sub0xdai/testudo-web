@@ -24,6 +24,11 @@
   @apply text-accent-steel hover:text-accent-steel-hover underline underline-offset-2 transition-colors;
 }
 
+/* Remove underlines from doc index grid links */
+a.no-underline, a.no-underline * {
+  text-decoration: none !important;
+}
+
 .prose-testudo strong {
   @apply text-text-primary font-semibold;
 }
