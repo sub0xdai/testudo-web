@@ -1,0 +1,100 @@
+/* Testudo docs prose styling — brutalist dark theme */
+
+.prose-testudo {
+  @apply font-display text-base text-text-secondary leading-relaxed;
+}
+
+.prose-testudo h2 {
+  @apply font-mono text-xl font-bold text-text-primary mt-12 mb-4 tracking-tight;
+}
+
+.prose-testudo h3 {
+  @apply font-mono text-base font-bold text-text-primary mt-8 mb-3;
+}
+
+.prose-testudo h4 {
+  @apply font-mono text-sm font-bold text-text-secondary mt-6 mb-2 uppercase tracking-wider;
+}
+
+.prose-testudo p {
+  @apply mb-4;
+}
+
+.prose-testudo a {
+  @apply text-accent-steel hover:text-accent-steel-hover underline underline-offset-2 transition-colors;
+}
+
+.prose-testudo strong {
+  @apply text-text-primary font-semibold;
+}
+
+.prose-testudo em {
+  @apply text-text-secondary italic;
+}
+
+.prose-testudo ul {
+  @apply list-none mb-4 space-y-1.5;
+}
+
+.prose-testudo ul li {
+  @apply relative pl-4;
+}
+
+.prose-testudo ul li::before {
+  content: '→';
+  @apply absolute left-0 text-text-tertiary;
+}
+
+.prose-testudo ol {
+  @apply list-decimal list-inside mb-4 space-y-1.5;
+}
+
+.prose-testudo ol li {
+  @apply marker:text-text-tertiary marker:font-mono;
+}
+
+.prose-testudo blockquote {
+  @apply border-l-2 border-accent-steel pl-4 my-4 text-text-secondary italic;
+}
+
+.prose-testudo code {
+  @apply font-mono text-sm bg-elevated px-1.5 py-0.5 text-text-primary;
+}
+
+.prose-testudo pre {
+  @apply bg-elevated border border-container-border p-4 overflow-x-auto mb-4 text-sm;
+}
+
+.prose-testudo pre code {
+  @apply bg-transparent p-0;
+}
+
+.prose-testudo table {
+  @apply w-full mb-4 border border-container-border;
+}
+
+.prose-testudo th {
+  @apply px-3 py-2 text-left font-mono text-[10px] uppercase tracking-widest text-text-tertiary border-b border-container-border bg-elevated;
+}
+
+.prose-testudo td {
+  @apply px-3 py-2 text-sm font-mono text-text-secondary border-b border-container-border/30;
+}
+
+.prose-testudo hr {
+  @apply border-container-border my-8;
+}
+
+/* KaTeX math blocks */
+.prose-testudo .math-display {
+  @apply my-6 overflow-x-auto;
+}
+
+.prose-testudo .math-inline {
+  @apply mx-0.5;
+}
+
+/* Info/warning callouts via blockquote with emoji prefix */
+.prose-testudo blockquote p:first-child {
+  @apply not-italic;
+}

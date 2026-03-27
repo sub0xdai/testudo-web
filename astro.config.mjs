@@ -1,6 +1,8 @@
 import { defineConfig } from 'astro/config'
 import solidJs from '@astrojs/solid-js'
 import tailwind from '@astrojs/tailwind'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 
 export default defineConfig({
   output: 'static',
@@ -8,6 +10,10 @@ export default defineConfig({
     solidJs(),
     tailwind(),
   ],
+  markdown: {
+    remarkPlugins: [remarkMath],
+    rehypePlugins: [rehypeKatex],
+  },
   server: { port: 3001 },
   devToolbar: { enabled: false },
   vite: {

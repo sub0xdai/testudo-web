@@ -1,0 +1,69 @@
+---
+import { getCollection } from 'astro:content'
+
+const allDocs = await getCollection('docs')
+const sorted = allDocs.sort((a, b) => a.data.order - b.data.order)
+
+const traderDocs = sorted.filter(d => d.data.section === 'trader')
+const technicalDocs = sorted.filter(d => d.data.section === 'technical')
+
+const currentPath = Astro.url.pathname.replace(/\/$/, '')
+---
+
+<nav class="space-y-6">
+  <div>
+    <h3 class="font-mono text-[10px] tracking-widest uppercase text-text-tertiary mb-3">
+      For Traders
+    </h3>
+    <ul class="space-y-1">
+      {traderDocs.map(doc => {
+        const href = `/docs/${doc.id}`
+        const isActive = currentPath === href
+        return (
+          <li>
+            <a
+              href={href}
+              class:list={[
+                'block px-3 py-1.5 font-mono text-xs transition-colors rounded-sm',
+                isActive
+                  ? 'text-text-primary bg-text-primary/10'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-text-primary/5',
+              ]}
+            >
+              {doc.data.title}
+            </a>
+          </li>
+        )
+      })}
+    </ul>
+  </div>
+
+  {technicalDocs.length > 0 && (
+    <div>
+      <h3 class="font-mono text-[10px] tracking-widest uppercase text-text-tertiary mb-3">
+        Technical
+      </h3>
+      <ul class="space-y-1">
+        {technicalDocs.map(doc => {
+          const href = `/docs/${doc.id}`
+          const isActive = currentPath === href
+          return (
+            <li>
+              <a
+                href={href}
+                class:list={[
+                  'block px-3 py-1.5 font-mono text-xs transition-colors rounded-sm',
+                  isActive
+                    ? 'text-text-primary bg-text-primary/10'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-text-primary/5',
+                ]}
+              >
+                {doc.data.title}
+              </a>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )}
+</nav>

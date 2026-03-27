@@ -1,0 +1,60 @@
+---
+import { getCollection } from 'astro:content'
+import DocsLayout from '../../components/DocsLayout.astro'
+
+const allDocs = await getCollection('docs')
+const sorted = allDocs.sort((a, b) => a.data.order - b.data.order)
+
+const traderDocs = sorted.filter(d => d.data.section === 'trader')
+const technicalDocs = sorted.filter(d => d.data.section === 'technical')
+
+const first = sorted[0]
+---
+
+<DocsLayout
+  title="Documentation"
+  description="Everything you need to know about trading with Testudo."
+  next={first ? { slug: first.slug, title: first.data.title } : undefined}
+>
+  <div class="space-y-8">
+    <section>
+      <h2 class="font-mono text-lg font-bold text-text-primary mb-4">For Traders</h2>
+      <div class="grid gap-3">
+        {traderDocs.map(doc => (
+          <a
+            href={`/docs/${doc.id}`}
+            class="block border border-container-border hover:border-text-primary p-4 transition-colors group"
+          >
+            <h3 class="font-mono text-sm text-text-primary group-hover:text-accent-steel transition-colors mb-1">
+              {doc.data.title}
+            </h3>
+            <p class="font-display text-xs text-text-tertiary">
+              {doc.data.description}
+            </p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    {technicalDocs.length > 0 && (
+      <section>
+        <h2 class="font-mono text-lg font-bold text-text-primary mb-4">Technical</h2>
+        <div class="grid gap-3">
+          {technicalDocs.map(doc => (
+            <a
+              href={`/docs/${doc.id}`}
+              class="block border border-container-border hover:border-text-primary p-4 transition-colors group"
+            >
+              <h3 class="font-mono text-sm text-text-primary group-hover:text-accent-steel transition-colors mb-1">
+                {doc.data.title}
+              </h3>
+              <p class="font-display text-xs text-text-tertiary">
+                {doc.data.description}
+              </p>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+  </div>
+</DocsLayout>

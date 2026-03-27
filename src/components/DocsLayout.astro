@@ -1,0 +1,100 @@
+---
+import DocsSidebar from './DocsSidebar.astro'
+import ThemeToggle from './ThemeToggle.tsx'
+import '../styles/global.css'
+import '../styles/docs.css'
+
+interface Props {
+  title: string
+  description: string
+  prev?: { slug: string; title: string }
+  next?: { slug: string; title: string }
+}
+
+const { title, description, prev, next } = Astro.props
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script is:inline>
+      let t = localStorage.getItem('testudo-theme');
+      if (t === 'soft-dark') { t = 'amoled'; localStorage.setItem('testudo-theme', t); }
+      if (t && t !== 'amoled') document.documentElement.setAttribute('data-theme', t);
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} | TESTUDO Docs</title>
+    <meta name="description" content={description} />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  </head>
+  <body class="bg-main-bg text-text-primary">
+    <!-- Docs header -->
+    <header class="fixed top-0 left-0 right-0 z-50 px-6 md:px-8 py-4 bg-main-bg/90 border-b border-container-border/30 backdrop-blur-sm">
+      <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <a href="/" class="font-mono text-lg tracking-widest text-text-primary hover:text-accent-steel transition-colors">
+            TESTUDO
+          </a>
+          <span class="text-text-tertiary font-mono text-xs">/</span>
+          <a href="/docs" class="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors">
+            DOCS
+          </a>
+          <ThemeToggle client:load />
+        </div>
+        <nav class="flex items-center gap-6">
+          <a href="/" class="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block">HOME</a>
+          <a href="/desk/" class="font-mono text-xs tracking-wider text-text-primary hover:text-accent-steel transition-colors">LAUNCH DESK</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Spacer -->
+    <div class="h-16"></div>
+
+    <!-- Main layout -->
+    <div class="max-w-7xl mx-auto flex min-h-[calc(100vh-4rem)]">
+      <!-- Sidebar -->
+      <aside class="hidden lg:block w-64 shrink-0 border-r border-container-border/30 py-8 px-6 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
+        <DocsSidebar />
+      </aside>
+
+      <!-- Content -->
+      <main class="flex-1 min-w-0 py-8 px-6 md:px-12 lg:px-16">
+        <article class="max-w-3xl">
+          <h1 class="font-display text-3xl md:text-4xl font-bold text-text-primary mb-2 tracking-tight">
+            {title}
+          </h1>
+          <p class="font-display text-sm text-text-secondary mb-8">
+            {description}
+          </p>
+
+          <div class="prose-testudo">
+            <slot />
+          </div>
+
+          <!-- Prev/Next navigation -->
+          <nav class="flex justify-between mt-16 pt-6 border-t border-container-border/30">
+            {prev ? (
+              <a href={`/docs/${prev.slug}`} class="group">
+                <span class="text-[10px] font-mono text-text-tertiary tracking-widest uppercase block mb-1">&larr; Previous</span>
+                <span class="font-mono text-sm text-text-secondary group-hover:text-text-primary transition-colors">{prev.title}</span>
+              </a>
+            ) : <div />}
+            {next ? (
+              <a href={`/docs/${next.slug}`} class="group text-right">
+                <span class="text-[10px] font-mono text-text-tertiary tracking-widest uppercase block mb-1">Next &rarr;</span>
+                <span class="font-mono text-sm text-text-secondary group-hover:text-text-primary transition-colors">{next.title}</span>
+              </a>
+            ) : <div />}
+          </nav>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>
