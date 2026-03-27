@@ -9,4 +9,13 @@ export default defineConfig({
     tailwind(),
   ],
   server: { port: 3001 },
+  devToolbar: { enabled: false },
+  vite: {
+    server: {
+      proxy: {
+        '/desk': 'http://localhost:3002',
+        '/api': 'http://127.0.0.1:8080',
+      },
+    },
+  },
 })
