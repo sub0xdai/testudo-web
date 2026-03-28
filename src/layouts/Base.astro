@@ -83,8 +83,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://testudo.
         document.addEventListener('mousemove', function(e) {
           var isLight = checkTheme()
           spotlight.style.background = isLight
-            ? 'radial-gradient(circle ' + radius + 'px at ' + e.clientX + 'px ' + e.clientY + 'px, rgb(var(--bg-core) / 0.55) 0%, rgb(var(--bg-core) / 0.80) 70%, rgb(var(--bg-core) / 0.92) 100%)'
-            : 'radial-gradient(circle ' + radius + 'px at ' + e.clientX + 'px ' + e.clientY + 'px, transparent 0%, rgb(var(--bg-core) / 0.85) 80%, rgb(var(--bg-core) / 0.95) 100%)'
+            ? 'radial-gradient(circle ' + radius + 'px at ' + e.clientX + 'px ' + e.clientY + 'px, rgb(var(--bg-core) / 0.60) 0%, rgb(var(--bg-core) / 0.82) 70%, rgb(var(--bg-core) / 0.92) 100%)'
+            : 'radial-gradient(circle ' + radius + 'px at ' + e.clientX + 'px ' + e.clientY + 'px, rgb(var(--bg-core) / 0.75) 0%, rgb(var(--bg-core) / 0.88) 70%, rgb(var(--bg-core) / 0.93) 100%)'
         })
         // Watch for theme changes to update texture overlay
         new MutationObserver(function() {

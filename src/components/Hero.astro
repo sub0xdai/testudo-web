@@ -8,10 +8,7 @@ const capabilities = [
 ---
 
 <section class="relative z-10 px-6 md:px-12 lg:px-24 pt-32 pb-16 min-h-[calc(100vh-4rem)] flex flex-col justify-center">
-  <!-- Scrim: gradient wash protecting text, fading out toward the right -->
-  <div class="hero-scrim absolute inset-0 pointer-events-none" aria-hidden="true"></div>
-
-  <div class="relative flex flex-col lg:flex-row lg:items-start lg:justify-between gap-12 lg:gap-16 max-w-6xl">
+  <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-12 lg:gap-16 max-w-6xl">
     <!-- Left: text content -->
     <div class="flex-1 min-w-0">
       <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-text-primary leading-[0.95] mb-8">
@@ -71,17 +68,6 @@ const capabilities = [
 </section>
 
 <style>
-  /* Scrim: solid on the left where text lives, fading to transparent on the right */
-  .hero-scrim {
-    background: linear-gradient(
-      to right,
-      rgb(var(--bg-core) / 0.92) 0%,
-      rgb(var(--bg-core) / 0.80) 40%,
-      rgb(var(--bg-core) / 0.45) 70%,
-      transparent 100%
-    );
-  }
-
   @keyframes land-rattle {
     0% {
       opacity: 0;
