@@ -104,3 +104,7 @@ Notes auto-save when you click away from the editor (on blur). If you close the 
 ### Export isn't working
 
 The export feature downloads a `.md` file for the selected trade. Make sure your browser allows file downloads from the Desk domain. The **Export All** button on the Journal page downloads all entries as individual markdown files.
+
+## Need More Help?
+
+If your issue isn't covered here, reach out to **[support@testudo.vip](mailto:support@testudo.vip)**. Include your wallet address and a description of the problem so we can help faster.
