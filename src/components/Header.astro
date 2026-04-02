@@ -5,8 +5,9 @@ import ThemeToggle from './ThemeToggle.tsx'
 <header class="fixed top-0 left-0 right-0 z-50 px-6 md:px-8 py-4 bg-main-bg/90 border-b border-container-border/30">
   <div class="flex items-center justify-between">
     <div class="flex items-center gap-3">
-      <a href="/" class="font-mono text-lg tracking-widest text-text-primary hover:text-accent-steel transition-colors">
-        TESTUDO
+      <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <img src="/shield.svg" alt="" class="crest-logo w-5 h-5 object-contain opacity-60" />
+        <span class="font-mono text-lg tracking-widest text-text-primary">TESTUDO</span>
       </a>
       <ThemeToggle client:load />
     </div>
@@ -15,7 +16,7 @@ import ThemeToggle from './ThemeToggle.tsx'
       <a href="/about" class="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block">ABOUT</a>
       <a href="/pricing" class="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block">PRICING</a>
       <a href="/docs/" target="_blank" rel="noopener noreferrer" class="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block">DOCS</a>
-      <a href="https://chromewebstore.google.com" target="_blank" rel="noopener noreferrer" class="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block">EXTENSION</a>
+      <a href="https://addons.mozilla.org/en-US/firefox/addon/testudo-sniper/" target="_blank" rel="noopener noreferrer" class="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors hidden md:block">EXTENSION</a>
       <a href="https://desk.testudo.vip" class="font-mono text-xs tracking-wider text-text-primary hover:text-accent-steel transition-colors">LAUNCH DESK</a>
     </nav>
   </div>

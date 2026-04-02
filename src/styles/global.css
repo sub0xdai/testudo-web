@@ -95,6 +95,11 @@ body {
   pointer-events: none;
 }
 
+/* Crest logo: invert for light theme */
+[data-theme="light"] .crest-logo {
+  filter: invert(1);
+}
+
 /* Heavier borders in light theme to compensate for reduced contrast range */
 [data-theme="light"] .border { border-width: 2px; }
 [data-theme="light"] .border-b { border-bottom-width: 2px; }
