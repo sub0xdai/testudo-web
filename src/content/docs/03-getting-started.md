@@ -45,7 +45,7 @@ Supported exchanges for history import:
 
 ## Step 4: Install and Pair the Extension
 
-Install the **Testudo Sniper** extension from the Chrome Web Store (Firefox also supported).
+Install the **Testudo** extension from the Chrome Web Store (Firefox also supported).
 
 To pair the extension with your Desk account:
 

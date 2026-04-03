@@ -5,7 +5,7 @@ order: 4
 section: "trader"
 ---
 
-The Testudo Sniper extension is where trades happen. It lives in your browser, reads your chart setups from TradingView, and places orders on your exchange.
+The Testudo extension is where trades happen. It lives in your browser, reads your chart setups from TradingView, and places orders on your exchange.
 
 ## The Alt+X Workflow
 
