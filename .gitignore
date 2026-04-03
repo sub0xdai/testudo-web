@@ -79,3 +79,7 @@ yarn-error.log*
 # PNPM cache
 .pnpm-debug.log*
 .pnpm-store/
+
+# Claude context files (break Astro content collections)
+**/CLAUDE.md
+.astro/
