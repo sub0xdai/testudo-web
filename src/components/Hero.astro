@@ -1,14 +1,14 @@
 ---
 const capabilities = [
-  { label: 'RISK ENGINE', detail: 'Automated position sizing. Every trade.' },
-  { label: 'DEX + CEX', detail: 'Hyperliquid, Binance, Bybit, WOO.' },
-  { label: 'CIRCUIT BREAKERS', detail: 'Daily loss limits. Portfolio heat.' },
-  { label: 'EXTENSION', detail: 'Alt+X from TradingView. Instant.' },
+  { label: 'RISK ENGINE', detail: 'Automated position sizing. Every trade' },
+  { label: 'DEX + CEX', detail: 'Hyperliquid, Binance, Bybit, WOO' },
+  { label: 'CIRCUIT BREAKERS', detail: 'Daily loss limits. Portfolio heat' },
+  { label: 'EXTENSION', detail: 'Alt+X from TradingView. Instant' },
 ]
 ---
 
 <section class="relative z-10 px-6 md:px-12 lg:px-24 xl:px-32 pt-36 pb-20 min-h-[calc(100vh-4rem)] flex flex-col justify-center">
-  <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-12 lg:gap-20 max-w-7xl">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-12 lg:gap-20 max-w-7xl">
     <!-- Left: text content -->
     <div class="flex-1 min-w-0">
       <h1 class="font-display text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-bold tracking-tight text-text-primary leading-[0.95] mb-10">
@@ -18,9 +18,13 @@ const capabilities = [
       </h1>
 
       <p class="font-display text-lg md:text-xl text-text-primary/80 max-w-2xl mb-20 leading-relaxed">
-        Adapt to the chaos. Outlast the market.
+        Adapt to the chaos 
+
+        <br /> 
+        Outlast the market
+
         <br />
-        Trade without breaking.
+        Trade without breaking
       </p>
 
       <!-- Capabilities — containerized with semi-transparent backgrounds -->
@@ -38,9 +42,9 @@ const capabilities = [
       </div>
     </div>
 
-    <!-- Right: crest emblem — drops in, rattles -->
-    <div class="lg:mt-[15vh] lg:shrink-0 self-start lg:self-auto animate-land-rattle">
-      <img src="/crest.png" alt="Testudo crest" class="crest-logo w-48 lg:w-64 xl:w-72 opacity-70" />
+    <!-- Right: crest emblem — drops in, rattles, anchored right -->
+    <div class="lg:shrink-0 lg:self-center animate-land-rattle">
+      <img src="/crest.png" alt="Testudo crest" class="crest-logo w-48 lg:w-72 xl:w-80" />
     </div>
   </div>
 </section>
