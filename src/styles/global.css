@@ -4,39 +4,41 @@
 
 /* --- Theme Tokens (space-separated RGB for Tailwind opacity support) --- */
 :root, [data-theme="amoled"] {
-  --bg-core: 10 10 10;
-  --bg-panel: 22 22 22;
-  --bg-elevated: 30 30 30;
-  --bg-hover: 40 40 40;
-  --border: 50 50 50;
+  /* Cool marble dark — blue-shifted for stone/silver read */
+  --bg-core: 9 10 13;
+  --bg-panel: 19 21 26;
+  --bg-elevated: 26 28 35;
+  --bg-hover: 35 38 46;
+  --border: 45 48 58;
   --border-active-accent: 237 237 237;
   --accent-steel: 148 163 184;
   --accent-steel-hover: 203 213 225;
-  --accent-primary: 180 190 200; /* #B4BEC8 — silver marble */
+  --accent-primary: 180 190 200;  /* silver marble */
   --signal-green: 34 197 94;
   --signal-red: 239 68 68;
   --signal-amber: 245 158 11;
-  --text-primary: 237 237 237;
-  --text-secondary: 190 190 190;
-  --text-tertiary: 120 120 120;
+  --text-primary: 235 237 242;
+  --text-secondary: 185 190 200;
+  --text-tertiary: 115 120 130;
 }
 
 [data-theme="light"] {
-  --bg-core: 245 244 240;         /* #F5F4F0 — cool parchment */
-  --bg-panel: 255 255 255;        /* #FFFFFF — pure white surfaces */
-  --bg-elevated: 250 250 248;     /* #FAFAF8 */
-  --bg-hover: 245 245 242;
-  --border: 229 231 235;          /* #E5E7EB — neutral grey */
-  --border-active-accent: 17 24 39;
+  /* Cool marble light — blue-shifted, no warm parchment */
+  --bg-core: 241 243 247;
+  --bg-panel: 255 255 255;
+  --bg-elevated: 248 249 252;
+  --bg-hover: 240 242 246;
+  --border: 218 222 230;
+  --border-active-accent: 15 20 35;
   --accent-steel: 75 85 99;
   --accent-steel-hover: 55 65 81;
-  --accent-primary: 120 128 140;  /* #788090 — marble for light */
-  --signal-green: 22 163 74;      /* #16A34A */
-  --signal-red: 220 38 38;        /* #DC2626 */
+  --accent-primary: 120 128 140;  /* marble for light */
+  --signal-green: 22 163 74;
+  --signal-red: 220 38 38;
   --signal-amber: 202 138 4;
-  --text-primary: 17 24 39;       /* #111827 — deep charcoal */
-  --text-secondary: 107 114 128;  /* #6B7280 — neutral grey */
-  --text-tertiary: 156 163 175;   /* #9CA3AF */
+  --text-primary: 15 20 35;
+  --text-secondary: 100 108 125;
+  --text-tertiary: 150 157 172;
 }
 
 @layer components {
