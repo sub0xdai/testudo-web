@@ -2,42 +2,45 @@
 ---
 
 <footer class="relative z-10 px-6 md:px-12 lg:px-24 xl:px-32 py-12 border-t border-container-border/30 bg-main-bg">
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-    <div class="flex items-center gap-8">
-      <span class="font-mono text-sm text-text-tertiary">
-        &copy; 2026 TESTUDO
-      </span>
-      <a
-        href="https://github.com/sub0xdai/"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="font-mono text-sm text-text-tertiary hover:text-text-primary transition-colors"
-      >
-        GITHUB
-      </a>
-      <a
-        href="https://x.com/i/communities/2009337617720987685"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="font-mono text-sm text-text-tertiary hover:text-text-primary transition-colors"
-      >
-        COMMUNITY
-      </a>
-      <a
-        href="mailto:support@testudo.vip"
-        class="font-mono text-sm text-text-tertiary hover:text-text-primary transition-colors"
-      >
-        SUPPORT
-      </a>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
+    <!-- Product -->
+    <div>
+      <p class="font-mono text-xs tracking-widest text-text-secondary mb-4">PRODUCT</p>
+      <div class="flex flex-col gap-2">
+        <a href="/about" class="font-mono text-sm text-text-tertiary hover:text-text-primary transition-colors">ABOUT</a>
+        <a href="/pricing" class="font-mono text-sm text-text-tertiary hover:text-text-primary transition-colors">PRICING</a>
+        <a href="/docs/01-what-is-testudo" class="font-mono text-sm text-text-tertiary hover:text-text-primary transition-colors">DOCS</a>
+      </div>
     </div>
 
+    <!-- Compare -->
+    <div>
+      <p class="font-mono text-xs tracking-widest text-text-secondary mb-4">COMPARE</p>
+      <div class="flex flex-col gap-2">
+        <a href="/vs/hyperliquid-web" class="font-mono text-sm text-text-tertiary hover:text-text-primary transition-colors">VS HYPERLIQUID</a>
+        <a href="/vs/binance-futures-web" class="font-mono text-sm text-text-tertiary hover:text-text-primary transition-colors">VS BINANCE</a>
+        <a href="/vs/bybit-web" class="font-mono text-sm text-text-tertiary hover:text-text-primary transition-colors">VS BYBIT</a>
+        <a href="/vs/woo-web" class="font-mono text-sm text-text-tertiary hover:text-text-primary transition-colors">VS WOO X</a>
+        <a href="/vs/okx-web" class="font-mono text-sm text-text-tertiary hover:text-text-primary transition-colors">VS OKX</a>
+      </div>
+    </div>
+
+    <!-- Community -->
+    <div>
+      <p class="font-mono text-xs tracking-widest text-text-secondary mb-4">COMMUNITY</p>
+      <div class="flex flex-col gap-2">
+        <a href="https://github.com/sub0xdai/" target="_blank" rel="noopener noreferrer" class="font-mono text-sm text-text-tertiary hover:text-text-primary transition-colors">GITHUB</a>
+        <a href="https://x.com/i/communities/2009337617720987685" target="_blank" rel="noopener noreferrer" class="font-mono text-sm text-text-tertiary hover:text-text-primary transition-colors">X COMMUNITY</a>
+        <a href="mailto:support@testudo.vip" class="font-mono text-sm text-text-tertiary hover:text-text-primary transition-colors">SUPPORT</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-8 border-t border-container-border/20">
+    <span class="font-mono text-sm text-text-tertiary">&copy; 2026 TESTUDO</span>
     <div class="flex gap-8">
-      <a href="/terms" class="font-mono text-sm text-text-tertiary hover:text-text-secondary transition-colors">
-        TERMS
-      </a>
-      <a href="/privacy" class="font-mono text-sm text-text-tertiary hover:text-text-secondary transition-colors">
-        PRIVACY
-      </a>
+      <a href="/terms" class="font-mono text-sm text-text-tertiary hover:text-text-secondary transition-colors">TERMS</a>
+      <a href="/privacy" class="font-mono text-sm text-text-tertiary hover:text-text-secondary transition-colors">PRIVACY</a>
     </div>
   </div>
 </footer>
