@@ -1,6 +1,5 @@
 ---
 import Base from '../../layouts/Base.astro'
-import Header from '../../components/Header.astro'
 import Footer from '../../components/Footer.astro'
 import { vsPages } from '../../content/vs/schema'
 import type { VsPageData } from '../../content/vs/schema'
@@ -19,321 +18,97 @@ interface Props {
 const { page } = Astro.props
 const speedMultiplier = Math.round(page.speed.exchangeSeconds / page.speed.testudoSeconds)
 
-// Feature comparison rows
 const comparisonRows = [
-  {
-    feature: 'Risk-based position sizing',
-    exchange: page.sizing.hasCalculator ? 'Calculator (margin-based)' : 'None',
-    testudo: 'Automatic from stop distance',
-    winner: 'testudo',
-  },
-  {
-    feature: 'Bracket orders (entry + SL + TP)',
-    exchange: page.sizing.bracketOrders ? 'Yes' : 'Separate orders',
-    testudo: 'Atomic — placed together',
-    winner: 'testudo',
-  },
-  {
-    feature: 'Execution from TradingView',
-    exchange: 'Copy values manually',
-    testudo: 'Alt+X reads chart directly',
-    winner: 'testudo',
-  },
-  {
-    feature: 'Account risk % enforcement',
-    exchange: page.sizing.enforcesRiskPercent ? 'Yes' : 'No',
-    testudo: 'MIN(account%, fixed, max, margin)',
-    winner: 'testudo',
-  },
-  {
-    feature: 'Trade journal with R-multiples',
-    exchange: page.journal.rMultiples ? 'Yes' : 'No',
-    testudo: 'Automatic — every trade',
-    winner: 'testudo',
-  },
-  {
-    feature: 'Equity curve & expectancy',
-    exchange: page.journal.equityCurve ? 'Yes' : 'No',
-    testudo: 'Real-time dashboard',
-    winner: 'testudo',
-  },
-  {
-    feature: 'Works during high volatility',
-    exchange: page.reliability.lagsDuringVolatility ? 'UI lags' : 'Stable',
-    testudo: 'Direct API — no browser rendering',
-    winner: page.reliability.lagsDuringVolatility ? 'testudo' : 'tie',
-  },
+  { feature: 'Risk-based sizing', exchange: page.sizing.hasCalculator ? 'Margin-based' : 'None', testudo: 'From stop distance' },
+  { feature: 'Bracket orders', exchange: page.sizing.bracketOrders ? 'Yes' : 'Separate', testudo: 'Atomic' },
+  { feature: 'TradingView execution', exchange: 'Manual', testudo: 'Alt+X' },
+  { feature: 'Risk % enforcement', exchange: page.sizing.enforcesRiskPercent ? 'Yes' : 'No', testudo: 'Yes' },
+  { feature: 'Auto journal + R-multiples', exchange: 'No', testudo: 'Yes' },
+  { feature: 'High volatility', exchange: page.reliability.lagsDuringVolatility ? 'Lags' : 'Stable', testudo: 'Direct API' },
 ]
 ---
 
 <Base title={page.title} description={page.metaDescription}>
   <main class="relative z-10 text-text-primary">
 
-    <!-- Hero -->
+    <!-- Hero + Speed -->
     <section class="border-b border-container-border">
-      <div class="max-w-5xl mx-auto px-6 md:px-12 py-16 md:py-24">
-        <p class="font-mono text-xs tracking-widest text-text-tertiary mb-4 uppercase">
+      <div class="max-w-4xl mx-auto px-6 md:px-12 py-16 md:py-20">
+        <p class="font-mono text-[10px] tracking-widest text-text-tertiary mb-6 uppercase">
           TESTUDO VS {page.exchange.toUpperCase()}
         </p>
-        <h1 class="font-mono text-3xl md:text-5xl font-bold tracking-tight mb-6 leading-tight">
+        <h1 class="font-mono text-2xl md:text-4xl font-bold tracking-tight mb-4">
           {page.headline}
         </h1>
-        <p class="font-mono text-lg md:text-xl text-text-secondary max-w-2xl leading-relaxed">
+        <p class="font-mono text-sm text-text-secondary mb-12 max-w-xl">
           {page.subheadline}
         </p>
-      </div>
-    </section>
 
-    <!-- Speed Comparison — the hero argument -->
-    <section class="border-b border-container-border bg-container-bg">
-      <div class="max-w-5xl mx-auto px-6 md:px-12 py-16">
-        <h2 class="font-display text-xs tracking-section text-text-tertiary uppercase mb-10">
-          EXECUTION SPEED
-        </h2>
-
-        <div class="grid md:grid-cols-2 gap-12">
-          <!-- Exchange side -->
+        <!-- Speed callout -->
+        <div class="grid grid-cols-3 gap-6 items-end mb-12">
           <div>
-            <p class="font-mono text-sm text-text-secondary mb-4">
-              {page.exchange} Web UI
-            </p>
-            <p class="font-mono text-4xl font-bold text-signal-red mb-2">
-              ~{page.speed.exchangeSeconds}s
-            </p>
-            <p class="font-mono text-xs text-text-tertiary mb-6">
-              {page.speed.exchangeSteps} steps to execute a sized trade
-            </p>
-            <ol class="space-y-2">
-              {page.speed.exchangePainPoints.map((point) => (
-                <li class="font-mono text-xs text-text-secondary flex gap-2">
-                  <span class="text-signal-red shrink-0">x</span>
-                  <span>{point}</span>
-                </li>
-              ))}
-            </ol>
+            <p class="font-mono text-3xl font-bold text-signal-red">~{page.speed.exchangeSeconds}s</p>
+            <p class="font-mono text-[10px] text-text-tertiary mt-1">{page.exchange} · {page.speed.exchangeSteps} steps</p>
           </div>
-
-          <!-- Testudo side -->
-          <div>
-            <p class="font-mono text-sm text-text-secondary mb-4">
-              Testudo (Alt+X)
-            </p>
-            <p class="font-mono text-4xl font-bold text-signal-green mb-2">
-              {page.speed.testudoSeconds}s
-            </p>
-            <p class="font-mono text-xs text-text-tertiary mb-6">
-              1 keystroke. Chart to exchange.
-            </p>
-            <ol class="space-y-2">
-              <li class="font-mono text-xs text-text-secondary flex gap-2">
-                <span class="text-signal-green shrink-0">1</span>
-                <span>Draw position tool on TradingView</span>
-              </li>
-              <li class="font-mono text-xs text-text-secondary flex gap-2">
-                <span class="text-signal-green shrink-0">2</span>
-                <span>Press Alt+X — extension reads entry/SL/TP</span>
-              </li>
-              <li class="font-mono text-xs text-text-secondary flex gap-2">
-                <span class="text-signal-green shrink-0">3</span>
-                <span>Risk engine sizes position automatically</span>
-              </li>
-              <li class="font-mono text-xs text-text-secondary flex gap-2">
-                <span class="text-signal-green shrink-0">4</span>
-                <span>Double-Enter confirms — bracket on exchange</span>
-              </li>
-            </ol>
+          <div class="text-center">
+            <p class="font-mono text-5xl font-bold text-text-primary">{speedMultiplier}x</p>
+            <p class="font-mono text-[10px] text-text-tertiary mt-1">faster</p>
+          </div>
+          <div class="text-right">
+            <p class="font-mono text-3xl font-bold text-signal-green">{page.speed.testudoSeconds}s</p>
+            <p class="font-mono text-[10px] text-text-tertiary mt-1">Testudo · Alt+X</p>
           </div>
         </div>
 
-        <!-- Speed multiplier callout -->
-        <div class="mt-12 border border-container-border p-8 text-center">
-          <p class="font-mono text-6xl font-bold text-text-primary mb-2">
-            {speedMultiplier}x
-          </p>
-          <p class="font-mono text-sm text-text-secondary">
-            faster than {page.exchange}'s web interface
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Feature Comparison Table -->
-    <section class="border-b border-container-border">
-      <div class="max-w-5xl mx-auto px-6 md:px-12 py-16">
-        <h2 class="font-display text-xs tracking-section text-text-tertiary uppercase mb-10">
-          FEATURE COMPARISON
-        </h2>
-
-        <div class="overflow-x-auto">
-          <table class="w-full font-mono text-sm">
-            <thead>
-              <tr class="border-b border-container-border">
-                <th class="text-left py-4 pr-6 text-text-secondary font-normal">Feature</th>
-                <th class="text-left py-4 pr-6 text-text-secondary font-normal">{page.exchange}</th>
-                <th class="text-left py-4 text-text-secondary font-normal">Testudo</th>
+        <!-- Comparison table -->
+        <table class="w-full font-mono text-xs">
+          <thead>
+            <tr class="border-b border-container-border">
+              <th class="text-left py-3 text-text-tertiary font-normal"></th>
+              <th class="text-left py-3 text-text-tertiary font-normal">{page.exchange}</th>
+              <th class="text-left py-3 text-text-tertiary font-normal">Testudo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {comparisonRows.map((row) => (
+              <tr class="border-b border-container-border/30">
+                <td class="py-3 pr-4 text-text-secondary">{row.feature}</td>
+                <td class="py-3 pr-4 text-text-tertiary">{row.exchange}</td>
+                <td class="py-3 text-signal-green">{row.testudo}</td>
               </tr>
-            </thead>
-            <tbody>
-              {comparisonRows.map((row) => (
-                <tr class="border-b border-container-border/30">
-                  <td class="py-4 pr-6 text-text-primary">{row.feature}</td>
-                  <td class={`py-4 pr-6 ${row.winner === 'testudo' ? 'text-text-tertiary' : 'text-text-primary'}`}>
-                    {row.exchange}
-                  </td>
-                  <td class={`py-4 ${row.winner === 'testudo' ? 'text-signal-green font-bold' : 'text-text-primary'}`}>
-                    {row.testudo}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
 
-    <!-- The Real Argument — unique content per page -->
-    <section class="border-b border-container-border bg-container-bg">
-      <div class="max-w-5xl mx-auto px-6 md:px-12 py-16">
-        <h2 class="font-display text-xs tracking-section text-text-tertiary uppercase mb-10">
-          WHY A LOCAL CLIENT WINS
-        </h2>
-
-        <div class="space-y-8">
-          <!-- Universal arguments (same across all pages but contextualized) -->
-          <div class="border-l-2 border-accent-primary pl-6">
-            <h3 class="font-mono text-sm font-bold text-text-primary mb-3">
-              Browser tabs are not trading terminals
-            </h3>
-            <p class="font-mono text-sm text-text-secondary leading-relaxed">
-              {page.exchange}'s web UI runs in a browser tab competing with your TradingView charts,
-              Discord, Twitter, and everything else. It shares memory, CPU, and network bandwidth
-              with the rest of your browser. Testudo's extension runs in an isolated service worker
-              with a direct WebSocket connection to {page.exchange} — no rendering overhead, no
-              competing tabs, no garbage collection pauses.
-            </p>
-          </div>
-
-          <div class="border-l-2 border-accent-primary pl-6">
-            <h3 class="font-mono text-sm font-bold text-text-primary mb-3">
-              Your chart IS your order form
-            </h3>
-            <p class="font-mono text-sm text-text-secondary leading-relaxed">
-              Every serious trader draws entry/stop/target on TradingView before trading.
-              Then they switch tabs and re-enter those numbers manually on {page.exchange}.
-              That's not a workflow — it's a transcription exercise. Alt+X reads the position
-              tool directly from the DOM. Zero manual re-entry. Zero transcription errors.
-            </p>
-          </div>
-
-          <!-- Exchange-specific unique arguments -->
-          {page.uniqueArguments.map((arg) => (
-            <div class="border-l-2 border-accent-steel pl-6">
-              <p class="font-mono text-sm text-text-secondary leading-relaxed">
-                {arg}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-
-    <!-- Sizing Deep Dive -->
-    <section class="border-b border-container-border">
-      <div class="max-w-5xl mx-auto px-6 md:px-12 py-16">
-        <h2 class="font-display text-xs tracking-section text-text-tertiary uppercase mb-10">
-          POSITION SIZING: THE REAL DIFFERENCE
-        </h2>
-
-        <div class="grid md:grid-cols-2 gap-12">
-          <div>
-            <h3 class="font-mono text-sm font-bold text-signal-red mb-4">
-              {page.exchange}'s Approach
-            </h3>
-            <p class="font-mono text-sm text-text-secondary mb-4 leading-relaxed">
-              {page.sizing.hasCalculator
-                ? `${page.exchange} has a position calculator — but it's margin-based, not risk-based. It tells you how much you CAN buy, not how much you SHOULD risk.`
-                : `${page.exchange} has no position size calculator. You enter a raw quantity and hope the math works out.`}
-            </p>
-            <ul class="space-y-2">
-              {page.sizing.limitations.map((lim) => (
-                <li class="font-mono text-xs text-text-tertiary flex gap-2">
-                  <span class="text-signal-red shrink-0">-</span>
-                  <span>{lim}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h3 class="font-mono text-sm font-bold text-signal-green mb-4">
-              Testudo's Approach
-            </h3>
-            <p class="font-mono text-sm text-text-secondary mb-4 leading-relaxed">
-              Testudo calculates four constraints and takes the smallest — ensuring the most
-              conservative limit always wins. Your stop distance dictates the size. Not the
-              other way around.
-            </p>
-            <ul class="space-y-2">
-              <li class="font-mono text-xs text-text-secondary flex gap-2">
-                <span class="text-signal-green shrink-0">1</span>
-                <span>Account risk % (e.g., 1% of balance)</span>
-              </li>
-              <li class="font-mono text-xs text-text-secondary flex gap-2">
-                <span class="text-signal-green shrink-0">2</span>
-                <span>Fixed dollar risk per trade</span>
-              </li>
-              <li class="font-mono text-xs text-text-secondary flex gap-2">
-                <span class="text-signal-green shrink-0">3</span>
-                <span>Maximum position size limit</span>
-              </li>
-              <li class="font-mono text-xs text-text-secondary flex gap-2">
-                <span class="text-signal-green shrink-0">4</span>
-                <span>Available margin capacity</span>
-              </li>
-            </ul>
-            <p class="font-mono text-xs text-text-tertiary mt-4">
-              Conservative wins. Always.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CTA -->
-    <section class="bg-container-bg">
-      <div class="max-w-5xl mx-auto px-6 md:px-12 py-16 md:py-24 text-center">
-        <p class="font-mono text-3xl md:text-4xl font-bold text-text-primary mb-4">
+    <!-- CTA + Related -->
+    <section>
+      <div class="max-w-4xl mx-auto px-6 md:px-12 py-16 text-center">
+        <p class="font-mono text-xl md:text-2xl font-bold text-text-primary mb-3">
           Your chart. Your edge. Properly sized.
         </p>
-        <p class="font-mono text-sm text-text-secondary mb-8 max-w-lg mx-auto">
-          Keep using {page.exchange} as your exchange. Use Testudo as your execution layer.
-          Alt+X from TradingView. Risk-managed. Bracket orders. Every trade journaled.
+        <p class="font-mono text-xs text-text-secondary mb-8">
+          Use {page.exchange} as your exchange. Use Testudo as your execution layer.
         </p>
         <a
           href="https://desk.testudo.vip"
-          class="inline-block border border-border-active text-text-primary font-mono text-sm tracking-wider px-8 py-3 hover:bg-text-primary hover:text-main-bg transition-colors"
+          class="inline-block border border-border-active text-text-primary font-mono text-xs tracking-wider px-8 py-3 hover:bg-text-primary hover:text-main-bg transition-colors"
         >
           {page.ctaText}
         </a>
-        <p class="font-mono text-[10px] text-text-tertiary mt-4">
-          $20/mo or $50 lifetime. No withdrawal permissions. Cancel anytime.
+        <p class="font-mono text-[10px] text-text-tertiary mt-3">
+          $20/mo or $50 lifetime · No withdrawal permissions
         </p>
-      </div>
-    </section>
 
-    <!-- Related comparisons -->
-    <section class="border-t border-container-border">
-      <div class="max-w-5xl mx-auto px-6 md:px-12 py-12">
-        <p class="font-display text-xs tracking-section text-text-tertiary uppercase mb-6">
-          MORE COMPARISONS
-        </p>
-        <div class="flex flex-wrap gap-4">
+        <!-- Related -->
+        <div class="flex flex-wrap justify-center gap-3 mt-12 pt-8 border-t border-container-border/30">
           {vsPages
             .filter((p) => p.slug !== page.slug)
             .map((p) => (
               <a
                 href={`/vs/${p.slug}`}
-                class="font-mono text-xs text-text-secondary hover:text-text-primary border border-container-border px-4 py-2 transition-colors"
+                class="font-mono text-[10px] text-text-tertiary hover:text-text-primary border border-container-border/50 px-3 py-1.5 transition-colors"
               >
                 vs {p.exchange}
               </a>
