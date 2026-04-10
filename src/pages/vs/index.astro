@@ -1,0 +1,65 @@
+---
+import Base from '../../layouts/Base.astro'
+import Footer from '../../components/Footer.astro'
+import { vsPages } from '../../content/vs/schema'
+---
+
+<Base
+  title="Testudo vs Exchange Web UIs — Why a Local Client Wins"
+  description="Compare Testudo's Alt+X execution against Hyperliquid, Binance, Bybit, WOO, and OKX web interfaces. Speed, sizing, and journaling compared."
+>
+  <main class="relative z-10 text-text-primary">
+    <section class="border-b border-container-border">
+      <div class="max-w-5xl mx-auto px-6 md:px-12 py-16 md:py-24">
+        <p class="font-mono text-xs tracking-widest text-text-tertiary mb-4 uppercase">
+          COMPARISONS
+        </p>
+        <h1 class="font-mono text-3xl md:text-5xl font-bold tracking-tight mb-6">
+          YOUR EXCHANGE'S WEB UI<br/>IS NOT A TRADING TERMINAL
+        </h1>
+        <p class="font-mono text-lg text-text-secondary max-w-2xl leading-relaxed">
+          Exchange web interfaces are designed for everyone. Testudo is designed for one
+          workflow: TradingView chart analysis to risk-managed execution. Compare the difference.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="max-w-5xl mx-auto px-6 md:px-12 py-16">
+        <div class="grid md:grid-cols-2 gap-6">
+          {vsPages.map((page) => (
+            <a
+              href={`/vs/${page.slug}`}
+              class="border border-container-border p-8 hover:border-text-secondary transition-colors group"
+            >
+              <div class="flex items-center gap-3 mb-4">
+                <span class={`font-mono text-[10px] tracking-widest uppercase px-2 py-0.5 border ${
+                  page.type === 'dex'
+                    ? 'border-signal-green/30 text-signal-green'
+                    : 'border-accent-steel/30 text-accent-steel'
+                }`}>
+                  {page.type}
+                </span>
+                <h2 class="font-mono text-lg font-bold text-text-primary group-hover:text-signal-green transition-colors">
+                  vs {page.exchange}
+                </h2>
+              </div>
+              <p class="font-mono text-sm text-text-secondary mb-6 leading-relaxed">
+                {page.subheadline}
+              </p>
+              <div class="flex items-center gap-6 font-mono text-xs">
+                <span class="text-signal-red">{page.speed.exchangeSeconds}s web</span>
+                <span class="text-text-tertiary">vs</span>
+                <span class="text-signal-green">{page.speed.testudoSeconds}s Alt+X</span>
+                <span class="text-text-tertiary">
+                  ({Math.round(page.speed.exchangeSeconds / page.speed.testudoSeconds)}x faster)
+                </span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>
