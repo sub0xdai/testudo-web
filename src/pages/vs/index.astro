@@ -1,6 +1,5 @@
 ---
 import Base from '../../layouts/Base.astro'
-import Footer from '../../components/Footer.astro'
 import { vsPages } from '../../content/vs/schema'
 ---
 
@@ -30,7 +29,7 @@ import { vsPages } from '../../content/vs/schema'
           {vsPages.map((page) => (
             <a
               href={`/vs/${page.slug}`}
-              class="border border-container-border p-8 hover:border-text-secondary transition-colors group"
+              class="flex flex-col border border-container-border p-8 hover:border-text-secondary transition-colors group"
             >
               <div class="flex items-center gap-3 mb-4">
                 <span class={`font-mono text-[10px] tracking-widest uppercase px-2 py-0.5 border ${
@@ -44,10 +43,10 @@ import { vsPages } from '../../content/vs/schema'
                   vs {page.exchange}
                 </h2>
               </div>
-              <p class="font-mono text-sm text-text-secondary mb-6 leading-relaxed">
+              <p class="font-mono text-sm text-text-secondary mb-6 leading-relaxed flex-1">
                 {page.subheadline}
               </p>
-              <div class="flex items-center gap-6 font-mono text-xs">
+              <div class="flex items-center gap-6 font-mono text-xs mt-auto">
                 <span class="text-signal-red">{page.speed.exchangeSeconds}s web</span>
                 <span class="text-text-tertiary">vs</span>
                 <span class="text-signal-green">{page.speed.testudoSeconds}s Alt+X</span>
@@ -61,5 +60,4 @@ import { vsPages } from '../../content/vs/schema'
       </div>
     </section>
   </main>
-  <Footer />
 </Base>

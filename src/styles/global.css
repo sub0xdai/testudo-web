@@ -18,8 +18,8 @@
   --signal-red: 239 68 68;
   --signal-amber: 245 158 11;
   --text-primary: 235 237 242;
-  --text-secondary: 185 190 200;
-  --text-tertiary: 115 120 130;
+  --text-secondary: 200 205 215;
+  --text-tertiary: 145 150 165;
 }
 
 [data-theme="light"] {
@@ -36,9 +36,9 @@
   --signal-green: 22 163 74;
   --signal-red: 220 38 38;
   --signal-amber: 202 138 4;
-  --text-primary: 15 20 35;
-  --text-secondary: 100 108 125;
-  --text-tertiary: 150 157 172;
+  --text-primary: 10 12 20;
+  --text-secondary: 55 62 78;
+  --text-tertiary: 90 97 112;
 }
 
 @layer components {

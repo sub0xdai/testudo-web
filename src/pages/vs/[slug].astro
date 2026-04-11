@@ -1,6 +1,5 @@
 ---
 import Base from '../../layouts/Base.astro'
-import Footer from '../../components/Footer.astro'
 import { vsPages } from '../../content/vs/schema'
 import type { VsPageData } from '../../content/vs/schema'
 
@@ -82,33 +81,16 @@ const comparisonRows = [
       </div>
     </section>
 
-    <!-- CTA + Related -->
+    <!-- Related -->
     <section>
-      <div class="max-w-4xl mx-auto px-6 md:px-12 py-16 text-center">
-        <p class="font-mono text-xl md:text-2xl font-bold text-text-primary mb-3">
-          Your chart. Your edge. Properly sized.
-        </p>
-        <p class="font-mono text-xs text-text-secondary mb-8">
-          Use {page.exchange} as your exchange. Use Testudo as your execution layer.
-        </p>
-        <a
-          href="https://desk.testudo.vip"
-          class="inline-block border border-border-active text-text-primary font-mono text-xs tracking-wider px-8 py-3 hover:bg-text-primary hover:text-main-bg transition-colors"
-        >
-          {page.ctaText}
-        </a>
-        <p class="font-mono text-[10px] text-text-tertiary mt-3">
-          $20/mo or $50 lifetime · No withdrawal permissions
-        </p>
-
-        <!-- Related -->
-        <div class="flex flex-wrap justify-center gap-3 mt-12 pt-8 border-t border-container-border/30">
+      <div class="max-w-4xl mx-auto px-6 md:px-12 py-12">
+        <div class="flex flex-wrap justify-center gap-3">
           {vsPages
             .filter((p) => p.slug !== page.slug)
             .map((p) => (
               <a
                 href={`/vs/${p.slug}`}
-                class="font-mono text-[10px] text-text-tertiary hover:text-text-primary border border-container-border/50 px-3 py-1.5 transition-colors"
+                class="font-mono text-[10px] text-text-secondary hover:text-text-primary border border-container-border px-3 py-1.5 transition-colors"
               >
                 vs {p.exchange}
               </a>
@@ -116,7 +98,5 @@ const comparisonRows = [
         </div>
       </div>
     </section>
-
   </main>
-  <Footer />
 </Base>
