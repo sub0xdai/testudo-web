@@ -7,7 +7,7 @@ const sorted = allDocs.sort((a, b) => a.data.order - b.data.order)
 const traderDocs = sorted.filter(d => d.data.section === 'trader')
 const technicalDocs = sorted.filter(d => d.data.section === 'technical')
 
-const currentPath = Astro.url.pathname.replace(/\/$/, '')
+const currentPath = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`
 ---
 
 <nav class="space-y-6">
@@ -17,7 +17,7 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '')
     </h3>
     <ul class="space-y-1">
       {traderDocs.map(doc => {
-        const href = `/docs/${doc.id}`
+        const href = `/docs/${doc.id}/`
         const isActive = currentPath === href
         return (
           <li>
@@ -45,7 +45,7 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '')
       </h3>
       <ul class="space-y-1">
         {technicalDocs.map(doc => {
-          const href = `/docs/${doc.id}`
+          const href = `/docs/${doc.id}/`
           const isActive = currentPath === href
           return (
             <li>

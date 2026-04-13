@@ -50,7 +50,7 @@ const { title, description, prev, next } = Astro.props
             TESTUDO
           </a>
           <span class="text-text-tertiary font-mono text-xs">/</span>
-          <a href="/docs" class="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors">
+          <a href="/docs/" class="font-mono text-xs tracking-wider text-text-secondary hover:text-text-primary transition-colors">
             DOCS
           </a>
           <ThemeToggle client:load />
@@ -89,13 +89,13 @@ const { title, description, prev, next } = Astro.props
           <!-- Prev/Next navigation -->
           <nav class="flex justify-between mt-16 pt-6 border-t border-container-border/30">
             {prev ? (
-              <a href={`/docs/${prev.slug}`} class="group">
+              <a href={`/docs/${prev.slug}/`} class="group">
                 <span class="text-[10px] font-mono text-text-tertiary tracking-widest uppercase block mb-1">&larr; Previous</span>
                 <span class="font-mono text-sm text-text-secondary group-hover:text-text-primary transition-colors">{prev.title}</span>
               </a>
             ) : <div />}
             {next ? (
-              <a href={`/docs/${next.slug}`} class="group text-right">
+              <a href={`/docs/${next.slug}/`} class="group text-right">
                 <span class="text-[10px] font-mono text-text-tertiary tracking-widest uppercase block mb-1">Next &rarr;</span>
                 <span class="font-mono text-sm text-text-secondary group-hover:text-text-primary transition-colors">{next.title}</span>
               </a>

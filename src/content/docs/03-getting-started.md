@@ -60,6 +60,6 @@ Once paired, the extension uses your active exchange for live balance display an
 
 With all four steps complete, you're ready to trade:
 
-- [The Extension](/docs/04-extension) — Learn the Alt+X workflow for placing trades from TradingView
-- [The Dashboard](/docs/05-dashboard) — Understand your performance analytics
-- [The Journal](/docs/06-journal) — Start documenting your trade theses
+- [The Extension](/docs/04-extension/) — Learn the Alt+X workflow for placing trades from TradingView
+- [The Dashboard](/docs/05-dashboard/) — Understand your performance analytics
+- [The Journal](/docs/06-journal/) — Start documenting your trade theses
