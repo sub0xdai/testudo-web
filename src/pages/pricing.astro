@@ -88,8 +88,10 @@ const tiers = [
             </ul>
 
             <div class:list={[
-              'mt-6 font-mono font-bold text-[10px] tracking-widest text-center transition-colors duration-300',
-              tier.highlight ? 'text-text-primary' : 'text-text-tertiary',
+              'mt-6 text-center transition-colors duration-300',
+              tier.highlight
+                ? 'btn-primary'
+                : 'btn-secondary',
             ]}>
               [ SELECT ]
             </div>

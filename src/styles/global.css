@@ -18,33 +18,57 @@
   --signal-red: 239 68 68;
   --signal-amber: 245 158 11;
   --text-primary: 235 237 242;
-  --text-secondary: 200 205 215;
-  --text-tertiary: 145 150 165;
+  --text-secondary: 185 190 200;
+  --text-tertiary: 115 120 130;
 }
 
 [data-theme="light"] {
   /* Cool marble light — blue-shifted, no warm parchment */
   --bg-core: 241 243 247;
   --bg-panel: 255 255 255;
-  --bg-elevated: 248 249 252;
-  --bg-hover: 240 242 246;
-  --border: 218 222 230;
+  --bg-elevated: 234 236 242;
+  --bg-hover: 225 228 236;
+  --border: 195 200 212;
   --border-active-accent: 15 20 35;
-  --accent-steel: 75 85 99;
-  --accent-steel-hover: 55 65 81;
-  --accent-primary: 120 128 140;  /* marble for light */
-  --signal-green: 22 163 74;
-  --signal-red: 220 38 38;
-  --signal-amber: 202 138 4;
+  --accent-steel: 55 65 81;
+  --accent-steel-hover: 35 45 60;
+  --accent-primary: 80 90 108;  /* marble for light */
+  --signal-green: 5 150 60;
+  --signal-red: 200 20 25;
+  --signal-amber: 180 110 0;
   --text-primary: 10 12 20;
   --text-secondary: 55 62 78;
-  --text-tertiary: 90 97 112;
+  --text-tertiary: 95 102 118;
 }
 
 @layer components {
   .btn-primary {
-    @apply border border-border-active text-text-primary
-           hover:bg-text-primary hover:text-main-bg transition-colors;
+    @apply bg-text-primary text-main-bg font-display font-bold text-sm py-3 px-8
+           tracking-wider hover:opacity-90 transition-opacity;
+  }
+  .btn-primary:disabled {
+    @apply bg-text-tertiary text-main-bg cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply border border-border-active text-text-primary font-mono font-bold text-xs
+           py-2.5 px-5 tracking-wider hover:bg-text-primary hover:text-main-bg transition-colors;
+  }
+  .btn-secondary:disabled {
+    @apply border-dashed border-text-tertiary text-text-tertiary cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply text-text-secondary font-mono text-xs tracking-wider
+           hover:text-text-primary transition-colors;
+  }
+  .btn-ghost:disabled {
+    @apply text-text-tertiary/50 cursor-not-allowed;
+  }
+
+  .btn-destructive {
+    @apply border border-signal-red text-signal-red font-mono text-xs
+           py-2.5 px-5 tracking-wider hover:bg-signal-red hover:text-main-bg transition-colors;
   }
 }
 
@@ -61,7 +85,7 @@ html {
 }
 
 body {
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
   background-color: rgb(var(--bg-core));
   color: rgb(var(--text-primary));
   -webkit-font-smoothing: antialiased;
