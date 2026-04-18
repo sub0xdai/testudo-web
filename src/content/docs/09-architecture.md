@@ -27,9 +27,9 @@ Router (Actix-web, Rust)
     |--- CEX Sidecar (Node.js, port 3100)
     |       |
     |       v
-    |    Exchange APIs (Binance, WOO, Bybit, OKX)
+    |    Exchange APIs (Binance, Bybit, OKX, etc.)
     |
-    |--- Hyperliquid SDK (native Rust)
+    |--- Hyperliquid Service (integrated in router)
     |       |
     |       v
     |    Hyperliquid L1
@@ -49,18 +49,19 @@ Extension + Desk (real-time updates)
 
 ### testudo-exchange (Rust Backend)
 
-The core backend, organized into 8 crates:
+The core backend, organized into 7 active crates:
 
 | Crate | Purpose |
 |---|---|
-| **router** | Actix-web HTTP server, REST API routes, services, middleware |
+| **router** | Actix-web HTTP server, REST API routes, services (including Hyperliquid), middleware |
 | **engine** | Matching engine, Shadow Engine (paper trading), OrderGroups |
 | **common_utils** | Risk service, position sizer, exchange adapters |
-| **pg_queue** | PostgreSQL job queue (SKIP LOCKED + LISTEN/NOTIFY) |
+| **pg_queue** | PostgreSQL-based high-performance messaging, queues (SKIP LOCKED + LISTEN/NOTIFY), and caching |
 | **sqlx_postgres** | SQLx database client, migrations |
 | **ws-stream** | WebSocket server for real-time event streaming |
 | **db-processor** | Database operation handlers |
-| **redis** | Deprecated — replaced by pg_queue |
+
+> **Note**: Redis is deprecated and has been replaced by `pg_queue` in the Rust backend for all message queuing and caching. Infrastructure still contains a Redis instance for legacy support and optional non-critical caching.
 
 Key patterns:
 - `Result<T, E>` everywhere (no `unwrap()` in production)
