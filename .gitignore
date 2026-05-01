@@ -83,3 +83,9 @@ yarn-error.log*
 # Claude context files (break Astro content collections)
 **/CLAUDE.md
 .astro/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example

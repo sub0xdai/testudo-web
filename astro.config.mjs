@@ -5,10 +5,13 @@ import sitemap from '@astrojs/sitemap'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 
+import cloudflare from '@astrojs/cloudflare';
+
 export default defineConfig({
   site: 'https://testudo.vip',
   output: 'static',
   trailingSlash: 'always',
+
   integrations: [
     solidJs(),
     tailwind(),
@@ -16,12 +19,15 @@ export default defineConfig({
       filter: (page) => !page.includes('/CLAUDE'),
     }),
   ],
+
   markdown: {
     remarkPlugins: [remarkMath],
     rehypePlugins: [rehypeKatex],
   },
+
   server: { port: 3001 },
   devToolbar: { enabled: false },
+
   vite: {
     server: {
       proxy: {
@@ -30,4 +36,6 @@ export default defineConfig({
       },
     },
   },
+
+  adapter: cloudflare(),
 })
