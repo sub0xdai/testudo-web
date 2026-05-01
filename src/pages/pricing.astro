@@ -4,37 +4,42 @@ import Footer from '../components/Footer.astro'
 
 const tiers = [
   {
-    name: 'MONTHLY',
-    price: '$20',
-    subtitle: '/mo',
-    description: 'Full platform access. Cancel anytime.',
+    name: 'FREE',
+    price: '$0',
+    subtitle: 'forever',
+    description: 'The full execution layer. No card, no trial, no expiry.',
     features: [
+      'Browser extension (Alt+X hotkey)',
       'Risk engine + position sizing',
-      'Multi-exchange execution',
-      'Browser extension (Alt+X)',
-      'Trade journal + analytics',
-      'Equity curve + P&L breakdowns',
+      'Multi-exchange order routing',
       'Real-time WebSocket fills',
+      'Journal — last 30 days of trades',
     ],
+    cta: '[ GET STARTED ]',
+    href: 'https://desk.testudo.vip',
     highlight: false,
   },
   {
-    name: 'EARLY LEGIONARY',
-    price: '$50',
-    subtitle: 'one-time',
-    description: 'Lifetime access. All current and future features. Limited offer.',
+    name: 'PRO',
+    price: 'TBD',
+    subtitle: 'launch pricing',
+    description: 'Unlimited journal. Dignitas score. Reserve your spot — early reservers get launch pricing.',
     features: [
-      'Everything. Forever.',
-      'All future updates included',
+      'Everything in FREE',
+      'Unlimited journal history',
+      'Dignitas discipline score',
+      'Equity curve + R-multiple analytics',
+      'Trade-by-trade P&L breakdowns',
       'Priority feature requests',
-      'Early adopter pricing — won\'t last',
     ],
+    cta: '[ RESERVE WITH WALLET ]',
+    href: 'https://desk.testudo.vip?reserve=pro',
     highlight: true,
   },
 ]
 ---
 
-<Base title="Pricing | TESTUDO" description="Two tiers, no hidden fees. Automated position sizing and trade journaling for crypto futures traders.">
+<Base title="Pricing | TESTUDO" description="Free execution layer. Pro journal coming soon. Reserve early access with your wallet.">
   <div class="relative z-10 min-h-screen flex flex-col">
   <main class="flex-1 px-6 md:px-12 lg:px-24 pt-32 pb-16">
     <div class="max-w-3xl mx-auto">
@@ -43,13 +48,14 @@ const tiers = [
       </h1>
 
       <p class="font-display text-sm text-text-secondary mb-12">
-        Two tiers. No hidden fees. Cancel anytime.
+        The execution layer is free, forever. Pay only for the journal —
+        the part that compounds.
       </p>
 
       <div class="grid md:grid-cols-2 gap-6">
         {tiers.map((tier) => (
           <a
-            href="https://desk.testudo.vip/account"
+            href={tier.href}
             class:list={[
               'pricing-card block p-6 border bg-main-bg/80 backdrop-blur-sm flex flex-col cursor-pointer no-underline transition-all duration-300',
               tier.highlight
@@ -89,14 +95,32 @@ const tiers = [
 
             <div class:list={[
               'mt-6 text-center transition-colors duration-300',
-              tier.highlight
-                ? 'btn-primary'
-                : 'btn-secondary',
+              tier.highlight ? 'btn-primary' : 'btn-secondary',
             ]}>
-              [ SELECT ]
+              {tier.cta}
             </div>
           </a>
         ))}
+      </div>
+
+      <div class="mt-12 border border-neutral-800 bg-main-bg/60 backdrop-blur-sm p-5">
+        <div class="font-mono text-[10px] tracking-widest text-text-tertiary mb-2">
+          // FAQ
+        </div>
+        <dl class="space-y-3 font-display text-xs text-text-secondary">
+          <div>
+            <dt class="text-text-primary mb-0.5">Why is the extension free?</dt>
+            <dd class="text-text-tertiary">Speed and risk sizing should not be paywalled. The journal is what compounds — that is what we charge for.</dd>
+          </div>
+          <div>
+            <dt class="text-text-primary mb-0.5">What does &ldquo;reserve with wallet&rdquo; do?</dt>
+            <dd class="text-text-tertiary">Connects your wallet, signs in (no funds moved, no fee), and tags your account for launch pricing. We notify reservers first.</dd>
+          </div>
+          <div>
+            <dt class="text-text-primary mb-0.5">When does PRO launch?</dt>
+            <dd class="text-text-tertiary">When the journal is ready to be paid for. Soon. Reservers get an email and a discount window.</dd>
+          </div>
+        </dl>
       </div>
     </div>
   </main>
