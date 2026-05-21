@@ -1,0 +1,51 @@
+{
+  "$schema": "https://github.com/cloudflare/agent-skills-discovery-rfc/releases/download/v0.2.0/schema.json",
+  "skills": [
+    {
+      "name": "agent-trading-guide",
+      "type": "service-doc",
+      "description": "Complete onboarding guide for AI agents trading autonomously on Testudo. Covers authentication, pre-trade research, signal execution, WebSocket monitoring, journal writes, and the autonomous trading loop with pseudocode.",
+      "url": "https://testudo.vip/AGENT_TRADING.md",
+      "sha256": "47712e8a2d1d419cff1e89742cddbc29ee1b5825f07dd016922a495f52fc9d5a"
+    },
+    {
+      "name": "llms-index",
+      "type": "llms",
+      "description": "AI agent discoverability index listing all agent-facing endpoints, WebSocket channels, and documentation URLs.",
+      "url": "https://testudo.vip/llms.txt",
+      "sha256": "8ae149061193aa811afcef7e7c306c37376bc2bfe9ced425d2eda75901a00cdf"
+    },
+    {
+      "name": "api-catalog",
+      "type": "api-catalog",
+      "description": "RFC 9727 linkset for automated API discovery. Links to API reference docs, agent trading guide, and LLM index.",
+      "url": "https://testudo.vip/.well-known/api-catalog",
+      "sha256": "2d65abb5f855862e761df0fc8d41ee7d0071b482d2e349acd454856187329956"
+    },
+    {
+      "name": "oauth-authorization-server",
+      "type": "oauth-authorization-server",
+      "description": "RFC 8414 OAuth 2.0 Authorization Server Metadata for SIWE (Sign-In With Ethereum) authentication. Declares nonce endpoint, verify endpoint, and token refresh endpoint.",
+      "url": "https://testudo.vip/.well-known/oauth-authorization-server",
+      "sha256": "bb7136cfc2698cf6cf7b0f6d8370eb2e0926d3454e28f2b529307536836dabba"
+    },
+    {
+      "name": "journal-memory",
+      "type": "api",
+      "description": "Agent journal memory endpoints for performance analysis. GET /summary (JSON + LLM markdown), GET /insights (coach patterns), POST /compare (period-over-period deltas). Writes: POST /journal/entries (thesis/postmortem), POST /journal/tags (strategy labels).",
+      "url": "https://testudo.vip/docs/11-agent-trading"
+    },
+    {
+      "name": "signal-execution",
+      "type": "api",
+      "description": "POST /api/v1/signals — programmatic trade execution with reasoning, confidence, setup tags, and idempotency. Supports shadow (paper) and live (CEX/Hyperliquid) modes.",
+      "url": "https://testudo.vip/docs/11-agent-trading"
+    },
+    {
+      "name": "websocket-alerts",
+      "type": "api",
+      "description": "WebSocket channels for real-time agent feedback. agent.execution.{user_id} for fill confirmations, agent.alert.{user_id} for risk breach and wallet expiry notifications.",
+      "url": "https://testudo.vip/docs/10-api-reference"
+    }
+  ]
+}
