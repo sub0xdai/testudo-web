@@ -1,0 +1,75 @@
+{
+  "serverInfo": {
+    "name": "testudo",
+    "version": "0.2.0",
+    "description": "Automated risk-managed crypto trading platform with AI agent integration. Execute trades, analyze performance, and receive real-time alerts via REST + WebSocket."
+  },
+  "transport": {
+    "type": "http",
+    "endpoint": "https://testudo.vip/api/v1",
+    "auth": {
+      "type": "bearer",
+      "discovery": "https://testudo.vip/.well-known/oauth-authorization-server"
+    }
+  },
+  "capabilities": {
+    "tools": [
+      {
+        "name": "signal",
+        "description": "Submit a trade signal for execution through the risk engine. Supports shadow (paper) and live modes across CEX and Hyperliquid.",
+        "method": "POST",
+        "path": "/api/v1/signals"
+      },
+      {
+        "name": "journal_summary",
+        "description": "Fetch consolidated performance summary as JSON or LLM-optimized markdown with [T-xxxxxxxx] citation tokens.",
+        "method": "GET",
+        "path": "/api/v1/journal/agent/summary"
+      },
+      {
+        "name": "journal_insights",
+        "description": "Retrieve behavioral pattern detection from the weekly coach pipeline (sizing drift, frequency spikes, session anomalies, etc.).",
+        "method": "GET",
+        "path": "/api/v1/journal/agent/insights"
+      },
+      {
+        "name": "journal_compare",
+        "description": "Compare performance between two time periods with per-metric deltas and direction indicators.",
+        "method": "POST",
+        "path": "/api/v1/journal/agent/compare"
+      },
+      {
+        "name": "journal_entries",
+        "description": "Record trade theses, postmortems, and market observations in the journal.",
+        "method": "POST",
+        "path": "/api/v1/journal/entries"
+      },
+      {
+        "name": "journal_tags",
+        "description": "Create strategy tags and apply them to trades for performance grouping.",
+        "method": "POST",
+        "path": "/api/v1/journal/tags"
+      }
+    ],
+    "streaming": [
+      {
+        "name": "execution_reports",
+        "description": "Real-time fill confirmations, SL/TP placement, and trade lifecycle events.",
+        "type": "websocket",
+        "channel": "agent.execution.{user_id}"
+      },
+      {
+        "name": "risk_alerts",
+        "description": "Real-time risk breach notifications (drawdown warnings, max positions, wallet expiry).",
+        "type": "websocket",
+        "channel": "agent.alert.{user_id}"
+      }
+    ]
+  },
+  "documentation": "https://testudo.vip/AGENT_TRADING.md",
+  "discovery": {
+    "llms": "https://testudo.vip/llms.txt",
+    "api_catalog": "https://testudo.vip/.well-known/api-catalog",
+    "agent_skills": "https://testudo.vip/.well-known/agent-skills/index.json"
+  }
+}
