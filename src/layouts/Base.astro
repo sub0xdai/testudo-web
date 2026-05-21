@@ -30,6 +30,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://testudo.
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL.href} />
 
+    <!-- AI agent discoverability -->
+    <link rel="llms" href="/llms.txt" />
+    <link rel="alternate" type="text/markdown" href="/AGENT_TRADING.md" title="Agent Trading Guide" />
+
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalURL.href} />
