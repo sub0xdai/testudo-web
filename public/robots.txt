@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 
+# Content Signals — AI usage preferences
+# Docs: https://contentsignals.org/
+Content-Signal: ai-train=no, search=yes, ai-input=yes
+
 Sitemap: https://testudo.vip/sitemap-index.xml
