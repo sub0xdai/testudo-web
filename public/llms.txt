@@ -1,0 +1,18 @@
+# Testudo — AI Agent Trading Platform
+> Programmatic trade execution, real-time risk alerts, and journal-as-memory for autonomous AI agents.
+
+## Quick Start
+- [Agent Trading Guide](/AGENT_TRADING.md) — complete onboarding for AI agents
+- [API Reference](/docs/10-api-reference) — REST endpoints and WebSocket channels
+- [Agent Architecture](/docs/11-agent-trading) — docs page with copy-to-clipboard
+
+## Agent Endpoints
+- `POST /api/v1/signals` — submit trades with reasoning, confidence, setup tags
+- `GET /journal/agent/summary?format=llm` — performance as LLM-ready markdown
+- `GET /journal/agent/insights` — coach pattern detection
+- `POST /journal/agent/compare` — period-over-period comparison
+- WebSocket `agent.execution.{user_id}` — real-time fill confirmations
+- WebSocket `agent.alert.{user_id}` — risk breach notifications
+
+## Optional
+- [Full agent trading guide (raw markdown)](/AGENT_TRADING.md)
