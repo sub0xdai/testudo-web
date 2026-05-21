@@ -14,3 +14,8 @@
 /AGENT_TRADING.md
   Content-Type: text/markdown; charset=utf-8
   Cache-Control: public, max-age=3600
+
+/.well-known/api-catalog
+  Content-Type: application/linkset+json; charset=utf-8
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600

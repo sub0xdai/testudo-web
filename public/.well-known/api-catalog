@@ -1,0 +1,30 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://testudo.vip/api/v1",
+      "service-doc": [
+        {
+          "href": "https://testudo.vip/docs/10-api-reference",
+          "type": "text/html",
+          "title": "Testudo API Reference"
+        }
+      ]
+    },
+    {
+      "anchor": "https://testudo.vip",
+      "service-doc": [
+        {
+          "href": "https://testudo.vip/AGENT_TRADING.md",
+          "type": "text/markdown",
+          "title": "Agent Trading Guide"
+        }
+      ],
+      "llms": [
+        {
+          "href": "https://testudo.vip/llms.txt",
+          "type": "text/plain"
+        }
+      ]
+    }
+  ]
+}
