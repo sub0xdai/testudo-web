@@ -27,7 +27,7 @@ curl -s https://testudo.vip/AGENT_TRADING.md
 
 <div class="flex flex-wrap gap-4 my-6 not-prose">
   <a href="/AGENT_TRADING.md"
-     class="inline-flex items-center gap-2 px-5 py-2.5 border border-signal-green text-signal-green font-mono text-xs tracking-wider hover:bg-signal-green hover:text-bg-core transition-colors">
+     class="inline-flex items-center gap-2 px-5 py-2.5 border border-signal-green text-signal-green font-mono text-xs tracking-wider hover:bg-signal-green hover:text-main-bg transition-colors">
     ↓ RAW GUIDE (agent-consumable)
   </a>
   <button onclick="navigator.clipboard.writeText('https://testudo.vip/AGENT_TRADING.md');this.textContent='COPIED!';setTimeout(()=>this.textContent='📋 COPY URL',1500)"
