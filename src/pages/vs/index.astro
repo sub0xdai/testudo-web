@@ -34,12 +34,12 @@ import { vsPages } from '../../content/vs/schema'
               <div class="flex items-center gap-3 mb-4">
                 <span class={`font-mono text-[10px] tracking-widest uppercase px-2 py-0.5 border ${
                   page.type === 'dex'
-                    ? 'border-signal-green/30 text-signal-green'
+                    ? 'border-accent-steel/30 text-accent-steel'
                     : 'border-accent-steel/30 text-accent-steel'
                 }`}>
                   {page.type}
                 </span>
-                <h2 class="font-mono text-lg font-bold text-text-primary group-hover:text-signal-green transition-colors">
+                <h2 class="font-mono text-lg font-bold text-text-primary group-hover:text-accent-steel transition-colors">
                   vs {page.exchange}
                 </h2>
               </div>
@@ -49,7 +49,7 @@ import { vsPages } from '../../content/vs/schema'
               <div class="flex items-center gap-6 font-mono text-xs mt-auto">
                 <span class="text-signal-red">{page.speed.exchangeSeconds}s web</span>
                 <span class="text-text-tertiary">vs</span>
-                <span class="text-signal-green">{page.speed.testudoSeconds}s Alt+X</span>
+                <span class="text-accent-steel">{page.speed.testudoSeconds}s Alt+X</span>
                 <span class="text-text-tertiary">
                   ({Math.round(page.speed.exchangeSeconds / page.speed.testudoSeconds)}x faster)
                 </span>
