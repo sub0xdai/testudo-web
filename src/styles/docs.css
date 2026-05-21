@@ -83,14 +83,12 @@ a.no-underline, a.no-underline * {
 
 .prose-testudo pre {
   @apply border border-container-border p-4 overflow-x-auto mb-4 text-sm;
-  background-color: rgb(var(--bg-elevated));
-  color: rgb(var(--text-primary));
+  /* background + color handled by --astro-code-* vars via inline style */
 }
 
 .prose-testudo pre code {
   background-color: transparent;
   padding: 0;
-  color: inherit;
 }
 
 .prose-testudo table {
@@ -123,25 +121,20 @@ a.no-underline, a.no-underline * {
   @apply not-italic;
 }
 
-/* --- Light theme overrides — hardcoded hex, no var() inheritance traps --- */
-[data-theme="light"] .prose-testudo code {
-  background-color: #dde0e7;
-}
+/* --- Light theme overrides --- */
 [data-theme="light"] .prose-testudo pre {
-  background-color: #eceef2;
-  border-color: #c5c9d4;
-  color: #0f1220;
+  border-color: rgb(var(--border) / 0.7);
 }
 [data-theme="light"] .prose-testudo blockquote {
   border-color: rgb(var(--accent-steel) / 0.7);
 }
 [data-theme="light"] .prose-testudo th {
-  background-color: #dde0e7;
-  color: #0f1220;
+  background-color: rgb(var(--border) / 0.45);
+  color: rgb(var(--text-primary));
 }
 [data-theme="light"] .prose-testudo td {
-  border-color: #cdd1db;
+  border-color: rgb(var(--border) / 0.55);
 }
 [data-theme="light"] .prose-testudo hr {
-  border-color: #cdd1db;
+  border-color: rgb(var(--border) / 0.65);
 }

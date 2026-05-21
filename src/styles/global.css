@@ -20,6 +20,19 @@
   --text-primary: 235 237 242;
   --text-secondary: 185 190 200;
   --text-tertiary: 115 120 130;
+
+  /* Astro-code syntax highlighting — GitHub Dark palette */
+  --astro-code-background: #1a1c23;
+  --astro-code-foreground: #e1e4e8;
+  --astro-code-token-constant: #79b8ff;
+  --astro-code-token-string: #9ecbff;
+  --astro-code-token-comment: #6a737d;
+  --astro-code-token-keyword: #b392f0;
+  --astro-code-token-parameter: #e1e4e8;
+  --astro-code-token-function: #b392f0;
+  --astro-code-token-string-expression: #9ecbff;
+  --astro-code-token-punctuation: #e1e4e8;
+  --astro-code-token-link: #79b8ff;
 }
 
 [data-theme="light"] {
@@ -39,6 +52,19 @@
   --text-primary: 10 12 20;
   --text-secondary: 55 62 78;
   --text-tertiary: 95 102 118;
+
+  /* Astro-code syntax highlighting — GitHub Light palette */
+  --astro-code-background: #eaeef2;
+  --astro-code-foreground: #24292e;
+  --astro-code-token-constant: #005cc5;
+  --astro-code-token-string: #032f62;
+  --astro-code-token-comment: #6a737d;
+  --astro-code-token-keyword: #6f42c1;
+  --astro-code-token-parameter: #24292e;
+  --astro-code-token-function: #6f42c1;
+  --astro-code-token-string-expression: #032f62;
+  --astro-code-token-punctuation: #24292e;
+  --astro-code-token-link: #005cc5;
 }
 
 @layer components {

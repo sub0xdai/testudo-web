@@ -19,6 +19,9 @@ export default defineConfig({
   markdown: {
     remarkPlugins: [remarkMath],
     rehypePlugins: [rehypeKatex],
+    shikiConfig: {
+      theme: 'css-variables',
+    },
   },
   server: { port: 3001 },
   devToolbar: { enabled: false },
