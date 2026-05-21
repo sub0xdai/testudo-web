@@ -6,6 +6,7 @@
   Link: </llms.txt>; rel="llms"
   Link: </AGENT_TRADING.md>; rel="service-doc"
   Link: </docs/10-api-reference>; rel="api"
+  Link: </.well-known/api-catalog>; rel="api-catalog"
 
 /llms.txt
   Content-Type: text/plain; charset=utf-8
