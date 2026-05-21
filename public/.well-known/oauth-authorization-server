@@ -1,0 +1,21 @@
+{
+  "issuer": "https://testudo.vip",
+  "authorization_endpoint": "https://testudo.vip/api/v1/auth/verify-siwe",
+  "token_endpoint": "https://testudo.vip/api/v1/auth/refresh",
+  "registration_endpoint": "https://testudo.vip/api/v1/auth/nonce",
+  "grant_types_supported": [
+    "urn:ietf:params:oauth:grant-type:siwe"
+  ],
+  "response_types_supported": [
+    "token"
+  ],
+  "token_endpoint_auth_methods_supported": [
+    "none"
+  ],
+  "service_documentation": "https://testudo.vip/docs/10-api-reference",
+  "ui_locales_supported": [
+    "en"
+  ],
+  "op_policy_uri": "https://testudo.vip/terms/",
+  "op_tos_uri": "https://testudo.vip/terms/"
+}
