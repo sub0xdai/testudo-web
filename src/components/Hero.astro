@@ -100,7 +100,6 @@ const capabilities = [
   }
 
   /* Agent card — draws attention with glow + arrow reveal */
-  /* Uses theme CSS variables so it adapts to light/dark automatically */
   .agent-card {
     border-color: rgb(var(--signal-green) / 0.25);
     box-shadow: 0 0 0 0 rgb(var(--signal-green) / 0);
@@ -126,5 +125,23 @@ const capabilities = [
   .agent-card:hover .agent-card-arrow {
     opacity: 1;
     transform: translateX(0);
+  }
+
+  /* Light theme — swap green glow for a cleaner border accent */
+  [data-theme="light"] .agent-card {
+    border-color: rgb(var(--signal-green) / 0.3);
+    box-shadow: none;
+  }
+  [data-theme="light"] .agent-card:hover {
+    border-color: rgb(var(--signal-green) / 0.8);
+    border-left-width: 3px;
+    box-shadow: 2px 0 12px rgb(var(--signal-green) / 0.1);
+    background-color: rgb(var(--signal-green) / 0.04);
+  }
+  [data-theme="light"] .agent-card-label {
+    color: rgb(var(--text-tertiary) / 1);
+  }
+  [data-theme="light"] .agent-card:hover .agent-card-label {
+    color: rgb(var(--signal-green) / 0.85);
   }
 </style>
