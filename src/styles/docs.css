@@ -118,22 +118,24 @@ a.no-underline, a.no-underline * {
   @apply not-italic;
 }
 
-/* --- Light theme overrides — higher contrast for light backgrounds --- */
+/* --- Light theme overrides — use raw var() for reliable attribute-selector resolution --- */
 [data-theme="light"] .prose-testudo code {
-  @apply bg-container-border/30 text-text-primary;
+  background-color: rgb(var(--border) / 0.45);
 }
 [data-theme="light"] .prose-testudo pre {
-  @apply border-container-border/50;
+  background-color: rgb(var(--border) / 0.22);
+  border-color: rgb(var(--border) / 0.55);
 }
 [data-theme="light"] .prose-testudo blockquote {
-  @apply border-accent-steel/60;
+  border-color: rgb(var(--accent-steel) / 0.7);
 }
 [data-theme="light"] .prose-testudo th {
-  @apply bg-container-border/40 text-text-primary;
+  background-color: rgb(var(--border) / 0.45);
+  color: rgb(var(--text-primary));
 }
 [data-theme="light"] .prose-testudo td {
-  @apply border-container-border/50;
+  border-color: rgb(var(--border) / 0.55);
 }
 [data-theme="light"] .prose-testudo hr {
-  @apply border-container-border/60;
+  border-color: rgb(var(--border) / 0.65);
 }
