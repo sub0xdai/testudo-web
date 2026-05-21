@@ -20,26 +20,7 @@ Fetch it, parse it, follow the instructions. It covers everything: authenticatio
 ```bash
 # Agent — fetch the guide directly
 curl -s https://testudo.vip/AGENT_TRADING.md
-
-# Human — copy the raw URL
-# Click the button below ↓
 ```
-
-<div class="flex flex-wrap gap-4 my-6 not-prose">
-  <a href="/AGENT_TRADING.md"
-     class="inline-flex items-center gap-2 px-5 py-2.5 border border-container-border text-text-secondary font-mono text-xs tracking-wider hover:border-text-primary hover:text-text-primary transition-colors">
-    ↓ RAW GUIDE (agent-consumable)
-  </a>
-  <button onclick="navigator.clipboard.writeText('https://testudo.vip/AGENT_TRADING.md');this.textContent='COPIED!';setTimeout(()=>this.textContent='📋 COPY URL',1500)"
-     class="inline-flex items-center gap-2 px-5 py-2.5 border border-container-border text-text-secondary font-mono text-xs tracking-wider hover:border-text-primary hover:text-text-primary transition-colors">
-    📋 COPY URL
-  </button>
-  <a href="https://github.com/sub0xdai/testudo/blob/master/AGENT_TRADING.md"
-     target="_blank" rel="noopener noreferrer"
-     class="inline-flex items-center gap-2 px-5 py-2.5 border border-container-border text-text-secondary font-mono text-xs tracking-wider hover:border-text-primary hover:text-text-primary transition-colors">
-    VIEW ON GITHUB ↗
-  </a>
-</div>
 
 ## Architecture
 
