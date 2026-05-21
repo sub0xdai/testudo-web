@@ -4,6 +4,7 @@ const capabilities = [
   { label: 'DEX + CEX', detail: '9 exchanges. Hyperliquid, Binance, Bybit + more' },
   { label: 'CIRCUIT BREAKERS', detail: 'Daily loss limits. Portfolio heat' },
   { label: 'EXTENSION', detail: 'Alt+X from TradingView. Instant' },
+  { label: 'AI AGENTS', detail: 'Claude, Hermes, OpenClaw. Autonomous execution', href: 'https://github.com/sub0xdai/testudo/blob/master/AGENT_TRADING.md' },
 ]
 ---
 
@@ -28,16 +29,27 @@ const capabilities = [
       </p>
 
       <!-- Capabilities — containerized with semi-transparent backgrounds -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4">
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-x-6 gap-y-4">
         {capabilities.map((cap) => (
-          <div class="border-l border-container-border pl-4 py-2.5 bg-main-bg/85 backdrop-blur-sm">
-            <div class="font-mono text-[11px] tracking-widest text-text-tertiary mb-1 font-medium">
-              {cap.label}
+          cap.href ? (
+            <a href={cap.href} target="_blank" rel="noopener noreferrer" class="block border-l border-container-border pl-4 py-2.5 bg-main-bg/85 backdrop-blur-sm hover:border-text-primary transition-colors">
+              <div class="font-mono text-[11px] tracking-widest text-text-tertiary mb-1 font-medium">
+                {cap.label}
+              </div>
+              <p class="font-display text-sm text-text-secondary leading-relaxed font-medium">
+                {cap.detail}
+              </p>
+            </a>
+          ) : (
+            <div class="border-l border-container-border pl-4 py-2.5 bg-main-bg/85 backdrop-blur-sm">
+              <div class="font-mono text-[11px] tracking-widest text-text-tertiary mb-1 font-medium">
+                {cap.label}
+              </div>
+              <p class="font-display text-sm text-text-secondary leading-relaxed font-medium">
+                {cap.detail}
+              </p>
             </div>
-            <p class="font-display text-sm text-text-secondary leading-relaxed font-medium">
-              {cap.detail}
-            </p>
-          </div>
+          )
         ))}
       </div>
     </div>
