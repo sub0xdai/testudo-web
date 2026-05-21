@@ -1,30 +1,20 @@
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const accept = request.headers.get('Accept') || '';
+    const url = new URL(request.url);
 
-    // Markdown for Agents: if the client requests markdown, serve
-    // the raw agent trading guide with proper Content-Type.
+    // Markdown for Agents: intercept Accept: text/markdown and serve
+    // the raw agent trading guide regardless of URL path.
     if (accept.includes('text/markdown')) {
-      const url = new URL(request.url);
-      // Map common entry points to their markdown equivalents
-      const markdownPaths = {
-        '/': '/AGENT_TRADING.md',
-        '/docs/': '/AGENT_TRADING.md',
-        '/docs/11-agent-trading/': '/AGENT_TRADING.md',
-      };
-      const redirect = markdownPaths[url.pathname];
-      if (redirect) {
-        url.pathname = redirect;
-        const mdRequest = new Request(url, request);
-        const response = await env.ASSETS.fetch(mdRequest);
-        return new Response(response.body, {
-          status: response.status,
-          headers: {
-            'Content-Type': 'text/markdown; charset=utf-8',
-            'Cache-Control': 'public, max-age=3600',
-          },
-        });
-      }
+      const mdRequest = new Request(new URL('/AGENT_TRADING.md', url), request);
+      const response = await env.ASSETS.fetch(mdRequest);
+      return new Response(response.body, {
+        status: response.status,
+        headers: {
+          'Content-Type': 'text/markdown; charset=utf-8',
+          'Cache-Control': 'no-cache',
+        },
+      });
     }
 
     // Default: pass through to static assets
