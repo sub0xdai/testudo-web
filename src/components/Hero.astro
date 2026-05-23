@@ -4,7 +4,7 @@ const capabilities = [
   { label: 'DEX + CEX', detail: '9 exchanges. Hyperliquid, Binance, Bybit + more' },
   { label: 'CIRCUIT BREAKERS', detail: 'Daily loss limits. Portfolio heat' },
   { label: 'EXTENSION', detail: 'Alt+X from TradingView. Instant' },
-  { label: 'AI AGENTS', detail: 'Claude, Hermes, OpenClaw. Autonomous execution', href: '/AGENT_TRADING.md' },
+  { label: 'AI AGENTS', detail: 'Claude, Hermes, OpenClaw. Autonomous execution', href: 'https://github.com/sub0xdai/testudo/blob/master/AGENTS.md' },
 ]
 ---
 
@@ -13,12 +13,13 @@ const capabilities = [
     <!-- Left: text content -->
     <div class="flex-1 min-w-0">
       <h1 class="font-display text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-bold tracking-tight text-text-primary leading-[0.95] mb-10">
-        command
+        COMMAND
         <br />
         [victōria]
       </h1>
 
       <p class="font-display text-lg md:text-xl text-text-primary/80 max-w-2xl mb-20 leading-relaxed">
+        <br />
         Automated risk management
         <br />
       </p>
@@ -94,13 +95,23 @@ const capabilities = [
     opacity: 0;
   }
 
-  /* Agent card — draws attention with subtle highlight */
+  /* Agent card — persistent glow that screams "click me" */
   .agent-card {
-    border-color: rgb(var(--accent-steel) / 0.2);
+    border-color: rgb(var(--accent-steel) / 0.5);
+    box-shadow:
+      0 0 8px rgb(var(--accent-steel) / 0.15),
+      0 0 20px rgb(var(--accent-steel) / 0.08),
+      inset 0 0 8px rgb(var(--accent-steel) / 0.04);
+    animation: agent-glow-pulse 2.5s ease-in-out infinite;
   }
   .agent-card:hover {
-    border-color: rgb(var(--accent-steel) / 0.6);
-    background-color: rgb(var(--accent-steel) / 0.05);
+    border-color: rgb(var(--accent-steel) / 0.8);
+    background-color: rgb(var(--accent-steel) / 0.08);
+    box-shadow:
+      0 0 16px rgb(var(--accent-steel) / 0.3),
+      0 0 40px rgb(var(--accent-steel) / 0.15),
+      0 0 60px rgb(var(--accent-steel) / 0.08),
+      inset 0 0 12px rgb(var(--accent-steel) / 0.06);
   }
   .agent-card-label {
     color: rgb(var(--text-tertiary) / 1);
@@ -119,12 +130,47 @@ const capabilities = [
     transform: translateX(0);
   }
 
-  /* Light theme — keep it clean, no glow */
+  @keyframes agent-glow-pulse {
+    0%, 100% {
+      box-shadow:
+        0 0 8px rgb(var(--accent-steel) / 0.15),
+        0 0 20px rgb(var(--accent-steel) / 0.08),
+        inset 0 0 8px rgb(var(--accent-steel) / 0.04);
+    }
+    50% {
+      box-shadow:
+        0 0 14px rgb(var(--accent-steel) / 0.25),
+        0 0 30px rgb(var(--accent-steel) / 0.14),
+        inset 0 0 14px rgb(var(--accent-steel) / 0.08);
+    }
+  }
+
+  /* Light theme — brighter steel hue for visibility */
   [data-theme="light"] .agent-card {
-    border-color: rgb(var(--accent-steel) / 0.25);
+    border-color: rgb(var(--accent-steel) / 0.55);
+    box-shadow:
+      0 0 10px rgb(var(--accent-steel) / 0.2),
+      0 0 24px rgb(var(--accent-steel) / 0.1);
+    animation: agent-glow-pulse-light 2.5s ease-in-out infinite;
   }
   [data-theme="light"] .agent-card:hover {
-    border-color: rgb(var(--accent-steel) / 0.7);
-    background-color: rgb(var(--accent-steel) / 0.06);
+    border-color: rgb(var(--accent-steel) / 0.8);
+    background-color: rgb(var(--accent-steel) / 0.08);
+    box-shadow:
+      0 0 18px rgb(var(--accent-steel) / 0.35),
+      0 0 44px rgb(var(--accent-steel) / 0.2);
+  }
+
+  @keyframes agent-glow-pulse-light {
+    0%, 100% {
+      box-shadow:
+        0 0 10px rgb(var(--accent-steel) / 0.2),
+        0 0 24px rgb(var(--accent-steel) / 0.1);
+    }
+    50% {
+      box-shadow:
+        0 0 16px rgb(var(--accent-steel) / 0.3),
+        0 0 34px rgb(var(--accent-steel) / 0.16);
+    }
   }
 </style>
