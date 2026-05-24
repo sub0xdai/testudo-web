@@ -1,6 +1,6 @@
 ---
 title: "Agent Trading"
-description: "How AI agents (Claude, Hermes, OpenClaw, pi) trade autonomously on Testudo."
+description: "How AI agents (Hermes, OpenClaw, pi) trade autonomously on Testudo."
 order: 11
 section: "technical"
 ---
