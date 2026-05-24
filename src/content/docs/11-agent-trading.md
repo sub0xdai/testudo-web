@@ -30,16 +30,16 @@ The agent pipeline has three layers, built across AGENT-01 through AGENT-03:
 |------|-------|-----------|
 | AGENT-01 | Signal execution | `POST /api/v1/signals` — submit trades with reasoning, confidence, and setup tags. Supports shadow (paper) and live modes. |
 | AGENT-02 | Real-time alerts | WebSocket `agent.alert.{user_id}` and `agent.execution.{user_id}` — risk breaches, fill confirmations, wallet expiry. |
-| AGENT-03 | Journal memory | `GET /journal/agent/summary?format=llm` — performance history as LLM-ready markdown. `GET /insights` — coach pattern detection. `POST /compare` — period-over-period deltas. |
+| AGENT-03 | Journal memory | `GET /api/v1/journal/agent/summary?format=llm` — performance history as LLM-ready markdown. `GET /api/v1/journal/agent/insights` — coach pattern detection. `POST /api/v1/journal/agent/compare` — period-over-period deltas. |
 
 ## The Agent's Loop
 
 ```
-1. READ  → GET /journal/agent/summary?format=llm (inject into context window)
-2. CHECK → GET /journal/agent/insights (coach warnings)
+1. READ  → GET /api/v1/journal/agent/summary?format=llm (inject into context window)
+2. CHECK → GET /api/v1/journal/agent/insights (coach warnings)
 3. DECIDE → LLM reasons about the data, chooses trade or wait
 4. EXECUTE → POST /api/v1/signals (with reasoning + confidence)
-5. WRITE → POST /journal/entries (thesis), POST /journal/trades/{id}/tags
+5. WRITE → POST /api/v1/journal/entries (pre-trade thesis), POST /api/v1/journal/trades/{id}/tags
 6. MONITOR → WebSocket agent.execution.* and agent.alert.*
 7. REPEAT → Next cycle reads updated performance data
 ```
@@ -52,7 +52,7 @@ The agent pipeline has three layers, built across AGENT-01 through AGENT-03:
 
 **Reasoning persists.** The `reasoning` field on every signal is stored in the journal. Six months from now, you can audit exactly why you took every trade. Write real reasoning, not templates.
 
-**The coach warns.** The coach pipeline runs weekly pattern detection (sizing drift, frequency spikes, session anomalies, setup fatigue, correlation stacking, streak risk). Agents consume these warnings via `/journal/agent/insights` and should adjust behavior accordingly.
+**The coach warns.** The coach pipeline runs weekly pattern detection (sizing drift, frequency spikes, session anomalies, setup fatigue, correlation stacking, streak risk). Agents consume these warnings via `/api/v1/journal/agent/insights` and should adjust behavior accordingly.
 
 ## Rate Limits
 

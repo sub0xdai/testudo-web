@@ -8,9 +8,9 @@
 
 ## Agent Endpoints
 - `POST /api/v1/signals` — submit trades with reasoning, confidence, setup tags
-- `GET /journal/agent/summary?format=llm` — performance as LLM-ready markdown
-- `GET /journal/agent/insights` — coach pattern detection
-- `POST /journal/agent/compare` — period-over-period comparison
+- `GET /api/v1/journal/agent/summary?format=llm` — performance as LLM-ready markdown
+- `GET /api/v1/journal/agent/insights` — coach pattern detection
+- `POST /api/v1/journal/agent/compare` — period-over-period comparison
 - WebSocket `agent.execution.{user_id}` — real-time fill confirmations
 - WebSocket `agent.alert.{user_id}` — risk breach notifications
 
