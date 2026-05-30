@@ -1,3 +1,6 @@
+/** @anchor ui:web:schema
+ * @tags ui */
+
 /**
  * Programmatic SEO: Versus page data schema
  * Each entry generates a /vs/[slug] page comparing Testudo's local client

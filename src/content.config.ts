@@ -1,3 +1,6 @@
+/** @anchor ui:web:content.config
+ * @tags ui */
+
 import { defineCollection, z } from 'astro:content'
 import { glob } from 'astro/loaders'
 

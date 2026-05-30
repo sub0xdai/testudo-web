@@ -1,3 +1,6 @@
+/** @anchor ui:web-comp:ThemeToggle
+ * @tags ui */
+
 import { createSignal, onMount } from "solid-js"
 
 type Theme = 'amoled' | 'light'
