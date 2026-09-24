@@ -7,6 +7,12 @@
   Link: </AGENT_TRADING.md>; rel="service-doc"
   Link: </docs/10-api-reference>; rel="api"
   Link: </.well-known/api-catalog>; rel="api-catalog"
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline'
 
 /llms.txt
   Content-Type: text/plain; charset=utf-8
